@@ -46,4 +46,4 @@ __pycache__/
 *.pyo
 *.pyd
 .venv/
-poetry.lock
+server/poetry.lock
