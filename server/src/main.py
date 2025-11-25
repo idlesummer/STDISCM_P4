@@ -1,6 +1,3 @@
-from torch.utils.data import DataLoader
-
-
 def main():
     print("Hello World")
 
