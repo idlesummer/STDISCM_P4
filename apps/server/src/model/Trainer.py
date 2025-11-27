@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from   torch.utils.data import DataLoader
 from   src.model.TrainingLogger import TrainingLogger
+from   src.types.BatchLogEntry import BatchLogEntry
 
 
 # Set up logging for this module
@@ -108,8 +109,7 @@ class Trainer:
         images_bytes = [self.logger.tensor_to_bytes(img) for img in X_batch]
 
         # Create and log batch entry
-        from src.types.BatchLogEntry import BatchLogEntry
-        entry = BatchLogEntry(
+        self.logger.log_batch(BatchLogEntry(
             iteration=(epoch * len(self.data_loader) + batch),
             batch=batch,
             batch_loss=loss.item(),
@@ -118,10 +118,10 @@ class Trainer:
             predictions=predicted_labels.tolist(),
             probabilities=probabilities.tolist(),
             ground_truths=y_batch.tolist(),
-        )
-        self.logger.log_batch(entry)
+        ))
 
-        return loss.item()  # Return the loss for the current batch
+        # Return the loss for the current batch
+        return loss.item()  
 
 
     def evaluate(self, val_loader: DataLoader) -> float:
