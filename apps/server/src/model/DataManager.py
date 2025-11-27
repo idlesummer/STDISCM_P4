@@ -24,7 +24,7 @@ class DatasetManager:
         val_size: float = 0.1,
         test_size: float = 0.1,
         transform: Optional[transforms.Compose] = None,
-        seed: int = 42
+        seed: int = 0
     ) -> None:
         """
         Initializes the DatasetManager class for MNIST dataset.
