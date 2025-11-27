@@ -17,7 +17,7 @@ class MNISTDatasetManager:
 
     def __init__(
         self,
-        root: str = './data',
+        root: str,
         batch_size: int = 16,
         val_size: float = 0.1,
         test_size: float = 0.1,
