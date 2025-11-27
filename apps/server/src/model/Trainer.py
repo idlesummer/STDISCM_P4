@@ -83,13 +83,7 @@ class Trainer:
             logger.warning(f"Training finished after {self.max_epochs} epochs. Convergence threshold was not met.")
 
 
-    def train_batch(
-        self,
-        epoch: int,
-        batch: int,
-        X_batch: torch.Tensor,
-        y_batch: torch.Tensor,
-    ) -> float:
+    def train_batch(self, epoch: int, batch: int, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
         """Train the model on a single batch and log the batch information."""
 
         X_batch = X_batch.float()                       # Ensure tensors are of the correct dtype for labels
@@ -121,7 +115,7 @@ class Trainer:
         ))
 
         # Return the loss for the current batch
-        return loss.item()  
+        return loss.item()
 
 
     def evaluate(self, val_loader: DataLoader) -> float:
@@ -134,8 +128,8 @@ class Trainer:
         # Disable gradient computation during evaluation
         with torch.no_grad():                       
             for X, y in val_loader:
-                X = X.float()                       # Ensure input is in float32
-                y = y.long()                        # Ensure labels are in long type
+                X = X.float()   # Ensure input is in float32
+                y = y.long()    # Ensure labels are in long type
 
                 scores, _ = self.model(X)
                 loss = self.criterion(scores, y)
