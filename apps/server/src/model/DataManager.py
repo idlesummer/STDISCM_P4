@@ -72,12 +72,8 @@ class DatasetManager:
         # Calculate split sizes based on proportions
         train_size = int((1 - self.val_size - self.test_size) * dataset_size)
         val_size = int(self.val_size * dataset_size)
-        test_size = dataset_size - train_size - val_size
-        
-        # Set the random seed for reproducibility
-        generator = torch.Generator().manual_seed(self.seed)
+        test_size = int(self.test_size * dataset_size)
         
         # Perform the split using random_split with a deterministic generator
-        train_dataset, val_dataset, test_dataset = random_split(self.dataset, [train_size, val_size, test_size], generator=generator)
-        
+        train_dataset, val_dataset, test_dataset = random_split(self.dataset, [train_size, val_size, test_size])
         return train_dataset, val_dataset, test_dataset
