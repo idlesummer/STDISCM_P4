@@ -24,19 +24,29 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13\x63ore_messages.proto\x12\x07metrics\"\xa5\x01\n\tBatchData\x12\r\n\x05\x65poch\x18\x01 \x01(\r\x12\x11\n\tbatch_idx\x18\x02 \x01(\r\x12\"\n\x06images\x18\x03 \x03(\x0b\x32\x12.metrics.ImageData\x12(\n\x0bpredictions\x18\x04 \x03(\x0b\x32\x13.metrics.Prediction\x12\x14\n\x0cground_truth\x18\x05 \x03(\x05\x12\x12\n\nbatch_loss\x18\x06 \x01(\x02\" \n\tImageData\x12\x13\n\x0bimage_bytes\x18\x01 \x01(\x0c\"9\n\nPrediction\x12\x17\n\x0fpredicted_class\x18\x01 \x01(\x05\x12\x12\n\nconfidence\x18\x02 \x01(\x02\"J\n\tEpochData\x12\r\n\x05\x65poch\x18\x01 \x01(\r\x12\x14\n\x0c\x61verage_loss\x18\x02 \x01(\x02\x12\x18\n\x10\x61verage_accuracy\x18\x03 \x01(\x02\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13\x63ore_messages.proto\x12\x07metrics\"\x99\x01\n\x0eMetricsRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x04\x12(\n\nbatch_data\x18\x03 \x01(\x0b\x32\x12.metrics.BatchDataH\x00\x12(\n\nepoch_data\x18\x04 \x01(\x0b\x32\x12.metrics.EpochDataH\x00\x42\t\n\x07payload\"]\n\x0fMetricsResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x04\x12\x0f\n\x07success\x18\x03 \x01(\x08\x12\x0f\n\x07message\x18\x04 \x01(\t\"L\n\x0bSessionInfo\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x13\n\x0b\x63lient_name\x18\x02 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x03 \x01(\x04\"G\n\x0fSessionResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x12\n\nsession_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"\xa5\x01\n\tBatchData\x12\r\n\x05\x65poch\x18\x01 \x01(\r\x12\x11\n\tbatch_idx\x18\x02 \x01(\r\x12\"\n\x06images\x18\x03 \x03(\x0b\x32\x12.metrics.ImageData\x12(\n\x0bpredictions\x18\x04 \x03(\x0b\x32\x13.metrics.Prediction\x12\x14\n\x0cground_truth\x18\x05 \x03(\x05\x12\x12\n\nbatch_loss\x18\x06 \x01(\x02\" \n\tImageData\x12\x13\n\x0bimage_bytes\x18\x01 \x01(\x0c\"9\n\nPrediction\x12\x17\n\x0fpredicted_class\x18\x01 \x01(\x05\x12\x12\n\nconfidence\x18\x02 \x01(\x02\"J\n\tEpochData\x12\r\n\x05\x65poch\x18\x01 \x01(\r\x12\x14\n\x0c\x61verage_loss\x18\x02 \x01(\x02\x12\x18\n\x10\x61verage_accuracy\x18\x03 \x01(\x02\x32\x9b\x01\n\x0eMetricsService\x12\x46\n\rStreamMetrics\x12\x17.metrics.MetricsRequest\x1a\x18.metrics.MetricsResponse(\x01\x30\x01\x12\x41\n\x0fRegisterSession\x12\x14.metrics.SessionInfo\x1a\x18.metrics.SessionResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'core_messages_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_BATCHDATA']._serialized_start=33
-  _globals['_BATCHDATA']._serialized_end=198
-  _globals['_IMAGEDATA']._serialized_start=200
-  _globals['_IMAGEDATA']._serialized_end=232
-  _globals['_PREDICTION']._serialized_start=234
-  _globals['_PREDICTION']._serialized_end=291
-  _globals['_EPOCHDATA']._serialized_start=293
-  _globals['_EPOCHDATA']._serialized_end=367
+  _globals['_METRICSREQUEST']._serialized_start=33
+  _globals['_METRICSREQUEST']._serialized_end=186
+  _globals['_METRICSRESPONSE']._serialized_start=188
+  _globals['_METRICSRESPONSE']._serialized_end=281
+  _globals['_SESSIONINFO']._serialized_start=283
+  _globals['_SESSIONINFO']._serialized_end=359
+  _globals['_SESSIONRESPONSE']._serialized_start=361
+  _globals['_SESSIONRESPONSE']._serialized_end=432
+  _globals['_BATCHDATA']._serialized_start=435
+  _globals['_BATCHDATA']._serialized_end=600
+  _globals['_IMAGEDATA']._serialized_start=602
+  _globals['_IMAGEDATA']._serialized_end=634
+  _globals['_PREDICTION']._serialized_start=636
+  _globals['_PREDICTION']._serialized_end=693
+  _globals['_EPOCHDATA']._serialized_start=695
+  _globals['_EPOCHDATA']._serialized_end=769
+  _globals['_METRICSSERVICE']._serialized_start=772
+  _globals['_METRICSSERVICE']._serialized_end=927
 # @@protoc_insertion_point(module_scope)

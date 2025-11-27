@@ -1,15 +1,68 @@
-// Core Data Messages - Simplified Protocol
+// Core Messages Protocol - ML Training Monitoring
 //
-// This file contains only the 4 essential core data messages
-// for ML training monitoring. These are the high-frequency messages
-// sent during training.
+// This file contains the complete protocol for ML training monitoring:
+// - Service definitions (RPC procedures)
+// - Core data messages (message types)
+//
+// Purpose: Enable real-time communication between training backend and dashboard
 
 syntax = "proto3";
 
 package metrics;
 
 // ============================================================================
-// CORE DATA MESSAGES (4 total)
+// SERVICE DEFINITIONS (RPC Procedures)
+// ============================================================================
+
+service MetricsService {
+  // Bidirectional streaming RPC for continuous metrics exchange
+  // Client sends: BatchData, EpochData
+  // Server sends: Acknowledgments
+  rpc StreamMetrics(stream MetricsRequest) returns (stream MetricsResponse);
+
+  // Unary RPC for initial session registration
+  rpc RegisterSession(SessionInfo) returns (SessionResponse);
+}
+
+// ============================================================================
+// REQUEST/RESPONSE WRAPPERS
+// ============================================================================
+
+// Client request wrapper
+message MetricsRequest {
+  string session_id = 1;
+  uint64 timestamp_ms = 2;
+
+  oneof payload {
+    BatchData batch_data = 3;
+    EpochData epoch_data = 4;
+  }
+}
+
+// Server response wrapper
+message MetricsResponse {
+  string session_id = 1;
+  uint64 timestamp_ms = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+// Session registration request
+message SessionInfo {
+  string session_id = 1;
+  string client_name = 2;
+  uint64 timestamp_ms = 3;
+}
+
+// Session registration response
+message SessionResponse {
+  bool success = 1;
+  string session_id = 2;
+  string message = 3;
+}
+
+// ============================================================================
+// CORE DATA MESSAGES (4 Message Types)
 // ============================================================================
 
 // 1. Per-batch metrics data (HIGH FREQUENCY ~60 FPS)

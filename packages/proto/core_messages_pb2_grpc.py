@@ -3,6 +3,7 @@
 import grpc
 import warnings
 
+import core_messages_pb2 as core__messages__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
@@ -22,3 +23,134 @@ if _version_not_supported:
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
+
+
+class MetricsServiceStub(object):
+    """============================================================================
+    SERVICE DEFINITIONS (RPC Procedures)
+    ============================================================================
+
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.StreamMetrics = channel.stream_stream(
+                '/metrics.MetricsService/StreamMetrics',
+                request_serializer=core__messages__pb2.MetricsRequest.SerializeToString,
+                response_deserializer=core__messages__pb2.MetricsResponse.FromString,
+                _registered_method=True)
+        self.RegisterSession = channel.unary_unary(
+                '/metrics.MetricsService/RegisterSession',
+                request_serializer=core__messages__pb2.SessionInfo.SerializeToString,
+                response_deserializer=core__messages__pb2.SessionResponse.FromString,
+                _registered_method=True)
+
+
+class MetricsServiceServicer(object):
+    """============================================================================
+    SERVICE DEFINITIONS (RPC Procedures)
+    ============================================================================
+
+    """
+
+    def StreamMetrics(self, request_iterator, context):
+        """Bidirectional streaming RPC for continuous metrics exchange
+        Client sends: BatchData, EpochData
+        Server sends: Acknowledgments
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RegisterSession(self, request, context):
+        """Unary RPC for initial session registration
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_MetricsServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'StreamMetrics': grpc.stream_stream_rpc_method_handler(
+                    servicer.StreamMetrics,
+                    request_deserializer=core__messages__pb2.MetricsRequest.FromString,
+                    response_serializer=core__messages__pb2.MetricsResponse.SerializeToString,
+            ),
+            'RegisterSession': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterSession,
+                    request_deserializer=core__messages__pb2.SessionInfo.FromString,
+                    response_serializer=core__messages__pb2.SessionResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'metrics.MetricsService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('metrics.MetricsService', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class MetricsService(object):
+    """============================================================================
+    SERVICE DEFINITIONS (RPC Procedures)
+    ============================================================================
+
+    """
+
+    @staticmethod
+    def StreamMetrics(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(
+            request_iterator,
+            target,
+            '/metrics.MetricsService/StreamMetrics',
+            core__messages__pb2.MetricsRequest.SerializeToString,
+            core__messages__pb2.MetricsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RegisterSession(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/metrics.MetricsService/RegisterSession',
+            core__messages__pb2.SessionInfo.SerializeToString,
+            core__messages__pb2.SessionResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
