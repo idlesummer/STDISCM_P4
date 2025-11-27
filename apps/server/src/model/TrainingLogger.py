@@ -14,7 +14,7 @@ class TrainingLogger:
     def log_batch(
         self,
         epoch_idx: int,
-        batch_idx: int,
+        batch: int,
         batch_loss: float,
         iteration: int,
         images: torch.Tensor,         # All input image tensors in the batch
@@ -30,7 +30,7 @@ class TrainingLogger:
         # Append the log entry with the necessary details
         self.batch_logs.append(BatchLogEntry(
             iteration=iteration,
-            batch=batch_idx,
+            batch=batch,
             batch_loss=batch_loss,
             epoch=epoch_idx,
             images=images_bytes,

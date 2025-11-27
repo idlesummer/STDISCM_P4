@@ -59,8 +59,8 @@ class Trainer:
             epoch_loss = 0
 
             # Iterate through the DataLoader to get batches
-            for batch_idx, (X_batch, y_batch) in enumerate(self.data_loader):
-                batch_loss = self.train_batch(X_batch, y_batch, epoch, batch_idx)
+            for batch, (X_batch, y_batch) in enumerate(self.data_loader):
+                batch_loss = self.train_batch(X_batch, y_batch, epoch, batch)
                 epoch_loss += batch_loss
 
             # Calculate average loss for the epoch
@@ -87,7 +87,7 @@ class Trainer:
         X_batch: torch.Tensor,
         y_batch: torch.Tensor,
         epoch_idx: int,
-        batch_idx: int
+        batch: int
     ) -> float:
         """Train the model on a single batch and log the batch information."""
 
@@ -107,13 +107,13 @@ class Trainer:
         # Log batch details including ALL images, predictions, and probabilities
         self.logger.log_batch(
             epoch_idx=epoch_idx,
-            batch_idx=batch_idx,
+            batch=batch,
             batch_loss=loss.item(),
-            iteration=(epoch_idx * len(self.data_loader) + batch_idx),  # Global iteration count
-            images=X_batch,                                              # Log all images in the batch
-            predictions=predicted_labels.tolist(),                       # All predicted labels
-            probabilities=probabilities.tolist(),                        # All prediction probabilities
-            ground_truths=y_batch.tolist(),                              # All ground truth labels
+            iteration=(epoch_idx * len(self.data_loader) + batch),  # Global iteration count
+            images=X_batch,                                          # Log all images in the batch
+            predictions=predicted_labels.tolist(),                   # All predicted labels
+            probabilities=probabilities.tolist(),                    # All prediction probabilities
+            ground_truths=y_batch.tolist(),                          # All ground truth labels
         )
 
         return loss.item()  # Return the loss for the current batch
