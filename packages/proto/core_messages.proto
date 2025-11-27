@@ -1,0 +1,41 @@
+// Core Data Messages - Simplified Protocol
+//
+// This file contains only the 4 essential core data messages
+// for ML training monitoring. These are the high-frequency messages
+// sent during training.
+
+syntax = "proto3";
+
+package metrics;
+
+// ============================================================================
+// CORE DATA MESSAGES (4 total)
+// ============================================================================
+
+// 1. Per-batch metrics data (HIGH FREQUENCY ~60 FPS)
+message BatchData {
+  uint32 epoch = 1;
+  uint32 batch_idx = 2;
+  repeated ImageData images = 3;           // Up to 16 images
+  repeated Prediction predictions = 4;
+  repeated int32 ground_truth = 5;         // Class indices
+  float batch_loss = 6;
+}
+
+// 2. Individual image with JPEG data
+message ImageData {
+  bytes image_bytes = 1;  // JPEG-encoded image data
+}
+
+// 3. Prediction with confidence scores
+message Prediction {
+  int32 predicted_class = 1;  // Predicted class index
+  float confidence = 2;       // Confidence score (0.0 - 1.0)
+}
+
+// 4. Per-epoch metrics data (LOW FREQUENCY ~1/epoch)
+message EpochData {
+  uint32 epoch = 1;
+  float average_loss = 2;
+  float average_accuracy = 3;
+}
