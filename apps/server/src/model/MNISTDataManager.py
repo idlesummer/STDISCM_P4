@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Any
 import torch
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import datasets, transforms
@@ -9,12 +9,11 @@ class MNISTDatasetManager:
     batch_size: int
     val_size: float
     test_size: float
-    transform: transforms.Compose
     seed: int
-    dataset: Dataset[Any]
-    train_dataset: Dataset[Any]
-    val_dataset: Dataset[Any]
-    test_dataset: Dataset[Any]
+    dataset: Dataset
+    train_dataset: Dataset
+    val_dataset: Dataset
+    test_dataset: Dataset
 
     def __init__(
         self,
@@ -49,7 +48,7 @@ class MNISTDatasetManager:
         self.dataset = datasets.MNIST(root=self.root, train=True, download=True, transform=transform)
 
         # Split the dataset into train, validation, and test sets
-        self.train_dataset, self.val_dataset, self.test_dataset = self.train_test_val_split()
+        self.train_dataset, self.val_dataset, self.test_dataset = self._train_test_val_split()
 
     def get_dataloaders(self) -> tuple[DataLoader, DataLoader, DataLoader]:
         """Returns a tuple of DataLoaders for 'train', 'val', and 'test' splits"""
@@ -62,7 +61,7 @@ class MNISTDatasetManager:
         # Return them as a tuple
         return train_loader, val_loader, test_loader
 
-    def train_test_val_split(self) -> tuple[Dataset, Dataset, Dataset]:
+    def _train_test_val_split(self) -> tuple[Dataset, Dataset, Dataset]:
         """Splits the MNIST dataset deterministically into train, validation, and test sets."""
         
         dataset_size = len(self.dataset)  # type: ignore
