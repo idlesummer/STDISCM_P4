@@ -23,13 +23,11 @@ class GrpcServer:
     def add_servicers(self) -> None:
         """Add the provided servicers to the server."""
         for servicer in self.servicers:
-            
             servicer_name = servicer.__class__.__name__
             try:
                 # Add the servicer dynamically
                 servicer.add_to_server(self.server)
                 logger.info(f"Servicer {servicer_name} added to the server.")
-
             except grpc.RpcError as e:
                 logger.error(f"RPC Error while adding servicer {servicer_name}: {e}")
             except Exception as e:
