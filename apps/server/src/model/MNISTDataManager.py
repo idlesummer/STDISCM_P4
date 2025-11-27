@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import datasets, transforms
 
 
-class DatasetManager:
+class MNISTDatasetManager:
     dataset_name: str = 'MNIST'  # Only supports MNIST dataset
     root: str
     batch_size: int
