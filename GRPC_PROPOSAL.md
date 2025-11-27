@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This proposal outlines the gRPC protocol design for a real-time machine learning training monitoring system. The system streams telemetry data from a PyTorch/TensorFlow training application to a monitoring backend, which then displays real-time visualizations on a web dashboard. The protocol supports bidirectional streaming, enabling both data transmission and control commands.
+This proposal outlines the gRPC protocol design for a real-time machine learning training monitoring system. The gRPC protocol specifically defines the communication between the **Training Application (gRPC Client)** and the **Monitoring Backend (gRPC Server)**. The monitoring backend then forwards processed data to a web dashboard using WebSocket/HTTP. The protocol supports bidirectional streaming, enabling both telemetry data transmission and control commands between the training app and backend.
 
 ---
 
@@ -43,11 +43,27 @@ service TelemetryService {
 
 ### 2.1 Purpose in P4 Project
 
-The `telemetry.proto` file serves as the **communication contract** between three system components:
+The `telemetry.proto` file serves as the **gRPC communication contract** between the Training Application and the Monitoring Backend.
 
-1. **Training Application** (PyTorch/TensorFlow) → Sends telemetry data
-2. **Monitoring Backend** (Python server) → Processes and relays data
-3. **Dashboard** (Web application) → Displays real-time visualizations
+**System Architecture (3-Tier):**
+
+```
+┌─────────────────┐         ┌──────────────────┐         ┌─────────────┐
+│  Training App   │◄───────►│ Monitoring       │────────►│  Dashboard  │
+│  (PyTorch/TF)   │  gRPC   │ Backend (Python) │ WS/HTTP │  (Next.js)  │
+└─────────────────┘         └──────────────────┘         └─────────────┘
+   gRPC CLIENT               gRPC SERVER              NOT part of gRPC
+
+  telemetry.proto              (Forwards data          (Receives via
+  defines THIS ←──────────────►  to dashboard)          WebSocket)
+```
+
+**Component Roles:**
+1. **Training Application** (gRPC Client) - Sends telemetry via gRPC to backend
+2. **Monitoring Backend** (gRPC Server) - Receives telemetry and forwards to dashboard
+3. **Dashboard** (Web Client) - Receives data via WebSocket/HTTP (NOT gRPC)
+
+**Important**: The `telemetry.proto` file ONLY defines the protocol between components 1 and 2. The backend-to-dashboard communication is handled separately (typically WebSocket for real-time updates).
 
 **Project Requirements Addressed:**
 - Display 16 image tiles with predictions in real-time
@@ -226,10 +242,11 @@ message ControlCommand {
 }
 ```
 
-**Purpose**: Bidirectional control
-- Dashboard can pause/resume training
-- Dynamically adjust hyperparameters
-- Demonstrates full bidirectional streaming capability
+**Purpose**: Bidirectional control (Backend → Training App)
+- Backend can send control commands to training app
+- User actions from Dashboard → Backend → Training App via gRPC
+- Dynamically pause/resume training or adjust hyperparameters
+- Demonstrates full bidirectional streaming capability of gRPC
 
 ##### 3. ErrorResponse (Error Handling)
 ```protobuf
@@ -483,17 +500,39 @@ batch_data.ground_truth.extend([3, 5, 3, 2, 1, ...])  # Actual labels
 ### 4.1 Data Flow Diagram
 
 ```
-┌─────────────────┐         ┌──────────────────┐         ┌─────────────┐
-│  Training App   │────────►│ Monitoring       │────────►│  Dashboard  │
-│  (PyTorch/TF)   │  gRPC   │ Backend (Python) │ WS/HTTP │  (Next.js)  │
-└─────────────────┘         └──────────────────┘         └─────────────┘
-    CLIENT                       SERVER                    WEB CLIENT
+┌─────────────────────────────────────────────────────────────────────┐
+│                        GRPC PROTOCOL SCOPE                          │
+│  (Defined by telemetry.proto)                                       │
+│                                                                      │
+│  ┌─────────────────┐                  ┌──────────────────┐         │
+│  │  Training App   │◄────────────────►│ Monitoring       │         │
+│  │  (PyTorch/TF)   │   Bidirectional  │ Backend (Python) │         │
+│  │                 │   gRPC Streaming │                  │         │
+│  └─────────────────┘                  └──────────────────┘         │
+│     gRPC CLIENT                            gRPC SERVER              │
+│                                                  │                  │
+└──────────────────────────────────────────────────┼──────────────────┘
+                                                   │
+                                                   │ WebSocket/HTTP
+                                                   │ (NOT gRPC)
+                                                   ▼
+                                          ┌─────────────┐
+                                          │  Dashboard  │
+                                          │  (Next.js)  │
+                                          └─────────────┘
+                                             WEB CLIENT
 
-Flow:
-1. Training app sends BatchData every batch (~60 FPS)
-2. Backend processes and forwards to dashboard
+Data Flow:
+1. Training app (gRPC client) sends BatchData to backend via gRPC (~60 FPS)
+2. Backend (gRPC server) receives, processes, and forwards to dashboard via WebSocket
 3. Dashboard displays 16 images + loss plot + FPS
-4. Total latency: <1.5 seconds (requirement met)
+4. User actions: Dashboard → Backend → Training App (control commands via gRPC)
+5. Total latency: <1.5 seconds (requirement met)
+
+Key Points:
+- telemetry.proto defines ONLY the Training App ↔ Backend communication
+- Backend acts as a bridge/relay between gRPC and WebSocket protocols
+- Dashboard does NOT use gRPC (uses WebSocket for browser compatibility)
 ```
 
 ### 4.2 Message Frequency Strategy
@@ -568,17 +607,40 @@ At 60 FPS: 485 KB × 60 = ~29 MB/s (manageable on LAN)
 
 ---
 
-## 7. Conclusion
+## 7. gRPC Scope Clarification
+
+**What this proto defines (IN SCOPE):**
+- ✅ Training Application (gRPC Client) ↔ Monitoring Backend (gRPC Server)
+- ✅ TelemetryRequest messages: BatchData, EpochData, PerformanceData, etc.
+- ✅ TelemetryResponse messages: Acknowledgments, ControlCommands, Errors
+- ✅ Bidirectional streaming between training app and backend
+- ✅ Session management and heartbeat mechanism
+
+**What this proto does NOT define (OUT OF SCOPE):**
+- ❌ Monitoring Backend → Dashboard communication (uses WebSocket/HTTP instead)
+- ❌ Dashboard frontend implementation
+- ❌ WebSocket message format (separate specification)
+- ❌ HTTP REST endpoints (if any)
+
+**Why the Backend-Dashboard connection is NOT gRPC:**
+- Web browsers have limited gRPC support (requires gRPC-Web proxy)
+- WebSocket provides native browser support and simpler implementation
+- The monitoring backend acts as a protocol bridge: gRPC ↔ WebSocket
+
+---
+
+## 8. Conclusion
 
 This gRPC protocol design provides:
 
-1. **Efficient Communication**: Binary protocol with minimal overhead
-2. **Real-Time Performance**: Bidirectional streaming for <1.5s latency
+1. **Efficient Communication**: Binary protocol with minimal overhead between training app and backend
+2. **Real-Time Performance**: Bidirectional streaming for <1.5s end-to-end latency
 3. **Fault Tolerance**: Heartbeat mechanism and reconnection support
 4. **Extensibility**: Easy to add new message types or fields
 5. **Type Safety**: Strongly-typed messages prevent runtime errors
+6. **Clear Separation**: Backend serves as a bridge between gRPC (training) and WebSocket (dashboard)
 
-The generated Python stubs (`telemetry_pb2.py` and `telemetry_pb2_grpc.py`) prove successful gRPC setup and provide the foundation for implementing both the training application client and monitoring backend server.
+The generated Python stubs (`telemetry_pb2.py` and `telemetry_pb2_grpc.py`) prove successful gRPC setup and provide the foundation for implementing both the training application gRPC client and monitoring backend gRPC server.
 
 ---
 
