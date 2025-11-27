@@ -1,0 +1,231 @@
+syntax = "proto3";
+
+package telemetry;
+
+// Main service definition for training telemetry
+service TelemetryService {
+  // Bidirectional streaming: Training app sends telemetry, receives control commands
+  rpc StreamTelemetry(stream TelemetryRequest) returns (stream TelemetryResponse);
+
+  // Unary call for initial handshake/registration
+  rpc RegisterTrainingSession(SessionInfo) returns (SessionResponse);
+}
+
+// ============================================================================
+// Request Messages (Training App -> Monitoring Backend)
+// ============================================================================
+
+message TelemetryRequest {
+  string session_id = 1;
+  uint64 timestamp_ms = 2; // Unix timestamp in milliseconds
+
+  oneof payload {
+    BatchData batch_data = 3;
+    EpochData epoch_data = 4;
+    PerformanceData performance_data = 5;
+    StatusUpdate status_update = 6;
+    Heartbeat heartbeat = 7;
+  }
+}
+
+// Per-batch telemetry data
+message BatchData {
+  uint32 epoch = 1;
+  uint32 batch_idx = 2;
+  uint32 batch_size = 3; // Actual number of images in this batch
+
+  // Image data for visualization (up to 16 images as per specs)
+  repeated ImageData images = 4;
+
+  // Predictions and ground truth
+  repeated Prediction predictions = 5;
+  repeated int32 ground_truth = 6; // Class indices
+
+  // Loss information
+  float batch_loss = 7;
+
+  // Optional: Additional metrics
+  float batch_accuracy = 8;
+
+  uint64 timestamp_ms = 9;
+}
+
+// Individual image with its data
+message ImageData {
+  bytes image_bytes = 1; // Encoded image (JPEG/PNG)
+  string format = 2; // "jpeg", "png", etc.
+  uint32 width = 3;
+  uint32 height = 4;
+  uint32 channels = 5; // 1 for grayscale, 3 for RGB
+
+  // Optional: Original filename or identifier
+  string image_id = 6;
+}
+
+// Prediction with confidence scores
+message Prediction {
+  int32 predicted_class = 1; // Predicted class index
+  string predicted_label = 2; // Human-readable label (e.g., "cat", "dog")
+  float confidence = 3; // Confidence score (0.0 - 1.0)
+
+  // Optional: Top-k predictions
+  repeated ClassScore top_k_scores = 4;
+}
+
+message ClassScore {
+  int32 class_idx = 1;
+  string label = 2;
+  float score = 3;
+}
+
+// Per-epoch telemetry data
+message EpochData {
+  uint32 epoch = 1;
+  float average_loss = 2;
+  float average_accuracy = 3;
+
+  // Training dynamics
+  float learning_rate = 4;
+  bool is_converged = 5;
+
+  // Validation metrics (if applicable)
+  optional float validation_loss = 6;
+  optional float validation_accuracy = 7;
+
+  uint64 timestamp_ms = 8;
+}
+
+// Performance and timing data
+message PerformanceData {
+  // Timing metrics
+  float time_per_batch_ms = 1; // Average time per batch in milliseconds
+  float total_time_for_epoch_sec = 2; // Total time for current epoch in seconds
+  float estimated_time_remaining_sec = 3; // Estimated time remaining
+
+  // Frame rate metrics (REQUIRED by specs)
+  float current_fps = 4; // Current frames per second
+  float average_fps = 5; // Average FPS over recent window
+
+  // Resource utilization
+  optional ResourceUsage resource_usage = 6;
+
+  uint64 timestamp_ms = 7;
+}
+
+message ResourceUsage {
+  float cpu_percent = 1;
+  float memory_mb = 2;
+  float gpu_percent = 3;
+  float gpu_memory_mb = 4;
+}
+
+// Training status updates
+message StatusUpdate {
+  TrainingStatus status = 1;
+  string message = 2; // Optional status message
+
+  // Training configuration
+  optional TrainingConfig config = 3;
+
+  uint64 timestamp_ms = 4;
+}
+
+enum TrainingStatus {
+  UNKNOWN = 0;
+  INITIALIZING = 1;
+  RUNNING = 2;
+  PAUSED = 3;
+  COMPLETED = 4;
+  FAILED = 5;
+}
+
+message TrainingConfig {
+  uint32 total_epochs = 1;
+  uint32 batches_per_epoch = 2;
+  uint32 batch_size = 3;
+  string model_name = 4;
+  string dataset_name = 5;
+  repeated string class_names = 6; // List of all class names
+}
+
+// Heartbeat for connection health monitoring
+message Heartbeat {
+  uint64 timestamp_ms = 1;
+  uint32 sequence_number = 2;
+}
+
+// ============================================================================
+// Response Messages (Monitoring Backend -> Training App)
+// ============================================================================
+
+message TelemetryResponse {
+  string session_id = 1;
+  uint64 timestamp_ms = 2;
+
+  oneof payload {
+    Acknowledgment ack = 3;
+    ControlCommand command = 4;
+    ErrorResponse error = 5;
+  }
+}
+
+// Acknowledgment for received data
+message Acknowledgment {
+  uint32 batch_idx = 1;
+  bool success = 2;
+}
+
+// Control commands from monitoring backend to training app
+message ControlCommand {
+  CommandType type = 1;
+  map<string, string> parameters = 2;
+
+  enum CommandType {
+    UNKNOWN_COMMAND = 0;
+    PAUSE_TRAINING = 1;
+    RESUME_TRAINING = 2;
+    STOP_TRAINING = 3;
+    ADJUST_BATCH_SIZE = 4;
+    CHANGE_LEARNING_RATE = 5;
+  }
+}
+
+// Error responses
+message ErrorResponse {
+  ErrorCode code = 1;
+  string message = 2;
+
+  enum ErrorCode {
+    UNKNOWN_ERROR = 0;
+    INVALID_SESSION = 1;
+    INVALID_DATA = 2;
+    BUFFER_FULL = 3;
+    INTERNAL_ERROR = 4;
+  }
+}
+
+// ============================================================================
+// Session Management
+// ============================================================================
+
+message SessionInfo {
+  string session_id = 1;
+  string client_name = 2; // E.g., "pytorch_trainer"
+  string client_version = 3;
+  TrainingConfig config = 4;
+  uint64 timestamp_ms = 5;
+}
+
+message SessionResponse {
+  bool success = 1;
+  string session_id = 2;
+  string message = 3;
+  ServerConfig server_config = 4;
+}
+
+message ServerConfig {
+  uint32 max_batch_size = 1; // Maximum batch size server can handle
+  uint32 max_image_dimension = 2; // Max image width/height (512 per specs)
+  uint32 heartbeat_interval_ms = 3; // Expected heartbeat interval
+  uint32 buffer_size = 4; // Server-side buffer size
+}
