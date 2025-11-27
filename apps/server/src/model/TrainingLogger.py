@@ -11,33 +11,9 @@ class TrainingLogger:
         self.batch_logs = []  # Holds batch log entries
 
 
-    def log_batch(
-        self,
-        iteration: int,
-        epoch: int,
-        batch: int,
-        images: torch.Tensor,              # All input image tensors in the batch
-        batch_loss: float,
-        predictions: list[int],            # All predicted labels
-        probabilities: list[list[float]],  # All prediction probabilities
-        ground_truths: list[int],          # All actual labels
-    ) -> None:
+    def log_batch(self, entry: BatchLogEntry) -> None:
         """Log a batch entry."""
-
-        # Convert all image tensors to bytes
-        images_bytes = [self.tensor_to_bytes(img) for img in images]
-
-        # Append the log entry with the necessary details
-        self.batch_logs.append(BatchLogEntry(
-            iteration=iteration,
-            epoch=epoch,
-            batch=batch,
-            images=images_bytes,
-            predictions=predictions,
-            probabilities=probabilities,
-            ground_truths=ground_truths,
-            batch_loss=batch_loss,
-        ))
+        self.batch_logs.append(entry)
 
 
     def get_batch_logs(self) -> list[BatchLogEntry]:
