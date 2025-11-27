@@ -12,7 +12,7 @@ This proposal outlines the gRPC protocol design for a real-time machine learning
 1. **Training Backend** (Python) - Combines ML training and monitoring server
 2. **Dashboard** (Next.js) - Web interface for visualization
 
-The `telemetry.proto` file defines the communication protocol between these components, enabling real-time visualization of training metrics, images, and predictions.
+The `metrics.proto` file defines the communication protocol between these components, enabling real-time visualization of training metrics, images, and predictions.
 
 ---
 
@@ -27,7 +27,7 @@ The `telemetry.proto` file defines the communication protocol between these comp
 │                             │         │             │
 │  - PyTorch/TensorFlow       │         │  - Image    │
 │  - Model Training           │         │    Grid     │
-│  - Telemetry Collection     │         │  - Loss     │
+│  - Metrics Collection       │         │  - Loss     │
 │  - gRPC Server              │         │    Plots    │
 │                             │         │  - FPS      │
 └─────────────────────────────┘         └─────────────┘
@@ -36,20 +36,20 @@ The `telemetry.proto` file defines the communication protocol between these comp
 
 **Key Points:**
 - Training and monitoring are **one unified Python application**
-- The backend performs training AND serves telemetry data
+- The backend performs training AND serves metrics data
 - The dashboard connects to the backend to receive real-time updates
 - Communication uses either WebSocket or gRPC-Web (browser-compatible)
 
 ---
 
-## Protocol Definition: telemetry.proto
+## Protocol Definition: metrics.proto
 
 ### Service Definition
 
 ```protobuf
-service TelemetryService {
-  // Stream telemetry data from backend to dashboard
-  rpc StreamTelemetry(stream TelemetryRequest) returns (stream TelemetryResponse);
+service MetricsService {
+  // Stream metrics data from backend to dashboard
+  rpc StreamMetrics(stream MetricsRequest) returns (stream MetricsResponse);
 
   // Initial session registration
   rpc RegisterTrainingSession(SessionInfo) returns (SessionResponse);
@@ -57,7 +57,7 @@ service TelemetryService {
 ```
 
 **Purpose:**
-- `StreamTelemetry`: Bidirectional streaming for continuous data flow
+- `StreamMetrics`: Bidirectional streaming for continuous data flow
 - `RegisterTrainingSession`: Initial handshake to establish connection
 
 ---
@@ -210,7 +210,7 @@ Dashboard                          Training Backend
 
 The backend is a single Python application that:
 1. Performs ML training (PyTorch/TensorFlow)
-2. Collects telemetry data during training
+2. Collects metrics data during training
 3. Serves as a gRPC server (or WebSocket server)
 4. Streams data to connected dashboards
 
@@ -227,11 +227,11 @@ class TrainingBackend:
                 # Train model
                 loss = train_batch(batch)
 
-                # Collect telemetry
-                telemetry = create_batch_data(batch, predictions, loss)
+                # Collect metrics
+                metrics = create_batch_data(batch, predictions, loss)
 
                 # Stream to dashboard
-                self.stream_to_clients(telemetry)
+                self.stream_to_clients(metrics)
 ```
 
 ### Dashboard (Next.js)
@@ -240,9 +240,9 @@ The dashboard connects to the backend and receives real-time updates:
 
 ```typescript
 // Example: Dashboard client
-const client = new TelemetryServiceClient('http://localhost:50051');
+const client = new MetricsServiceClient('http://localhost:50051');
 
-const stream = client.streamTelemetry();
+const stream = client.streamMetrics();
 
 stream.on('data', (response) => {
   if (response.hasBatchData()) {
@@ -293,34 +293,34 @@ Protocol Buffers provide:
 
 ## Generated Stub Files
 
-Successfully generated Python stubs from `telemetry.proto`:
+Successfully generated Python stubs from `metrics.proto`:
 
 ```bash
-python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. telemetry.proto
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. metrics.proto
 ```
 
 **Generated Files:**
-- `telemetry_pb2.py` (9.3 KB) - Message classes
-- `telemetry_pb2_grpc.py` (5.3 KB) - Server and client stubs
+- `metrics_pb2.py` (9.3 KB) - Message classes
+- `metrics_pb2_grpc.py` (5.3 KB) - Server and client stubs
 
 **Usage in Backend:**
 ```python
-import telemetry_pb2_grpc
+import metrics_pb2_grpc
 
-class TelemetryServicer(telemetry_pb2_grpc.TelemetryServiceServicer):
-    def StreamTelemetry(self, request_iterator, context):
+class MetricsServicer(metrics_pb2_grpc.MetricsServiceServicer):
+    def StreamMetrics(self, request_iterator, context):
         # Handle incoming requests from dashboard
         for request in request_iterator:
-            # Send telemetry responses
+            # Send metrics responses
             yield create_response(request)
 ```
 
 **Usage in Dashboard:**
 ```typescript
 // TypeScript stubs can be generated using grpc-web
-import { TelemetryServiceClient } from './telemetry_grpc_web_pb';
+import { MetricsServiceClient } from './metrics_grpc_web_pb';
 
-const client = new TelemetryServiceClient('http://localhost:8080');
+const client = new MetricsServiceClient('http://localhost:8080');
 ```
 
 ---
@@ -345,7 +345,7 @@ const client = new TelemetryServiceClient('http://localhost:8080');
 
 1. **Backend Implementation**
    - [ ] Integrate gRPC server with training loop
-   - [ ] Implement telemetry collection
+   - [ ] Implement metrics collection
    - [ ] Add image encoding (JPEG compression)
    - [ ] Implement heartbeat mechanism
 
@@ -374,11 +374,11 @@ This simplified 2-tier architecture:
 - **Provides fault tolerance** through heartbeats and reconnection
 - **Scales efficiently** with binary protocol and compression
 
-The `telemetry.proto` file serves as the contract between the backend and dashboard, ensuring type-safe, efficient, and reliable communication for real-time ML training visualization.
+The `metrics.proto` file serves as the contract between the backend and dashboard, ensuring type-safe, efficient, and reliable communication for real-time ML training visualization.
 
 ---
 
 **Files:**
-- Protocol Definition: `/packages/proto/telemetry.proto`
-- Generated Stubs: `/packages/proto/telemetry_pb2.py`, `telemetry_pb2_grpc.py`
+- Protocol Definition: `/packages/proto/metrics.proto`
+- Generated Stubs: `/packages/proto/metrics_pb2.py`, `metrics_pb2_grpc.py`
 - Architecture Docs: `/packages/proto/ARCHITECTURE.md`

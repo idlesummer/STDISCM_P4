@@ -124,9 +124,9 @@ message Heartbeat {
 
 **Final Design:**
 ```protobuf
-service TelemetryService {
-  rpc StreamTelemetry(stream TelemetryRequest)
-      returns (stream TelemetryResponse);
+service MetricsService {
+  rpc StreamMetrics(stream MetricsRequest)
+      returns (stream MetricsResponse);
 }
 ```
 
@@ -180,7 +180,7 @@ At 60 FPS: ~28 MB/second (manageable!)
 
 **Implementation:**
 ```protobuf
-message TelemetryRequest {
+message MetricsRequest {
   oneof payload {
     BatchData batch_data = 3;        // High frequency
     EpochData epoch_data = 4;        // Low frequency
@@ -228,7 +228,7 @@ Every 2 seconds:
 
 ## Addressing Your Original Question
 
-**Q:** "If telemetry backend is server and frontend is client, how does server ping client?"
+**Q:** "If metrics backend is server and frontend is client, how does server ping client?"
 
 **A:** It doesn't! Instead:
 

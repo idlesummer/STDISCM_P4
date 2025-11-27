@@ -23,13 +23,13 @@ python -m grpc_tools.protoc \
   --python_out=../../apps/monitoring/generated \
   --grpc_python_out=../../apps/monitoring/generated \
   --pyi_out=../../apps/monitoring/generated \
-  telemetry.proto
+  metrics.proto
 ```
 
 This generates:
-- `telemetry_pb2.py` - Message classes
-- `telemetry_pb2_grpc.py` - Service stubs
-- `telemetry_pb2.pyi` - Type hints
+- `metrics_pb2.py` - Message classes
+- `metrics_pb2_grpc.py` - Service stubs
+- `metrics_pb2.pyi` - Type hints
 
 ## Generate TypeScript Code (for Dashboard)
 
@@ -40,7 +40,7 @@ import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
 const packageDefinition = protoLoader.loadSync(
-  'telemetry.proto',
+  'metrics.proto',
   {
     keepCase: true,
     longs: String,
@@ -50,7 +50,7 @@ const packageDefinition = protoLoader.loadSync(
   }
 );
 
-const telemetryProto = grpc.loadPackageDefinition(packageDefinition).telemetry;
+const metricsProto = grpc.loadPackageDefinition(packageDefinition).metrics;
 ```
 
 ### Option 2: Static Code Generation (Type-safe)
@@ -62,7 +62,7 @@ grpc_tools_node_protoc \
   --js_out=import_style=commonjs:../../apps/dashboard/src/generated \
   --grpc_out=grpc_js:../../apps/dashboard/src/generated \
   -I. \
-  telemetry.proto
+  metrics.proto
 ```
 
 ## Usage Examples
@@ -73,15 +73,15 @@ grpc_tools_node_protoc \
 # monitoring/server.py
 import grpc
 from concurrent import futures
-from generated import telemetry_pb2, telemetry_pb2_grpc
+from generated import metrics_pb2, metrics_pb2_grpc
 import asyncio
 
-class TelemetryServicer(telemetry_pb2_grpc.TelemetryServiceServicer):
-    def StreamTelemetry(self, request_iterator, context):
+class MetricsServicer(metrics_pb2_grpc.MetricsServiceServicer):
+    def StreamMetrics(self, request_iterator, context):
         """Bidirectional streaming RPC"""
 
         for request in request_iterator:
-            # Handle incoming telemetry
+            # Handle incoming metrics
             if request.HasField('batch_data'):
                 batch = request.batch_data
                 print(f"Received batch {batch.batch_idx} from epoch {batch.epoch}")
@@ -94,10 +94,10 @@ class TelemetryServicer(telemetry_pb2_grpc.TelemetryServiceServicer):
                 await broadcast_to_dashboard(request)
 
                 # Send acknowledgment
-                yield telemetry_pb2.TelemetryResponse(
+                yield metrics_pb2.MetricsResponse(
                     session_id=request.session_id,
                     timestamp_ms=int(time.time() * 1000),
-                    ack=telemetry_pb2.Acknowledgment(
+                    ack=metrics_pb2.Acknowledgment(
                         batch_idx=batch.batch_idx,
                         success=True
                     )
@@ -115,11 +115,11 @@ class TelemetryServicer(telemetry_pb2_grpc.TelemetryServiceServicer):
         """Unary RPC for session registration"""
         print(f"New session: {request.session_id}")
 
-        return telemetry_pb2.SessionResponse(
+        return metrics_pb2.SessionResponse(
             success=True,
             session_id=request.session_id,
             message="Session registered successfully",
-            server_config=telemetry_pb2.ServerConfig(
+            server_config=metrics_pb2.ServerConfig(
                 max_batch_size=16,
                 max_image_dimension=512,
                 heartbeat_interval_ms=2000,
@@ -129,8 +129,8 @@ class TelemetryServicer(telemetry_pb2_grpc.TelemetryServiceServicer):
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    telemetry_pb2_grpc.add_TelemetryServiceServicer_to_server(
-        TelemetryServicer(), server
+    metrics_pb2_grpc.add_MetricsServiceServicer_to_server(
+        MetricsServicer(), server
     )
     server.add_insecure_port('[::]:50051')
     server.start()
@@ -144,23 +144,23 @@ if __name__ == '__main__':
 ### Python Client (Training App)
 
 ```python
-# training/telemetry_client.py
+# training/metrics_client.py
 import grpc
-from generated import telemetry_pb2, telemetry_pb2_grpc
+from generated import metrics_pb2, metrics_pb2_grpc
 import time
 import cv2
 import numpy as np
 
-class TelemetryClient:
+class MetricsClient:
     def __init__(self, server_address='localhost:50051'):
         self.channel = grpc.insecure_channel(server_address)
-        self.stub = telemetry_pb2_grpc.TelemetryServiceStub(self.channel)
+        self.stub = metrics_pb2_grpc.MetricsServiceStub(self.channel)
         self.session_id = f"session_{int(time.time())}"
 
     def register_session(self, config):
         """Register training session"""
         response = self.stub.RegisterTrainingSession(
-            telemetry_pb2.SessionInfo(
+            metrics_pb2.SessionInfo(
                 session_id=self.session_id,
                 client_name="pytorch_trainer",
                 client_version="1.0.0",
@@ -172,7 +172,7 @@ class TelemetryClient:
         return response.server_config
 
     def send_batch_data(self, epoch, batch_idx, images, predictions, ground_truth, loss):
-        """Send batch telemetry"""
+        """Send batch metrics"""
 
         # Prepare image data
         image_data_list = []
@@ -185,7 +185,7 @@ class TelemetryClient:
             _, buffer = cv2.imencode('.jpg', img_np, [cv2.IMWRITE_JPEG_QUALITY, 85])
 
             image_data_list.append(
-                telemetry_pb2.ImageData(
+                metrics_pb2.ImageData(
                     image_bytes=buffer.tobytes(),
                     format="jpeg",
                     width=img_np.shape[1],
@@ -198,7 +198,7 @@ class TelemetryClient:
         prediction_list = []
         for pred_idx, pred_score in zip(predictions['classes'], predictions['scores']):
             prediction_list.append(
-                telemetry_pb2.Prediction(
+                metrics_pb2.Prediction(
                     predicted_class=int(pred_idx),
                     predicted_label=predictions['labels'][pred_idx],
                     confidence=float(pred_score)
@@ -206,10 +206,10 @@ class TelemetryClient:
             )
 
         # Create batch data message
-        return telemetry_pb2.TelemetryRequest(
+        return metrics_pb2.MetricsRequest(
             session_id=self.session_id,
             timestamp_ms=int(time.time() * 1000),
-            batch_data=telemetry_pb2.BatchData(
+            batch_data=metrics_pb2.BatchData(
                 epoch=epoch,
                 batch_idx=batch_idx,
                 batch_size=len(images),
@@ -221,10 +221,10 @@ class TelemetryClient:
             )
         )
 
-    def stream_telemetry(self, request_generator):
+    def stream_metrics(self, request_generator):
         """Bidirectional streaming"""
         try:
-            for response in self.stub.StreamTelemetry(request_generator):
+            for response in self.stub.StreamMetrics(request_generator):
                 if response.HasField('ack'):
                     print(f"Batch {response.ack.batch_idx} acknowledged")
                 elif response.HasField('command'):
@@ -237,10 +237,10 @@ class TelemetryClient:
             # Implement reconnection logic
 
 # Usage in training loop
-client = TelemetryClient()
+client = MetricsClient()
 
 # Register session
-config = telemetry_pb2.TrainingConfig(
+config = metrics_pb2.TrainingConfig(
     total_epochs=10,
     batches_per_epoch=100,
     batch_size=16,
@@ -251,7 +251,7 @@ config = telemetry_pb2.TrainingConfig(
 server_config = client.register_session(config)
 
 # Training loop
-def telemetry_generator():
+def metrics_generator():
     for epoch in range(10):
         for batch_idx, (images, labels) in enumerate(dataloader):
             # Train
@@ -260,7 +260,7 @@ def telemetry_generator():
             loss.backward()
             optimizer.step()
 
-            # Send telemetry
+            # Send metrics
             yield client.send_batch_data(
                 epoch=epoch,
                 batch_idx=batch_idx,
@@ -271,17 +271,17 @@ def telemetry_generator():
             )
 
 # Start streaming
-client.stream_telemetry(telemetry_generator())
+client.stream_metrics(metrics_generator())
 ```
 
 ### TypeScript/Next.js (Dashboard)
 
 ```typescript
-// dashboard/src/lib/telemetry-client.ts
+// dashboard/src/lib/metrics-client.ts
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
-const PROTO_PATH = '../../../packages/proto/telemetry.proto';
+const PROTO_PATH = '../../../packages/proto/metrics.proto';
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,
@@ -291,21 +291,21 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   oneofs: true
 });
 
-const telemetryProto = grpc.loadPackageDefinition(packageDefinition).telemetry as any;
+const metricsProto = grpc.loadPackageDefinition(packageDefinition).metrics as any;
 
-export class TelemetryClient {
+export class MetricsClient {
   private client: any;
   private stream: any;
 
   constructor(serverAddress: string = 'localhost:50051') {
-    this.client = new telemetryProto.TelemetryService(
+    this.client = new metricsProto.MetricsService(
       serverAddress,
       grpc.credentials.createInsecure()
     );
   }
 
   connectStream(onBatchData: (data: any) => void) {
-    this.stream = this.client.StreamTelemetry();
+    this.stream = this.client.StreamMetrics();
 
     this.stream.on('data', (response: any) => {
       if (response.batch_data) {

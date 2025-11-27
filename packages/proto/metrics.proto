@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package telemetry;
+package metrics;
 
-// Main service definition for training telemetry
-service TelemetryService {
-  // Bidirectional streaming: Training app sends telemetry, receives control commands
-  rpc StreamTelemetry(stream TelemetryRequest) returns (stream TelemetryResponse);
+// Main service definition for training metrics
+service MetricsService {
+  // Bidirectional streaming: Training app sends metrics, receives control commands
+  rpc StreamMetrics(stream MetricsRequest) returns (stream MetricsResponse);
 
   // Unary call for initial handshake/registration
   rpc RegisterTrainingSession(SessionInfo) returns (SessionResponse);
@@ -15,7 +15,7 @@ service TelemetryService {
 // Request Messages (Training App -> Monitoring Backend)
 // ============================================================================
 
-message TelemetryRequest {
+message MetricsRequest {
   string session_id = 1;
   uint64 timestamp_ms = 2; // Unix timestamp in milliseconds
 
@@ -28,7 +28,7 @@ message TelemetryRequest {
   }
 }
 
-// Per-batch telemetry data
+// Per-batch metrics data
 message BatchData {
   uint32 epoch = 1;
   uint32 batch_idx = 2;
@@ -78,7 +78,7 @@ message ClassScore {
   float score = 3;
 }
 
-// Per-epoch telemetry data
+// Per-epoch metrics data
 message EpochData {
   uint32 epoch = 1;
   float average_loss = 2;
@@ -158,7 +158,7 @@ message Heartbeat {
 // Response Messages (Monitoring Backend -> Training App)
 // ============================================================================
 
-message TelemetryResponse {
+message MetricsResponse {
   string session_id = 1;
   uint64 timestamp_ms = 2;
 

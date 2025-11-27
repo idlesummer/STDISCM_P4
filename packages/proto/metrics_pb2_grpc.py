@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import telemetry_pb2 as telemetry__pb2
+import metrics_pb2 as metrics__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
@@ -18,15 +18,15 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in telemetry_pb2_grpc.py depends on'
+        + ' but the generated code in metrics_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class TelemetryServiceStub(object):
-    """Main service definition for training telemetry
+class MetricsServiceStub(object):
+    """Main service definition for training metrics
     """
 
     def __init__(self, channel):
@@ -35,24 +35,24 @@ class TelemetryServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.StreamTelemetry = channel.stream_stream(
-                '/telemetry.TelemetryService/StreamTelemetry',
-                request_serializer=telemetry__pb2.TelemetryRequest.SerializeToString,
-                response_deserializer=telemetry__pb2.TelemetryResponse.FromString,
+        self.StreamMetrics = channel.stream_stream(
+                '/metrics.MetricsService/StreamMetrics',
+                request_serializer=metrics__pb2.MetricsRequest.SerializeToString,
+                response_deserializer=metrics__pb2.MetricsResponse.FromString,
                 _registered_method=True)
         self.RegisterTrainingSession = channel.unary_unary(
-                '/telemetry.TelemetryService/RegisterTrainingSession',
-                request_serializer=telemetry__pb2.SessionInfo.SerializeToString,
-                response_deserializer=telemetry__pb2.SessionResponse.FromString,
+                '/metrics.MetricsService/RegisterTrainingSession',
+                request_serializer=metrics__pb2.SessionInfo.SerializeToString,
+                response_deserializer=metrics__pb2.SessionResponse.FromString,
                 _registered_method=True)
 
 
-class TelemetryServiceServicer(object):
-    """Main service definition for training telemetry
+class MetricsServiceServicer(object):
+    """Main service definition for training metrics
     """
 
-    def StreamTelemetry(self, request_iterator, context):
-        """Bidirectional streaming: Training app sends telemetry, receives control commands
+    def StreamMetrics(self, request_iterator, context):
+        """Bidirectional streaming: Training app sends metrics, receives control commands
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -66,32 +66,32 @@ class TelemetryServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_TelemetryServiceServicer_to_server(servicer, server):
+def add_MetricsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'StreamTelemetry': grpc.stream_stream_rpc_method_handler(
-                    servicer.StreamTelemetry,
-                    request_deserializer=telemetry__pb2.TelemetryRequest.FromString,
-                    response_serializer=telemetry__pb2.TelemetryResponse.SerializeToString,
+            'StreamMetrics': grpc.stream_stream_rpc_method_handler(
+                    servicer.StreamMetrics,
+                    request_deserializer=metrics__pb2.MetricsRequest.FromString,
+                    response_serializer=metrics__pb2.MetricsResponse.SerializeToString,
             ),
             'RegisterTrainingSession': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterTrainingSession,
-                    request_deserializer=telemetry__pb2.SessionInfo.FromString,
-                    response_serializer=telemetry__pb2.SessionResponse.SerializeToString,
+                    request_deserializer=metrics__pb2.SessionInfo.FromString,
+                    response_serializer=metrics__pb2.SessionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'telemetry.TelemetryService', rpc_method_handlers)
+            'metrics.MetricsService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('telemetry.TelemetryService', rpc_method_handlers)
+    server.add_registered_method_handlers('metrics.MetricsService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class TelemetryService(object):
-    """Main service definition for training telemetry
+class MetricsService(object):
+    """Main service definition for training metrics
     """
 
     @staticmethod
-    def StreamTelemetry(request_iterator,
+    def StreamMetrics(request_iterator,
             target,
             options=(),
             channel_credentials=None,
@@ -104,9 +104,9 @@ class TelemetryService(object):
         return grpc.experimental.stream_stream(
             request_iterator,
             target,
-            '/telemetry.TelemetryService/StreamTelemetry',
-            telemetry__pb2.TelemetryRequest.SerializeToString,
-            telemetry__pb2.TelemetryResponse.FromString,
+            '/metrics.MetricsService/StreamMetrics',
+            metrics__pb2.MetricsRequest.SerializeToString,
+            metrics__pb2.MetricsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -131,9 +131,9 @@ class TelemetryService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/telemetry.TelemetryService/RegisterTrainingSession',
-            telemetry__pb2.SessionInfo.SerializeToString,
-            telemetry__pb2.SessionResponse.FromString,
+            '/metrics.MetricsService/RegisterTrainingSession',
+            metrics__pb2.SessionInfo.SerializeToString,
+            metrics__pb2.SessionResponse.FromString,
             options,
             channel_credentials,
             insecure,

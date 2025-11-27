@@ -53,7 +53,7 @@ Dashboard                          Monitoring Backend
 ```
 
 **Flow:**
-1. **Training App → Monitoring Backend**: Pushes telemetry via bidirectional gRPC
+1. **Training App → Monitoring Backend**: Pushes metrics via bidirectional gRPC
 2. **Monitoring Backend → Dashboard**: Streams updates via WebSocket/gRPC-Web
 3. **Key Design**: Dashboard initiates connection, backend pushes updates through it
 
@@ -65,7 +65,7 @@ Dashboard                          Monitoring Backend
 │                      (PyTorch/TensorFlow)                       │
 │                                                                  │
 │  ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌──────────┐     │
-│  │  Model   │→│  Batch     │→│ Telemetry │→│  gRPC     │     │
+│  │  Model   │→│  Batch     │→│ Metrics   │→│  gRPC     │     │
 │  │ Training │  │ Processing │  │ Collector │  │  Client  │     │
 │  └──────────┘  └───────────┘  └──────────┘  └──────────┘     │
 │                                                    │            │
@@ -79,7 +79,7 @@ Dashboard                          Monitoring Backend
 │                         (Python/FastAPI)                        │
 │                                                                  │
 │  ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌──────────┐     │
-│  │  gRPC    │→│ Telemetry  │→│ WebSocket │→│  State   │     │
+│  │  gRPC    │→│ Metrics    │→│ WebSocket │→│  State   │     │
 │  │  Server  │  │  Processor │  │  Server  │  │  Manager │     │
 │  └──────────┘  └───────────┘  └──────────┘  └──────────┘     │
 │                                      │                          │
@@ -196,7 +196,7 @@ Dashboard              Monitoring Backend         Training App
 ### Option 1: WebSocket (Recommended for Web Dashboard)
 ```javascript
 // Dashboard (Next.js)
-const ws = new WebSocket('ws://localhost:8080/telemetry');
+const ws = new WebSocket('ws://localhost:8080/metrics');
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
@@ -214,10 +214,10 @@ ws.onclose = () => {
 ### Option 2: gRPC-Web (More Complex, Better Type Safety)
 ```typescript
 // Dashboard (Next.js)
-const client = new TelemetryServiceClient('http://localhost:8080');
-const stream = client.streamTelemetry();
+const client = new MetricsServiceClient('http://localhost:8080');
+const stream = client.streamMetrics();
 
-stream.on('data', (response: TelemetryResponse) => {
+stream.on('data', (response: MetricsResponse) => {
   if (response.hasBatchData()) {
     updateImageGrid(response.batchData);
   }

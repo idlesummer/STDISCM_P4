@@ -1,4 +1,4 @@
-# Telemetry gRPC Protocol Design
+# Metrics gRPC Protocol Design
 
 ## Overview
 
@@ -88,7 +88,7 @@ message Heartbeat {
 ### 6. Oneof Pattern for Message Types
 
 ```protobuf
-message TelemetryRequest {
+message MetricsRequest {
   oneof payload {
     BatchData batch_data = 3;
     EpochData epoch_data = 4;
@@ -100,7 +100,7 @@ message TelemetryRequest {
 ```
 
 **Rationale:**
-- Single stream for all telemetry types
+- Single stream for all metrics types
 - Type-safe message parsing
 - Efficient serialization (only one payload type per message)
 
@@ -218,7 +218,7 @@ Per specs:
 ### Client-Side (Training App)
 ```python
 try:
-    for response in stub.StreamTelemetry(request_iterator):
+    for response in stub.StreamMetrics(request_iterator):
         if response.HasField('error'):
             handle_error(response.error)
         elif response.HasField('command'):
@@ -231,12 +231,12 @@ except grpc.RpcError as e:
 
 ### Server-Side (Monitoring Backend)
 ```python
-def handle_telemetry_stream(request_iterator):
+def handle_metrics_stream(request_iterator):
     last_heartbeat = time.time()
 
     for request in request_iterator:
         if time.time() - last_heartbeat > HEARTBEAT_TIMEOUT:
-            yield TelemetryResponse(
+            yield MetricsResponse(
                 error=ErrorResponse(
                     code=ErrorCode.HEARTBEAT_TIMEOUT,
                     message="No heartbeat received"
