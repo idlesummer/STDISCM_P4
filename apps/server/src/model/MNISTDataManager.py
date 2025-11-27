@@ -22,7 +22,6 @@ class MNISTDatasetManager:
         batch_size: int = 16,
         val_size: float = 0.1,
         test_size: float = 0.1,
-        transform: Optional[transforms.Compose] = None,
         seed: int = 0
     ) -> None:
         """
@@ -40,14 +39,14 @@ class MNISTDatasetManager:
         self.batch_size = batch_size
         self.val_size = val_size
         self.test_size = test_size
-        self.transform = transform or transforms.Compose([transforms.ToTensor()])
         self.seed = seed
 
         # Set the random seed for reproducibility
         torch.manual_seed(self.seed)
 
         # Load the MNIST dataset
-        self.dataset = datasets.MNIST(root=self.root, train=True, download=True, transform=self.transform)
+        transform = transforms.Compose([transforms.ToTensor()]) # Convert image to tensors
+        self.dataset = datasets.MNIST(root=self.root, train=True, download=True, transform=transform)
 
         # Split the dataset into train, validation, and test sets
         self.train_dataset, self.val_dataset, self.test_dataset = self.train_test_val_split()
