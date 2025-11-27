@@ -60,7 +60,7 @@ class Trainer:
 
             # Iterate through the DataLoader to get batches
             for batch, (X_batch, y_batch) in enumerate(self.data_loader):
-                batch_loss = self.train_batch(X_batch, y_batch, epoch, batch)
+                batch_loss = self.train_batch(epoch, batch, X_batch, y_batch)
                 epoch_loss += batch_loss
 
             # Calculate average loss for the epoch
@@ -84,10 +84,10 @@ class Trainer:
 
     def train_batch(
         self,
+        epoch: int,
+        batch: int,
         X_batch: torch.Tensor,
         y_batch: torch.Tensor,
-        epoch: int,
-        batch: int
     ) -> float:
         """Train the model on a single batch and log the batch information."""
 
@@ -121,7 +121,7 @@ class Trainer:
 
     def evaluate(self, val_loader: DataLoader) -> float:
         """Evaluate the model on the validation data."""
-        
+
         # Set the model to evaluation mode
         self.model.eval()  
         total_loss = 0
