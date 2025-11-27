@@ -1,4 +1,4 @@
-from typing import Callable, TypeVar
+from   typing import Callable, TypeVar
 import logging
 import time
 import grpc
