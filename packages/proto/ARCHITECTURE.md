@@ -42,6 +42,21 @@ Dashboard                          Monitoring Backend
 
 **Key Insight:** Client initiates, server pushes through the open connection!
 
+## High-Level Architecture Overview
+
+```
+┌─────────────────┐         ┌──────────────────┐         ┌─────────────┐
+│  Training App   │────────►│ Monitoring       │────────►│  Dashboard  │
+│  (PyTorch/TF)   │  gRPC   │ Backend (Python) │ WS/gRPC │  (Next.js)  │
+└─────────────────┘         └──────────────────┘         └─────────────┘
+    CLIENT 1                     SERVER                    CLIENT 2
+```
+
+**Flow:**
+1. **Training App → Monitoring Backend**: Pushes telemetry via bidirectional gRPC
+2. **Monitoring Backend → Dashboard**: Streams updates via WebSocket/gRPC-Web
+3. **Key Design**: Dashboard initiates connection, backend pushes updates through it
+
 ## Complete Three-Tier Architecture
 
 ```
