@@ -5,7 +5,6 @@ from torchvision import datasets, transforms
 
 
 class MNISTDatasetManager:
-    dataset_name: str = 'MNIST'  # Only supports MNIST dataset
     root: str
     batch_size: int
     val_size: float
