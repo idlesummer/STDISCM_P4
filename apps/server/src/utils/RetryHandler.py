@@ -33,8 +33,7 @@ class RetryHandler:
                 return func(*args, **kwargs)
 
             except grpc.RpcError as e:
-                # Store the exception
-                last_exception = e
+                last_exception = e  # Store the exception
                 
                 # Calculate exponential backoff delay
                 delay = self.delay * (2 ** attempt)
@@ -44,4 +43,5 @@ class RetryHandler:
 
         # After all retries are exhausted, raise the last encountered exception
         logger.error("Max retries reached, giving up.")
-        raise last_exception or RuntimeError("Unexpected error: No exception was raised.")
+        exception = RuntimeError("Unexpected error: No exception was raised.")
+        raise last_exception or exception
