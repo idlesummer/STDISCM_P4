@@ -5,20 +5,17 @@ This document outlines the key message types used in the training metrics monito
 ## Core Data Messages
 
 ### BatchData
-Per-batch metrics sent during training.
+Per-batch metrics sent during training (high frequency ~60 FPS).
 
 **Fields:**
 - `uint32 epoch` - Current epoch number
 - `uint32 batch_idx` - Batch index within the epoch
-- `uint32 batch_size` - Actual number of images in this batch
-- `repeated ImageData images` - Image data for visualization (up to 16 images)
+- `repeated ImageData images` - Up to 16 images for visualization
 - `repeated Prediction predictions` - Model predictions for each image
 - `repeated int32 ground_truth` - Ground truth class indices
 - `float batch_loss` - Loss value for this batch
-- `float batch_accuracy` - Accuracy for this batch (optional)
-- `uint64 timestamp_ms` - Unix timestamp in milliseconds
 
-**Usage:** Sent for each training batch to provide detailed metrics, visualizations, and predictions.
+**Usage:** Sent for each training batch with images, predictions, and loss metrics.
 
 ---
 
@@ -26,14 +23,9 @@ Per-batch metrics sent during training.
 Individual image data for visualization.
 
 **Fields:**
-- `bytes image_bytes` - Encoded image data (JPEG/PNG)
-- `string format` - Image format ("jpeg", "png", etc.)
-- `uint32 width` - Image width in pixels
-- `uint32 height` - Image height in pixels
-- `uint32 channels` - Number of channels (1 for grayscale, 3 for RGB)
-- `string image_id` - Optional identifier or filename
+- `bytes image_bytes` - JPEG-encoded image data
 
-**Usage:** Embedded within `BatchData` to send images for real-time visualization in the monitoring dashboard.
+**Usage:** Embedded within `BatchData`. Images are always JPEG-encoded for bandwidth efficiency.
 
 ---
 
@@ -42,11 +34,21 @@ Model prediction with confidence scores.
 
 **Fields:**
 - `int32 predicted_class` - Predicted class index
-- `string predicted_label` - Human-readable label (e.g., "cat", "dog")
 - `float confidence` - Confidence score (0.0 - 1.0)
-- `repeated ClassScore top_k_scores` - Optional top-k predictions
 
-**Usage:** Provides detailed prediction information for each image in a batch, enabling per-sample analysis and debugging.
+**Usage:** Provides prediction information for each image. Class labels can be derived from class index using `TrainingConfig.class_names`.
+
+---
+
+### EpochData
+Aggregate metrics sent at epoch completion (low frequency).
+
+**Fields:**
+- `uint32 epoch` - Epoch number
+- `float average_loss` - Average loss for the epoch
+- `float average_accuracy` - Average accuracy for the epoch
+
+**Usage:** Sent at the end of each epoch to track overall training progress.
 
 ---
 

@@ -32,50 +32,21 @@ message MetricsRequest {
 message BatchData {
   uint32 epoch = 1;
   uint32 batch_idx = 2;
-  uint32 batch_size = 3; // Actual number of images in this batch
-
-  // Image data for visualization (up to 16 images as per specs)
-  repeated ImageData images = 4;
-
-  // Predictions and ground truth
-  repeated Prediction predictions = 5;
-  repeated int32 ground_truth = 6; // Class indices
-
-  // Loss information
-  float batch_loss = 7;
-
-  // Optional: Additional metrics
-  float batch_accuracy = 8;
-
-  uint64 timestamp_ms = 9;
+  repeated ImageData images = 3; // Up to 16 images
+  repeated Prediction predictions = 4;
+  repeated int32 ground_truth = 5; // Class indices
+  float batch_loss = 6;
 }
 
 // Individual image with its data
 message ImageData {
-  bytes image_bytes = 1; // Encoded image (JPEG/PNG)
-  string format = 2; // "jpeg", "png", etc.
-  uint32 width = 3;
-  uint32 height = 4;
-  uint32 channels = 5; // 1 for grayscale, 3 for RGB
-
-  // Optional: Original filename or identifier
-  string image_id = 6;
+  bytes image_bytes = 1; // JPEG-encoded image data
 }
 
 // Prediction with confidence scores
 message Prediction {
   int32 predicted_class = 1; // Predicted class index
-  string predicted_label = 2; // Human-readable label (e.g., "cat", "dog")
-  float confidence = 3; // Confidence score (0.0 - 1.0)
-
-  // Optional: Top-k predictions
-  repeated ClassScore top_k_scores = 4;
-}
-
-message ClassScore {
-  int32 class_idx = 1;
-  string label = 2;
-  float score = 3;
+  float confidence = 2; // Confidence score (0.0 - 1.0)
 }
 
 // Per-epoch metrics data
@@ -83,16 +54,6 @@ message EpochData {
   uint32 epoch = 1;
   float average_loss = 2;
   float average_accuracy = 3;
-
-  // Training dynamics
-  float learning_rate = 4;
-  bool is_converged = 5;
-
-  // Validation metrics (if applicable)
-  optional float validation_loss = 6;
-  optional float validation_accuracy = 7;
-
-  uint64 timestamp_ms = 8;
 }
 
 // Performance and timing data
