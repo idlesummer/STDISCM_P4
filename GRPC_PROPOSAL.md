@@ -1,103 +1,73 @@
-# gRPC Client-Server Stub Proposal for P4 Project
+# gRPC Protocol Proposal for P4 Project
 
-**Project**: Real-Time ML Training Telemetry and Monitoring System
-**Student**: [Your Name Here]
+**Project**: Real-Time ML Training Monitoring System
 **Date**: November 27, 2025
 
 ---
 
 ## Executive Summary
 
-This proposal outlines the gRPC protocol design for a real-time machine learning training monitoring system. The gRPC protocol specifically defines the communication between the **Training Application (gRPC Client)** and the **Monitoring Backend (gRPC Server)**. The monitoring backend then forwards processed data to a web dashboard using WebSocket/HTTP. The protocol supports bidirectional streaming, enabling both telemetry data transmission and control commands between the training app and backend.
+This proposal outlines the gRPC protocol design for a real-time machine learning training monitoring system. The system consists of **two main components**:
+
+1. **Training Backend** (Python) - Combines ML training and monitoring server
+2. **Dashboard** (Next.js) - Web interface for visualization
+
+The `telemetry.proto` file defines the communication protocol between these components, enabling real-time visualization of training metrics, images, and predictions.
 
 ---
 
-## 1. Protocol Buffer (.proto) Format
+## System Architecture
 
-### 1.1 Service Definition
+### 2-Tier Architecture
 
-Our system uses **one main .proto file**: `telemetry.proto`
+```
+┌─────────────────────────────┐         ┌─────────────┐
+│  Training + Monitoring      │────────►│  Dashboard  │
+│  Backend (Python)           │ WS/gRPC │  (Next.js)  │
+│                             │         │             │
+│  - PyTorch/TensorFlow       │         │  - Image    │
+│  - Model Training           │         │    Grid     │
+│  - Telemetry Collection     │         │  - Loss     │
+│  - gRPC Server              │         │    Plots    │
+│                             │         │  - FPS      │
+└─────────────────────────────┘         └─────────────┘
+     gRPC SERVER                            CLIENT
+```
+
+**Key Points:**
+- Training and monitoring are **one unified Python application**
+- The backend performs training AND serves telemetry data
+- The dashboard connects to the backend to receive real-time updates
+- Communication uses either WebSocket or gRPC-Web (browser-compatible)
+
+---
+
+## Protocol Definition: telemetry.proto
+
+### Service Definition
 
 ```protobuf
-syntax = "proto3";
-package telemetry;
-
-// Main service definition for training telemetry
 service TelemetryService {
-  // Bidirectional streaming: Training app sends telemetry, receives control commands
+  // Stream telemetry data from backend to dashboard
   rpc StreamTelemetry(stream TelemetryRequest) returns (stream TelemetryResponse);
 
-  // Unary call for initial handshake/registration
+  // Initial session registration
   rpc RegisterTrainingSession(SessionInfo) returns (SessionResponse);
 }
 ```
 
-**Key Features:**
-- **Bidirectional Streaming**: Allows continuous data flow in both directions
-- **Session Management**: Initial handshake to register training sessions
-- **Control Commands**: Backend can send commands to training app (pause, stop, adjust parameters)
+**Purpose:**
+- `StreamTelemetry`: Bidirectional streaming for continuous data flow
+- `RegisterTrainingSession`: Initial handshake to establish connection
 
 ---
 
-## 2. Explanation of telemetry.proto
+## Message Types
 
-### 2.1 Purpose in P4 Project
+### 1. BatchData (High Frequency ~60 FPS)
 
-The `telemetry.proto` file serves as the **gRPC communication contract** between the Training Application and the Monitoring Backend.
+Sent after each training batch to update the dashboard in real-time.
 
-**System Architecture (3-Tier):**
-
-```
-┌─────────────────┐         ┌──────────────────┐         ┌─────────────┐
-│  Training App   │◄───────►│ Monitoring       │────────►│  Dashboard  │
-│  (PyTorch/TF)   │  gRPC   │ Backend (Python) │ WS/HTTP │  (Next.js)  │
-└─────────────────┘         └──────────────────┘         └─────────────┘
-   gRPC CLIENT               gRPC SERVER              NOT part of gRPC
-
-  telemetry.proto              (Forwards data          (Receives via
-  defines THIS ←──────────────►  to dashboard)          WebSocket)
-```
-
-**Component Roles:**
-1. **Training Application** (gRPC Client) - Sends telemetry via gRPC to backend
-2. **Monitoring Backend** (gRPC Server) - Receives telemetry and forwards to dashboard
-3. **Dashboard** (Web Client) - Receives data via WebSocket/HTTP (NOT gRPC)
-
-**Important**: The `telemetry.proto` file ONLY defines the protocol between components 1 and 2. The backend-to-dashboard communication is handled separately (typically WebSocket for real-time updates).
-
-**Project Requirements Addressed:**
-- Display 16 image tiles with predictions in real-time
-- Show loss plots updated every N batches
-- Display frame rate (FPS) continuously
-- Complete data flow in <1.5 seconds
-- Support fault tolerance and reconnection
-
-### 2.2 Message Categories
-
-#### **A. Request Messages (Training App → Backend)**
-
-##### 1. TelemetryRequest (Main Container)
-```protobuf
-message TelemetryRequest {
-  string session_id = 1;
-  uint64 timestamp_ms = 2;
-
-  oneof payload {
-    BatchData batch_data = 3;
-    EpochData epoch_data = 4;
-    PerformanceData performance_data = 5;
-    StatusUpdate status_update = 6;
-    Heartbeat heartbeat = 7;
-  }
-}
-```
-
-**Purpose**: Wrapper for all telemetry data types
-- `session_id`: Identifies the training session
-- `timestamp_ms`: Unix timestamp for synchronization
-- `oneof payload`: Polymorphic message type (only one active at a time)
-
-##### 2. BatchData (Per-Batch Telemetry)
 ```protobuf
 message BatchData {
   uint32 epoch = 1;
@@ -110,93 +80,66 @@ message BatchData {
 
   float batch_loss = 7;
   float batch_accuracy = 8;
-  uint64 timestamp_ms = 9;
 }
 ```
 
-**Purpose**: Sent after each training batch
-- **Images**: Actual image bytes (JPEG-encoded) for dashboard visualization
-- **Predictions**: Model outputs with confidence scores
-- **Ground Truth**: Correct labels for comparison
-- **Metrics**: Loss and accuracy for plotting
+**Contains:**
+- 16 training images (JPEG-encoded for bandwidth efficiency)
+- Model predictions with confidence scores
+- Ground truth labels for comparison
+- Training metrics (loss, accuracy)
 
-**Why Images as Bytes?**
-- Specification requires displaying actual images (not just filenames)
-- JPEG encoding reduces bandwidth (512×512 RGB: 786KB → ~30KB)
-- Dashboard can directly decode and display images
+### 2. EpochData (Low Frequency ~1/epoch)
 
-##### 3. EpochData (Per-Epoch Summary)
+Sent at the end of each training epoch for aggregate metrics.
+
 ```protobuf
 message EpochData {
   uint32 epoch = 1;
   float average_loss = 2;
   float average_accuracy = 3;
   float learning_rate = 4;
-  bool is_converged = 5;
 
   optional float validation_loss = 6;
   optional float validation_accuracy = 7;
-  uint64 timestamp_ms = 8;
 }
 ```
 
-**Purpose**: Sent at the end of each epoch
-- Aggregated metrics for the entire epoch
-- Convergence status for automatic stopping
-- Optional validation metrics if available
+### 3. PerformanceData (Medium Frequency)
 
-##### 4. PerformanceData (System Performance)
+Tracks system performance and frame rate.
+
 ```protobuf
 message PerformanceData {
   float time_per_batch_ms = 1;
-  float total_time_for_epoch_sec = 2;
-  float estimated_time_remaining_sec = 3;
-
-  float current_fps = 4;              // REQUIRED by specs
-  float average_fps = 5;              // REQUIRED by specs
+  float current_fps = 4;              // REQUIRED: Display constantly
+  float average_fps = 5;
 
   optional ResourceUsage resource_usage = 6;
-  uint64 timestamp_ms = 7;
-}
-
-message ResourceUsage {
-  float cpu_percent = 1;
-  float memory_mb = 2;
-  float gpu_percent = 3;
-  float gpu_memory_mb = 4;
 }
 ```
 
-**Purpose**: Performance monitoring
-- **FPS Metrics**: Critical grading criterion (target: 60 FPS)
-- **Timing**: Progress estimation
-- **Resources**: CPU/GPU utilization tracking
+**Critical for specs:**
+- FPS must be displayed at all times
+- Target: 60 FPS constant
+- Latency goal: <1.5 seconds end-to-end
 
-##### 5. StatusUpdate (Training Status)
+### 4. StatusUpdate
+
+Notifies dashboard of training state changes.
+
 ```protobuf
 message StatusUpdate {
-  TrainingStatus status = 1;
+  TrainingStatus status = 1;  // INITIALIZING, RUNNING, PAUSED, COMPLETED, FAILED
   string message = 2;
   optional TrainingConfig config = 3;
-  uint64 timestamp_ms = 4;
-}
-
-enum TrainingStatus {
-  UNKNOWN = 0;
-  INITIALIZING = 1;
-  RUNNING = 2;
-  PAUSED = 3;
-  COMPLETED = 4;
-  FAILED = 5;
 }
 ```
 
-**Purpose**: Lifecycle management
-- Notifies dashboard when training starts/stops
-- Provides configuration details
-- Useful for UI state management
+### 5. Heartbeat
 
-##### 6. Heartbeat (Connection Health)
+Connection health monitoring for fault tolerance.
+
 ```protobuf
 message Heartbeat {
   uint64 timestamp_ms = 1;
@@ -204,456 +147,238 @@ message Heartbeat {
 }
 ```
 
-**Purpose**: Fault tolerance
-- Sent every 2 seconds to verify connection
-- Detect disconnections before data loss occurs
-- Enable automatic reconnection (required for grading)
+---
 
-#### **B. Response Messages (Backend → Training App)**
+## Data Flow
 
-##### 1. TelemetryResponse (Main Container)
-```protobuf
-message TelemetryResponse {
-  string session_id = 1;
-  uint64 timestamp_ms = 2;
+### Connection Establishment
 
-  oneof payload {
-    Acknowledgment ack = 3;
-    ControlCommand command = 4;
-    ErrorResponse error = 5;
-  }
-}
+```
+Dashboard                          Training Backend
+   │                                      │
+   │──── Connect (WS/gRPC-Web) ──────────►│
+   │                                      │
+   │◄─── Connection Established ──────────│
+   │                                      │
+   │──── RegisterTrainingSession ────────►│
+   │                                      │
+   │◄─── SessionResponse ─────────────────│
+   │     (session_id, config)             │
 ```
 
-##### 2. ControlCommand (Interactive Control)
-```protobuf
-message ControlCommand {
-  CommandType type = 1;
-  map<string, string> parameters = 2;
+### Training Loop
 
-  enum CommandType {
-    UNKNOWN_COMMAND = 0;
-    PAUSE_TRAINING = 1;
-    RESUME_TRAINING = 2;
-    STOP_TRAINING = 3;
-    ADJUST_BATCH_SIZE = 4;
-    CHANGE_LEARNING_RATE = 5;
-  }
-}
+```
+Dashboard                          Training Backend
+   │                                      │
+   │                                      │  [Training starts]
+   │◄─── StatusUpdate(RUNNING) ───────────│
+   │                                      │
+   │◄─── BatchData ───────────────────────│  [Every batch]
+   │     (16 images, predictions, loss)   │
+   │                                      │
+   │◄─── PerformanceData ─────────────────│  [Every N batches]
+   │     (FPS: 58.2)                      │
+   │                                      │
+   │──── Heartbeat ───────────────────────►│  [Every 2 seconds]
+   │                                      │
+   │◄─── EpochData ───────────────────────│  [End of epoch]
+   │     (avg metrics)                    │
 ```
 
-**Purpose**: Bidirectional control (Backend → Training App)
-- Backend can send control commands to training app
-- User actions from Dashboard → Backend → Training App via gRPC
-- Dynamically pause/resume training or adjust hyperparameters
-- Demonstrates full bidirectional streaming capability of gRPC
+### Bidirectional Control (Optional)
 
-##### 3. ErrorResponse (Error Handling)
-```protobuf
-message ErrorResponse {
-  ErrorCode code = 1;
-  string message = 2;
+The dashboard can send control commands back to the training backend:
 
-  enum ErrorCode {
-    UNKNOWN_ERROR = 0;
-    INVALID_SESSION = 1;
-    INVALID_DATA = 2;
-    BUFFER_FULL = 3;
-    INTERNAL_ERROR = 4;
-  }
-}
 ```
-
-**Purpose**: Robust error handling
-- Communicates failures to training app
-- Enables graceful degradation
-- Supports debugging and monitoring
+Dashboard                          Training Backend
+   │                                      │
+   │──── ControlCommand(PAUSE) ───────────►│
+   │                                      │
+   │◄─── StatusUpdate(PAUSED) ────────────│
+   │                                      │
+   │──── ControlCommand(RESUME) ──────────►│
+   │                                      │
+   │◄─── StatusUpdate(RUNNING) ───────────│
+```
 
 ---
 
-## 3. Generated Python Stub Files
+## Implementation Details
 
-### 3.1 Proof of gRPC Setup
+### Backend (Python)
 
-Successfully generated two Python files using:
+The backend is a single Python application that:
+1. Performs ML training (PyTorch/TensorFlow)
+2. Collects telemetry data during training
+3. Serves as a gRPC server (or WebSocket server)
+4. Streams data to connected dashboards
+
+```python
+# Example: Backend server structure
+class TrainingBackend:
+    def __init__(self):
+        self.model = load_model()
+        self.grpc_server = create_grpc_server()
+
+    def train(self):
+        for epoch in range(num_epochs):
+            for batch in dataloader:
+                # Train model
+                loss = train_batch(batch)
+
+                # Collect telemetry
+                telemetry = create_batch_data(batch, predictions, loss)
+
+                # Stream to dashboard
+                self.stream_to_clients(telemetry)
+```
+
+### Dashboard (Next.js)
+
+The dashboard connects to the backend and receives real-time updates:
+
+```typescript
+// Example: Dashboard client
+const client = new TelemetryServiceClient('http://localhost:50051');
+
+const stream = client.streamTelemetry();
+
+stream.on('data', (response) => {
+  if (response.hasBatchData()) {
+    updateImageGrid(response.batchData.images);
+    updateLossChart(response.batchData.batchLoss);
+  }
+  if (response.hasPerformanceData()) {
+    updateFPS(response.performanceData.currentFps);
+  }
+});
+```
+
+---
+
+## Key Features
+
+### 1. Efficient Image Transmission
+
+Images are JPEG-encoded before transmission:
+- Original: 256×256×3 RGB = 196 KB
+- JPEG (85% quality): ~30 KB
+- 16 images per batch: ~480 KB
+
+At 60 FPS: ~29 MB/s bandwidth (manageable on LAN)
+
+### 2. Fault Tolerance
+
+- **Heartbeat mechanism**: Detect connection failures
+- **Auto-reconnection**: Dashboard automatically reconnects
+- **Buffering**: Backend can buffer data during disconnections
+
+### 3. Real-Time Performance
+
+- **Persistent connection**: No HTTP handshake overhead
+- **Binary protocol**: Efficient serialization with Protocol Buffers
+- **Target latency**: <1.5 seconds end-to-end
+- **Target FPS**: 60 FPS constant
+
+### 4. Type Safety
+
+Protocol Buffers provide:
+- Strongly-typed messages
+- Automatic validation
+- Cross-language compatibility
+- Version compatibility
+
+---
+
+## Generated Stub Files
+
+Successfully generated Python stubs from `telemetry.proto`:
+
 ```bash
 python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. telemetry.proto
 ```
 
 **Generated Files:**
-1. `telemetry_pb2.py` (9.3 KB) - Message serialization/deserialization
-2. `telemetry_pb2_grpc.py` (5.3 KB) - Client and server stubs
+- `telemetry_pb2.py` (9.3 KB) - Message classes
+- `telemetry_pb2_grpc.py` (5.3 KB) - Server and client stubs
 
-### 3.2 telemetry_pb2_grpc.py Overview
-
-This file contains the **client and server stubs** for the TelemetryService.
-
-#### **Client Stub (TelemetryServiceStub)**
+**Usage in Backend:**
 ```python
-class TelemetryServiceStub(object):
-    """Main service definition for training telemetry"""
-
-    def __init__(self, channel):
-        """Constructor.
-
-        Args:
-            channel: A grpc.Channel.
-        """
-        # Bidirectional streaming RPC
-        self.StreamTelemetry = channel.stream_stream(
-                '/telemetry.TelemetryService/StreamTelemetry',
-                request_serializer=telemetry__pb2.TelemetryRequest.SerializeToString,
-                response_deserializer=telemetry__pb2.TelemetryResponse.FromString,
-                _registered_method=True)
-
-        # Unary RPC for session registration
-        self.RegisterTrainingSession = channel.unary_unary(
-                '/telemetry.TelemetryService/RegisterTrainingSession',
-                request_serializer=telemetry__pb2.SessionInfo.SerializeToString,
-                response_deserializer=telemetry__pb2.SessionResponse.FromString,
-                _registered_method=True)
-```
-
-**Usage in Training Application:**
-```python
-import grpc
-import telemetry_pb2
-import telemetry_pb2_grpc
-
-# Create gRPC channel to monitoring backend
-channel = grpc.insecure_channel('localhost:50051')
-stub = telemetry_pb2_grpc.TelemetryServiceStub(channel)
-
-# Register session
-session_info = telemetry_pb2.SessionInfo(
-    session_id="train_001",
-    client_name="pytorch_trainer",
-    client_version="1.0.0"
-)
-response = stub.RegisterTrainingSession(session_info)
-
-# Start bidirectional streaming
-def request_generator():
-    # Send batch data
-    batch_data = telemetry_pb2.BatchData(
-        epoch=1,
-        batch_idx=42,
-        batch_loss=0.234
-    )
-    request = telemetry_pb2.TelemetryRequest(
-        session_id="train_001",
-        timestamp_ms=int(time.time() * 1000),
-        batch_data=batch_data
-    )
-    yield request
-
-# Stream telemetry and receive responses
-responses = stub.StreamTelemetry(request_generator())
-for response in responses:
-    if response.HasField('command'):
-        # Handle control command from backend
-        if response.command.type == telemetry_pb2.ControlCommand.PAUSE_TRAINING:
-            # Pause training loop
-            pass
-```
-
-#### **Server Stub (TelemetryServiceServicer)**
-```python
-class TelemetryServiceServicer(object):
-    """Main service definition for training telemetry"""
-
-    def StreamTelemetry(self, request_iterator, context):
-        """Bidirectional streaming: Training app sends telemetry, receives control commands"""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def RegisterTrainingSession(self, request, context):
-        """Unary call for initial handshake/registration"""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-```
-
-**Usage in Monitoring Backend:**
-```python
-import grpc
-from concurrent import futures
-import telemetry_pb2
 import telemetry_pb2_grpc
 
 class TelemetryServicer(telemetry_pb2_grpc.TelemetryServiceServicer):
-    def RegisterTrainingSession(self, request, context):
-        """Handle session registration"""
-        print(f"New session: {request.session_id}")
-
-        # Return server configuration
-        return telemetry_pb2.SessionResponse(
-            success=True,
-            session_id=request.session_id,
-            message="Session registered successfully",
-            server_config=telemetry_pb2.ServerConfig(
-                max_batch_size=64,
-                max_image_dimension=512,
-                heartbeat_interval_ms=2000,
-                buffer_size=1000
-            )
-        )
-
     def StreamTelemetry(self, request_iterator, context):
-        """Handle bidirectional streaming"""
+        # Handle incoming requests from dashboard
         for request in request_iterator:
-            # Process incoming telemetry
-            if request.HasField('batch_data'):
-                batch = request.batch_data
-                print(f"Received batch {batch.batch_idx}, loss: {batch.batch_loss}")
-
-                # Forward to dashboard via WebSocket
-                # ... (dashboard forwarding logic)
-
-                # Send acknowledgment
-                yield telemetry_pb2.TelemetryResponse(
-                    session_id=request.session_id,
-                    timestamp_ms=int(time.time() * 1000),
-                    ack=telemetry_pb2.Acknowledgment(
-                        batch_idx=batch.batch_idx,
-                        success=True
-                    )
-                )
-
-            elif request.HasField('heartbeat'):
-                # Heartbeat received - connection healthy
-                pass
-
-# Start gRPC server
-server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-telemetry_pb2_grpc.add_TelemetryServiceServicer_to_server(
-    TelemetryServicer(), server)
-server.add_insecure_port('[::]:50051')
-server.start()
-print("Monitoring backend listening on port 50051...")
-server.wait_for_termination()
+            # Send telemetry responses
+            yield create_response(request)
 ```
 
-### 3.3 telemetry_pb2.py Overview
+**Usage in Dashboard:**
+```typescript
+// TypeScript stubs can be generated using grpc-web
+import { TelemetryServiceClient } from './telemetry_grpc_web_pb';
 
-This file contains **message classes** for all Protocol Buffer definitions:
-
-**Key Classes Generated:**
-- `TelemetryRequest` - Main request container
-- `BatchData` - Per-batch telemetry data
-- `ImageData` - Individual image representation
-- `Prediction` - Model prediction with confidence
-- `EpochData` - Per-epoch metrics
-- `PerformanceData` - Performance and FPS metrics
-- `StatusUpdate` - Training status updates
-- `Heartbeat` - Connection health check
-- `TelemetryResponse` - Main response container
-- `ControlCommand` - Control commands from backend
-- `ErrorResponse` - Error communication
-
-**Example Usage:**
-```python
-import telemetry_pb2
-
-# Create a batch data message
-batch_data = telemetry_pb2.BatchData()
-batch_data.epoch = 5
-batch_data.batch_idx = 42
-batch_data.batch_size = 16
-batch_data.batch_loss = 0.234
-batch_data.batch_accuracy = 0.92
-batch_data.timestamp_ms = 1732684800000
-
-# Add image data
-for i in range(16):
-    image = batch_data.images.add()
-    image.image_bytes = jpeg_encoded_bytes  # Actual image data
-    image.format = "jpeg"
-    image.width = 256
-    image.height = 256
-    image.channels = 3
-    image.image_id = f"batch42_img{i}"
-
-# Add predictions
-for i in range(16):
-    pred = batch_data.predictions.add()
-    pred.predicted_class = 3
-    pred.predicted_label = "cat"
-    pred.confidence = 0.94
-
-    # Add top-k scores
-    for j, (class_idx, score) in enumerate(top_k_results):
-        score_entry = pred.top_k_scores.add()
-        score_entry.class_idx = class_idx
-        score_entry.label = class_names[class_idx]
-        score_entry.score = score
-
-# Add ground truth labels
-batch_data.ground_truth.extend([3, 5, 3, 2, 1, ...])  # Actual labels
+const client = new TelemetryServiceClient('http://localhost:8080');
 ```
 
 ---
 
-## 4. System Architecture
+## Project Requirements Met
 
-### 4.1 Data Flow Diagram
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        GRPC PROTOCOL SCOPE                          │
-│  (Defined by telemetry.proto)                                       │
-│                                                                      │
-│  ┌─────────────────┐                  ┌──────────────────┐         │
-│  │  Training App   │◄────────────────►│ Monitoring       │         │
-│  │  (PyTorch/TF)   │   Bidirectional  │ Backend (Python) │         │
-│  │                 │   gRPC Streaming │                  │         │
-│  └─────────────────┘                  └──────────────────┘         │
-│     gRPC CLIENT                            gRPC SERVER              │
-│                                                  │                  │
-└──────────────────────────────────────────────────┼──────────────────┘
-                                                   │
-                                                   │ WebSocket/HTTP
-                                                   │ (NOT gRPC)
-                                                   ▼
-                                          ┌─────────────┐
-                                          │  Dashboard  │
-                                          │  (Next.js)  │
-                                          └─────────────┘
-                                             WEB CLIENT
-
-Data Flow:
-1. Training app (gRPC client) sends BatchData to backend via gRPC (~60 FPS)
-2. Backend (gRPC server) receives, processes, and forwards to dashboard via WebSocket
-3. Dashboard displays 16 images + loss plot + FPS
-4. User actions: Dashboard → Backend → Training App (control commands via gRPC)
-5. Total latency: <1.5 seconds (requirement met)
-
-Key Points:
-- telemetry.proto defines ONLY the Training App ↔ Backend communication
-- Backend acts as a bridge/relay between gRPC and WebSocket protocols
-- Dashboard does NOT use gRPC (uses WebSocket for browser compatibility)
-```
-
-### 4.2 Message Frequency Strategy
-
-```
-High Frequency (60 Hz):
-├─ BatchData (every batch)
-
-Medium Frequency (10 Hz):
-├─ PerformanceData (every 10 batches)
-
-Low Frequency (per epoch):
-├─ EpochData (once per epoch)
-
-Regular Interval (0.5 Hz):
-└─ Heartbeat (every 2 seconds)
-```
-
-### 4.3 Bandwidth Optimization
-
-**Per Batch Calculation:**
-```
-16 images × 30 KB (JPEG) = 480 KB
-Predictions + metadata     =   5 KB
-Total per batch           = 485 KB
-
-At 60 FPS: 485 KB × 60 = ~29 MB/s (manageable on LAN)
-```
-
-**Optimization Techniques:**
-- Resize images to 256×256 before JPEG encoding
-- Use 85% JPEG quality
-- Send only 16 images even if batch_size > 16
-- Use delta encoding for unchanged data
+| Requirement | Implementation |
+|-------------|----------------|
+| Display 16 image tiles | `BatchData.images` (up to 16 per batch) |
+| Show predictions | `Prediction` messages with confidence scores |
+| Loss plots | `BatchData.batch_loss` updated every batch |
+| FPS display | `PerformanceData.current_fps` (constant) |
+| <1.5s latency | Persistent streaming connection |
+| Fault tolerance | Heartbeat + auto-reconnection |
+| 60 FPS target | Optimized batch streaming |
 
 ---
 
-## 5. Fault Tolerance Features
+## Next Steps
 
-### 5.1 Heartbeat Mechanism
-- Training app sends heartbeat every 2 seconds
-- Backend detects missed heartbeats (connection loss)
-- Automatic reconnection on failure
+### Implementation Tasks
 
-### 5.2 Buffering Strategy
-- Backend buffers data during dashboard disconnections
-- On reconnection, sends buffered data (catch-up)
-- Prevents data loss during network interruptions
+1. **Backend Implementation**
+   - [ ] Integrate gRPC server with training loop
+   - [ ] Implement telemetry collection
+   - [ ] Add image encoding (JPEG compression)
+   - [ ] Implement heartbeat mechanism
 
-### 5.3 Session Management
-- Session registration before streaming
-- Session ID tracking for multiple concurrent trainings
-- Graceful session termination
+2. **Dashboard Implementation**
+   - [ ] Create gRPC-Web or WebSocket client
+   - [ ] Build image grid component (16 tiles)
+   - [ ] Create real-time loss chart
+   - [ ] Display FPS counter
+   - [ ] Implement auto-reconnection
 
----
-
-## 6. Implementation Status
-
-### ✅ Completed
-- [x] Protocol design (telemetry.proto)
-- [x] gRPC tools installation
-- [x] Python stub generation (telemetry_pb2.py, telemetry_pb2_grpc.py)
-- [x] Documentation and design decisions
-
-### 🚧 Next Steps
-- [ ] Implement monitoring backend server
-- [ ] Implement training app telemetry client
-- [ ] Create dashboard WebSocket bridge
-- [ ] End-to-end testing
-- [ ] Performance optimization
-- [ ] Fault tolerance testing
+3. **Testing**
+   - [ ] End-to-end latency testing
+   - [ ] FPS consistency testing
+   - [ ] Fault tolerance testing (network failures)
+   - [ ] Load testing (sustained 60 FPS)
 
 ---
 
-## 7. gRPC Scope Clarification
+## Conclusion
 
-**What this proto defines (IN SCOPE):**
-- ✅ Training Application (gRPC Client) ↔ Monitoring Backend (gRPC Server)
-- ✅ TelemetryRequest messages: BatchData, EpochData, PerformanceData, etc.
-- ✅ TelemetryResponse messages: Acknowledgments, ControlCommands, Errors
-- ✅ Bidirectional streaming between training app and backend
-- ✅ Session management and heartbeat mechanism
+This simplified 2-tier architecture:
 
-**What this proto does NOT define (OUT OF SCOPE):**
-- ❌ Monitoring Backend → Dashboard communication (uses WebSocket/HTTP instead)
-- ❌ Dashboard frontend implementation
-- ❌ WebSocket message format (separate specification)
-- ❌ HTTP REST endpoints (if any)
+- **Combines training and monitoring** in a single Python backend
+- **Uses gRPC/WebSocket** for efficient real-time communication
+- **Meets all project requirements** (images, predictions, FPS, latency)
+- **Provides fault tolerance** through heartbeats and reconnection
+- **Scales efficiently** with binary protocol and compression
 
-**Why the Backend-Dashboard connection is NOT gRPC:**
-- Web browsers have limited gRPC support (requires gRPC-Web proxy)
-- WebSocket provides native browser support and simpler implementation
-- The monitoring backend acts as a protocol bridge: gRPC ↔ WebSocket
+The `telemetry.proto` file serves as the contract between the backend and dashboard, ensuring type-safe, efficient, and reliable communication for real-time ML training visualization.
 
 ---
 
-## 8. Conclusion
-
-This gRPC protocol design provides:
-
-1. **Efficient Communication**: Binary protocol with minimal overhead between training app and backend
-2. **Real-Time Performance**: Bidirectional streaming for <1.5s end-to-end latency
-3. **Fault Tolerance**: Heartbeat mechanism and reconnection support
-4. **Extensibility**: Easy to add new message types or fields
-5. **Type Safety**: Strongly-typed messages prevent runtime errors
-6. **Clear Separation**: Backend serves as a bridge between gRPC (training) and WebSocket (dashboard)
-
-The generated Python stubs (`telemetry_pb2.py` and `telemetry_pb2_grpc.py`) prove successful gRPC setup and provide the foundation for implementing both the training application gRPC client and monitoring backend gRPC server.
-
----
-
-## Appendix: File Locations
-
-- **Proto Definition**: `/packages/proto/telemetry.proto`
-- **Generated Message Classes**: `/packages/proto/telemetry_pb2.py` (9.3 KB)
-- **Generated Service Stubs**: `/packages/proto/telemetry_pb2_grpc.py` (5.3 KB)
-- **Design Documentation**: `/packages/proto/DESIGN_DECISIONS.md`
-- **Architecture Documentation**: `/packages/proto/ARCHITECTURE.md`
-
----
-
-**Generated on**: November 27, 2025
-**gRPC Version**: 1.76.0
-**Protocol Buffer Version**: 6.33.1
+**Files:**
+- Protocol Definition: `/packages/proto/telemetry.proto`
+- Generated Stubs: `/packages/proto/telemetry_pb2.py`, `telemetry_pb2_grpc.py`
+- Architecture Docs: `/packages/proto/ARCHITECTURE.md`
