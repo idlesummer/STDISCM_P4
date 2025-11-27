@@ -86,7 +86,7 @@ class Trainer:
         self,
         X_batch: torch.Tensor,
         y_batch: torch.Tensor,
-        epoch_idx: int,
+        epoch: int,
         batch: int
     ) -> float:
         """Train the model on a single batch and log the batch information."""
@@ -106,14 +106,14 @@ class Trainer:
 
         # Log batch details including ALL images, predictions, and probabilities
         self.logger.log_batch(
-            epoch_idx=epoch_idx,
+            iteration=(epoch * len(self.data_loader) + batch),  # Global iteration count
+            epoch=epoch,
             batch=batch,
+            images=X_batch,                                     # Log all images in the batch
             batch_loss=loss.item(),
-            iteration=(epoch_idx * len(self.data_loader) + batch),  # Global iteration count
-            images=X_batch,                                          # Log all images in the batch
-            predictions=predicted_labels.tolist(),                   # All predicted labels
-            probabilities=probabilities.tolist(),                    # All prediction probabilities
-            ground_truths=y_batch.tolist(),                          # All ground truth labels
+            predictions=predicted_labels.tolist(),              # All predicted labels
+            probabilities=probabilities.tolist(),               # All prediction probabilities
+            ground_truths=y_batch.tolist(),                     # All ground truth labels
         )
 
         return loss.item()  # Return the loss for the current batch

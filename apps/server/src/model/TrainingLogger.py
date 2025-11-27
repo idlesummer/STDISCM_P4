@@ -13,14 +13,14 @@ class TrainingLogger:
 
     def log_batch(
         self,
-        epoch_idx: int,
-        batch: int,
-        batch_loss: float,
         iteration: int,
-        images: torch.Tensor,         # All input image tensors in the batch
-        predictions: list[int],       # All predicted labels
+        epoch: int,
+        batch: int,
+        images: torch.Tensor,              # All input image tensors in the batch
+        batch_loss: float,
+        predictions: list[int],            # All predicted labels
         probabilities: list[list[float]],  # All prediction probabilities
-        ground_truths: list[int]      # All actual labels
+        ground_truths: list[int],          # All actual labels
     ) -> None:
         """Log a batch entry."""
 
@@ -30,13 +30,13 @@ class TrainingLogger:
         # Append the log entry with the necessary details
         self.batch_logs.append(BatchLogEntry(
             iteration=iteration,
+            epoch=epoch,
             batch=batch,
-            batch_loss=batch_loss,
-            epoch=epoch_idx,
             images=images_bytes,
             predictions=predictions,
             probabilities=probabilities,
-            ground_truths=ground_truths
+            ground_truths=ground_truths,
+            batch_loss=batch_loss,
         ))
 
 
