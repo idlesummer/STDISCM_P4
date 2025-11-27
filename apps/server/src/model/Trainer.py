@@ -104,17 +104,22 @@ class Trainer:
         probabilities = torch.softmax(scores, dim=1)
         predicted_labels = torch.argmax(probabilities, dim=1)
 
-        # Log batch details including ALL images, predictions, and probabilities
-        self.logger.log_batch(
-            iteration=(epoch * len(self.data_loader) + batch),  # Global iteration count
-            epoch=epoch,
+        # Convert all images to bytes
+        images_bytes = [self.logger.tensor_to_bytes(img) for img in X_batch]
+
+        # Create and log batch entry
+        from src.types.BatchLogEntry import BatchLogEntry
+        entry = BatchLogEntry(
+            iteration=(epoch * len(self.data_loader) + batch),
             batch=batch,
-            images=X_batch,                                     # Log all images in the batch
             batch_loss=loss.item(),
-            predictions=predicted_labels.tolist(),              # All predicted labels
-            probabilities=probabilities.tolist(),               # All prediction probabilities
-            ground_truths=y_batch.tolist(),                     # All ground truth labels
+            epoch=epoch,
+            images=images_bytes,
+            predictions=predicted_labels.tolist(),
+            probabilities=probabilities.tolist(),
+            ground_truths=y_batch.tolist(),
         )
+        self.logger.log_batch(entry)
 
         return loss.item()  # Return the loss for the current batch
 
