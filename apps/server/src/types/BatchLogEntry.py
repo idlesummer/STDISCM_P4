@@ -9,8 +9,7 @@ class BatchLogEntry:
     batch: int
     batch_loss: float
     epoch: int
-    epoch_loss: float
-    image: bytes                # Store image as bytes
-    predicted_label: int
-    probabilities: list[float]  # Store probabilities as a list
-    ground_truth: int
+    images: list[bytes]              # Store all images in batch as bytes
+    predictions: list[int]           # Store predictions for all images
+    probabilities: list[list[float]] # Store probabilities for all images
+    ground_truths: list[int]         # Store ground truths for all images

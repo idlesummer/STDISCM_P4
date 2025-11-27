@@ -12,33 +12,31 @@ class TrainingLogger:
 
 
     def log_batch(
-        self, 
-        epoch_idx: int, 
-        batch_idx: int, 
-        batch_loss: float, 
-        iteration: int, 
-        epoch_loss: float,
-        image: torch.Tensor,  # The input image tensor
-        predicted_label: int,  # The predicted label
-        probabilities: torch.Tensor,  # Prediction probabilities (softmax output)
-        ground_truth: int  # The actual label
+        self,
+        epoch_idx: int,
+        batch_idx: int,
+        batch_loss: float,
+        iteration: int,
+        images: torch.Tensor,         # All input image tensors in the batch
+        predictions: list[int],       # All predicted labels
+        probabilities: list[list[float]],  # All prediction probabilities
+        ground_truths: list[int]      # All actual labels
     ) -> None:
         """Log a batch entry."""
-        
-        # Convert image tensor to bytes (for logging)
-        image_bytes = self.tensor_to_bytes(image)
-        
+
+        # Convert all image tensors to bytes
+        images_bytes = [self.tensor_to_bytes(img) for img in images]
+
         # Append the log entry with the necessary details
         self.batch_logs.append(BatchLogEntry(
             iteration=iteration,
             batch=batch_idx,
             batch_loss=batch_loss,
             epoch=epoch_idx,
-            epoch_loss=epoch_loss,
-            image=image_bytes,
-            predicted_label=predicted_label,
-            probabilities=probabilities.tolist(),  # Convert tensor to list for storage
-            ground_truth=ground_truth
+            images=images_bytes,
+            predictions=predictions,
+            probabilities=probabilities,
+            ground_truths=ground_truths
         ))
 
 

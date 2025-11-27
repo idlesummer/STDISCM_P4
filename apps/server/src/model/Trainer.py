@@ -47,16 +47,22 @@ class Trainer:
 
     def train(self) -> None:
         """Train the model for a given number of epochs until convergence."""
-        
+
         # Initialize the flag
         self.is_converged = False
 
         # Start the training loop
         for epoch in range(self.max_epochs):
-            
-            # Run the epoch loop
-            epoch_loss = self.train_epoch()
-            
+
+            # Set model to training mode
+            self.model.train()
+            epoch_loss = 0
+
+            # Iterate through the DataLoader to get batches
+            for batch_idx, (X_batch, y_batch) in enumerate(self.data_loader):
+                batch_loss = self.train_batch(X_batch, y_batch, epoch, batch_idx)
+                epoch_loss += batch_loss
+
             # Calculate average loss for the epoch
             average_loss = epoch_loss / len(self.data_loader)
             self.losses.append(average_loss)
@@ -68,7 +74,7 @@ class Trainer:
             if abs(self.previous_loss - average_loss) < self.threshold:
                 self.is_converged = True
                 logger.info(f"Training converged at epoch {epoch + 1}.")
-                break            
+                break
             self.previous_loss = average_loss
 
         else:
@@ -76,69 +82,40 @@ class Trainer:
             logger.warning(f"Training finished after {self.max_epochs} epochs. Convergence threshold was not met.")
 
 
-    def train_epoch(self, epoch_idx: int) -> float:
-        """Train the model for one epoch."""
-        
-        self.model.train()
-        epoch_loss = 0
-
-        # Iterate through the DataLoader to get batches
-        for batch_idx, (X_batch, y_batch) in enumerate(self.data_loader):
-            batch_loss = self.train_batch(X_batch, y_batch, epoch_idx, batch_idx)
-            epoch_loss += batch_loss
-
-        # Return the total loss for the epoch
-        return epoch_loss  
-
-
-    # def train_batch(self, X_batch: torch.Tensor, y_batch: torch.Tensor) -> float:
-    #     """Train the model on a single batch."""
-        
-    #     # Ensure tensors are of the correct dtype for labels
-    #     X_batch = X_batch.float()                   # Ensure tensors are of the correct dtype for labels
-    #     y_batch = y_batch.long()                    # Ensure labels are in long type for classification
-        
-    #     self.optimizer.zero_grad()                  # Empty the gradients of the network
-    #     scores, probabilities = self.model(X_batch) # Forward propagation
-    #     loss = self.criterion(scores, y_batch)      # Compute the loss
-    #     loss.backward()                             # Backward propagation
-    #     self.optimizer.step()                       # Update parameters
-    #     return loss.item()                          # Return the loss for the current batch
-
     def train_batch(
-        self, 
-        X_batch: torch.Tensor, 
-        y_batch: torch.Tensor, 
-        epoch_idx: int, 
+        self,
+        X_batch: torch.Tensor,
+        y_batch: torch.Tensor,
+        epoch_idx: int,
         batch_idx: int
     ) -> float:
         """Train the model on a single batch and log the batch information."""
-        
+
         X_batch = X_batch.float()                       # Ensure tensors are of the correct dtype for labels
         y_batch = y_batch.long()                        # Ensure labels are in long type for classification
-        
+
         self.optimizer.zero_grad()                      # Empty the gradients of the network
         scores = self.model(X_batch)                    # Forward propagation
         loss = self.criterion(scores, y_batch)          # Compute the loss
         loss.backward()                                 # Backward propagation
         self.optimizer.step()                           # Update parameters
-                
-        probabilities = torch.softmax(scores, dim=1)                 # Get prediction probabilities and the predicted label
-        predicted_label = torch.argmax(probabilities, dim=1).item()  # Get predicted label (e.g., using argmax for classification)
-        
-        # Log batch details including image, prediction, and probability
+
+        # Get prediction probabilities and predicted labels for ALL images in batch
+        probabilities = torch.softmax(scores, dim=1)
+        predicted_labels = torch.argmax(probabilities, dim=1)
+
+        # Log batch details including ALL images, predictions, and probabilities
         self.logger.log_batch(
-            epoch_idx=epoch_idx, 
-            batch_idx=batch_idx, 
-            batch_loss=loss.item(), 
+            epoch_idx=epoch_idx,
+            batch_idx=batch_idx,
+            batch_loss=loss.item(),
             iteration=(epoch_idx * len(self.data_loader) + batch_idx),  # Global iteration count
-            epoch_loss=loss.item(),                                     # Averaging batch loss for epoch
-            image=X_batch[0],                                           # Log the first image in the batch
-            predicted_label=predicted_label,                            # Get predicted label
-            probabilities=probabilities[0].tolist(),                    # Get prediction probabilities
-            ground_truth=y_batch[0].item(),                             # Get the first ground truth label in the batch
+            images=X_batch,                                              # Log all images in the batch
+            predictions=predicted_labels.tolist(),                       # All predicted labels
+            probabilities=probabilities.tolist(),                        # All prediction probabilities
+            ground_truths=y_batch.tolist(),                              # All ground truth labels
         )
-        
+
         return loss.item()  # Return the loss for the current batch
 
 
