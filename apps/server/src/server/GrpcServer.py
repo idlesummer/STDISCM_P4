@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 class GrpcServer:
     """Higher-level abstraction for running a gRPC server."""
+    port: str
+    servicers: list[Servicer]
+    server: grpc.Server
 
     def __init__(self, port: str, servicers: list[Servicer]):
         """Initialize the gRPC server with a given port and services."""
