@@ -16,23 +16,27 @@ class Trainer:
     """Trainer for training a neural network."""
     
     def __init__(
-        self, 
-        model: nn.Module, 
-        optimizer: optim.Optimizer, 
+        self,
+        model: nn.Module,
+        optimizer: optim.Optimizer,
         criterion: nn.Module,
-        data_loader: DataLoader, 
-        max_epochs: int = 1000, 
-        threshold: float = 0.00005
+        data_loader: DataLoader,
+        max_epochs: int = 1000,
+        threshold: float = 0.00005,
+        max_images_per_batch: int = 4,
+        log_every_n_batches: int = 1
     ):
         """
         Initialize the trainer with the model, optimizer, loss function, and data loader.
-        
-        :param model:       The model being trained.
-        :param optimizer:   Optimizer (e.g., SGD, Adam).
-        :param criterion:   Loss function (e.g., CrossEntropyLoss).
-        :param data_loader: DataLoader for loading batches.
-        :param max_epochs:  Maximum number of epochs for training.
-        :param threshold:   Threshold for convergence. Training stops if the loss change is below this.
+
+        :param model:                The model being trained.
+        :param optimizer:            Optimizer (e.g., SGD, Adam).
+        :param criterion:            Loss function (e.g., CrossEntropyLoss).
+        :param data_loader:          DataLoader for loading batches.
+        :param max_epochs:           Maximum number of epochs for training.
+        :param threshold:            Threshold for convergence. Training stops if the loss change is below this.
+        :param max_images_per_batch: Maximum number of images to log per batch (reduces memory usage).
+        :param log_every_n_batches:  Log batch details every N batches (set higher to reduce memory usage).
         """
         self.model = model
         self.optimizer = optimizer
@@ -40,6 +44,8 @@ class Trainer:
         self.data_loader = data_loader
         self.max_epochs = max_epochs
         self.threshold = threshold
+        self.max_images_per_batch = max_images_per_batch
+        self.log_every_n_batches = log_every_n_batches
         self.losses = []
         self.previous_loss = float('inf')
         self.is_converged = False
@@ -95,24 +101,30 @@ class Trainer:
         loss.backward()                                 # Backward propagation
         self.optimizer.step()                           # Update parameters
 
-        # Get prediction probabilities and predicted labels for ALL images in batch
-        probabilities = torch.softmax(scores, dim=1)
-        predicted_labels = torch.argmax(probabilities, dim=1)
+        # Log batch details if this batch should be logged
+        if batch % self.log_every_n_batches == 0:
+            # Get prediction probabilities and predicted labels for ALL images in batch
+            probabilities = torch.softmax(scores, dim=1)
+            predicted_labels = torch.argmax(probabilities, dim=1)
 
-        # Convert all images to bytes
-        images_bytes = [self.logger.tensor_to_bytes(img) for img in X_batch]
+            # Subsample images to reduce memory usage
+            sample_size = min(self.max_images_per_batch, len(X_batch))
+            sample_indices = torch.randperm(len(X_batch))[:sample_size].tolist()
 
-        # Create and log batch entry
-        self.logger.log_batch(BatchLogEntry(
-            iteration=(epoch * len(self.data_loader) + batch),
-            batch=batch,
-            batch_loss=loss.item(),
-            epoch=epoch,
-            images=images_bytes,
-            predictions=predicted_labels.tolist(),
-            probabilities=probabilities.tolist(),
-            ground_truths=y_batch.tolist(),
-        ))
+            # Convert sampled images to bytes
+            images_bytes = [self.logger.tensor_to_bytes(X_batch[i]) for i in sample_indices]
+
+            # Create and log batch entry with sampled data
+            self.logger.log_batch(BatchLogEntry(
+                iteration=(epoch * len(self.data_loader) + batch),
+                batch=batch,
+                batch_loss=loss.item(),
+                epoch=epoch,
+                images=images_bytes,
+                predictions=[predicted_labels[i].item() for i in sample_indices],
+                probabilities=[probabilities[i].tolist() for i in sample_indices],
+                ground_truths=[y_batch[i].item() for i in sample_indices],
+            ))
 
         # Return the loss for the current batch
         return loss.item()
@@ -138,3 +150,13 @@ class Trainer:
         average_val_loss = total_loss / len(val_loader)
         logger.info(f"Validation Loss: {average_val_loss:.6f}")
         return average_val_loss
+
+
+    def get_logger(self) -> TrainingLogger:
+        """Access the training logger to retrieve batch logs."""
+        return self.logger
+
+
+    def reset_logger(self) -> None:
+        """Clear all logged batches and start fresh."""
+        self.logger = TrainingLogger()

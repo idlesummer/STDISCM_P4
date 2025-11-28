@@ -24,9 +24,16 @@ class TrainingLogger:
     @staticmethod
     def tensor_to_bytes(image: torch.Tensor) -> bytes:
         """Convert a tensor to a byte representation (JPEG format)."""
+        # Validate tensor dimensions
+        if image.dim() not in (2, 3):
+            raise ValueError(f"Expected 2D or 3D tensor, got {image.dim()}D tensor with shape {image.shape}")
+
         # Convert the tensor to a PIL image
         # MNIST images are grayscale (1, 28, 28) and normalized to [0, 1]
         image = image.squeeze()                                    # Remove all singleton dimensions
+
+        # Clamp values to [0, 1] to handle potential numerical instability
+        image = torch.clamp(image, 0, 1)
         image_np = (image * 255).cpu().numpy().astype('uint8')     # Scale to [0, 255] and convert to numpy
 
         # Convert to PIL Image (mode='L' for grayscale)

@@ -28,12 +28,19 @@ class MNISTDatasetManager:
 
         :param root: Directory to store the dataset
         :param batch_size: Batch size for the DataLoader
-        :param val_size: Proportion of the dataset to use for validation
-        :param test_size: Proportion of the dataset to use for testing
-        :param transform: Transformations to apply to the dataset (e.g., ToTensor, Normalize)
+        :param val_size: Proportion of the dataset to use for validation (must be < 1.0 when combined with test_size)
+        :param test_size: Proportion of the dataset to use for testing (must be < 1.0 when combined with val_size)
         :param seed: Random seed for reproducibility
         """
         
+        # Validate split proportions
+        if val_size < 0 or test_size < 0:
+            raise ValueError(f"val_size ({val_size}) and test_size ({test_size}) must be non-negative")
+        if val_size + test_size >= 1.0:
+            raise ValueError(
+                f"val_size ({val_size}) + test_size ({test_size}) = {val_size + test_size:.2f} must be < 1.0"
+            )
+
         self.root = root
         self.batch_size = batch_size
         self.val_size = val_size
@@ -64,7 +71,9 @@ class MNISTDatasetManager:
     def _train_test_val_split(self) -> tuple[Dataset, Dataset, Dataset]:
         """Splits the MNIST dataset deterministically into train, validation, and test sets."""
 
-        dataset_size = len(self.dataset)  # type: ignore
+        # Dataset is Sized, so len() is supported
+        assert hasattr(self.dataset, '__len__'), "Dataset must support len() operation"
+        dataset_size = len(self.dataset)
 
         # Calculate split sizes based on proportions
         # Calculate val and test first, then use remainder for train to ensure exact total
