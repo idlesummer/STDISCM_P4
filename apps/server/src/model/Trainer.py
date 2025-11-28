@@ -131,7 +131,7 @@ class Trainer:
                 X = X.float()   # Ensure input is in float32
                 y = y.long()    # Ensure labels are in long type
 
-                scores, _ = self.model(X)
+                scores = self.model(X)
                 loss = self.criterion(scores, y)
                 total_loss += loss.item()
 

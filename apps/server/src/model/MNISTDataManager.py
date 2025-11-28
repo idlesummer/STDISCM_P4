@@ -63,14 +63,15 @@ class MNISTDatasetManager:
 
     def _train_test_val_split(self) -> tuple[Dataset, Dataset, Dataset]:
         """Splits the MNIST dataset deterministically into train, validation, and test sets."""
-        
+
         dataset_size = len(self.dataset)  # type: ignore
 
         # Calculate split sizes based on proportions
-        train_size = int((1 - self.val_size - self.test_size) * dataset_size)
+        # Calculate val and test first, then use remainder for train to ensure exact total
         val_size = int(self.val_size * dataset_size)
         test_size = int(self.test_size * dataset_size)
-        
+        train_size = dataset_size - val_size - test_size
+
         # Perform the split using random_split with a deterministic generator
         train_dataset, val_dataset, test_dataset = random_split(self.dataset, [train_size, val_size, test_size])
         return train_dataset, val_dataset, test_dataset

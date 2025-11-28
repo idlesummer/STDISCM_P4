@@ -21,20 +21,20 @@ class TrainingLogger:
         return self.batch_logs
 
 
-    @staticmethod    
+    @staticmethod
     def tensor_to_bytes(image: torch.Tensor) -> bytes:
         """Convert a tensor to a byte representation (JPEG format)."""
         # Convert the tensor to a PIL image
-        image = image.squeeze(0)                        # Remove batch dimension if it's there
-        image = image.permute(1, 2, 0)                  # Convert from (C, H, W) to (H, W, C)
-        image_np = image.cpu().numpy().astype('uint8')  # Convert to numpy and ensure type
-        
-        # Convert to PIL Image
-        pil_image = Image.fromarray(image_np)           
-        
+        # MNIST images are grayscale (1, 28, 28) and normalized to [0, 1]
+        image = image.squeeze()                                    # Remove all singleton dimensions
+        image_np = (image * 255).cpu().numpy().astype('uint8')     # Scale to [0, 255] and convert to numpy
+
+        # Convert to PIL Image (mode='L' for grayscale)
+        pil_image = Image.fromarray(image_np, mode='L')
+
         # Save the image to a BytesIO object as JPEG
         with BytesIO() as byte_io:
             pil_image.save(byte_io, format="JPEG")
-            
+
             # Return the byte data
             return byte_io.getvalue()
