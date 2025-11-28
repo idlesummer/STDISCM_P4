@@ -23,20 +23,20 @@ class Trainer:
         data_loader: DataLoader,
         max_epochs: int = 1000,
         threshold: float = 0.00005,
-        max_images_per_batch: int = 4,
-        log_every_n_batches: int = 1
+        max_batch_size: int = 4,
+        log_freq: int = 1
     ):
         """
         Initialize the trainer with the model, optimizer, loss function, and data loader.
 
-        :param model:                The model being trained.
-        :param optimizer:            Optimizer (e.g., SGD, Adam).
-        :param criterion:            Loss function (e.g., CrossEntropyLoss).
-        :param data_loader:          DataLoader for loading batches.
-        :param max_epochs:           Maximum number of epochs for training.
-        :param threshold:            Threshold for convergence. Training stops if the loss change is below this.
-        :param max_images_per_batch: Maximum number of images to log per batch (reduces memory usage).
-        :param log_every_n_batches:  Log batch details every N batches (set higher to reduce memory usage).
+        :param model:          The model being trained.
+        :param optimizer:      Optimizer (e.g., SGD, Adam).
+        :param criterion:      Loss function (e.g., CrossEntropyLoss).
+        :param data_loader:    DataLoader for loading batches.
+        :param max_epochs:     Maximum number of epochs for training.
+        :param threshold:      Threshold for convergence. Training stops if the loss change is below this.
+        :param max_batch_size: Maximum number of images to log per batch (reduces memory usage).
+        :param log_freq:       Log batch details every N batches (set higher to reduce memory usage).
         """
         self.model = model
         self.optimizer = optimizer
@@ -44,8 +44,8 @@ class Trainer:
         self.data_loader = data_loader
         self.max_epochs = max_epochs
         self.threshold = threshold
-        self.max_images_per_batch = max_images_per_batch
-        self.log_every_n_batches = log_every_n_batches
+        self.max_batch_size = max_batch_size
+        self.log_freq = log_freq
         self.losses = []
         self.previous_loss = float('inf')
         self.is_converged = False
@@ -102,13 +102,13 @@ class Trainer:
         self.optimizer.step()                           # Update parameters
 
         # Log batch details if this batch should be logged
-        if batch % self.log_every_n_batches == 0:
+        if batch % self.log_freq == 0:
             # Get prediction probabilities and predicted labels for ALL images in batch
             probabilities = torch.softmax(scores, dim=1)
             predicted_labels = torch.argmax(probabilities, dim=1)
 
             # Subsample images to reduce memory usage
-            sample_size = min(self.max_images_per_batch, len(X_batch))
+            sample_size = min(self.max_batch_size, len(X_batch))
             sample_indices = torch.randperm(len(X_batch))[:sample_size].tolist()
 
             # Convert sampled images to bytes
