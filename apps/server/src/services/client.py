@@ -9,25 +9,14 @@ class Client:
     """A gRPC client that subscribes to training metrics from the server."""
 
     def __init__(self, target: str, timeout: float = 10.0) -> None:
-        """
-        Initialize training client.
-
-        Args:
-            target: gRPC server address (e.g., 'localhost:50051')
-            timeout: Request timeout in seconds
-        """
+        """Initialize training client."""
         self.channel = grpc.insecure_channel(target)
         self.stub = pbg.TrainingStub(self.channel)
         self.timeout = timeout
         print(f"📡 Client initialized (target={target}, timeout={timeout}s)")
 
     def status(self) -> pb.StatusRes:
-        """
-        Check server status (handshake).
-
-        Returns:
-            StatusRes containing status, message, and current epoch
-        """
+        """Check server status (handshake)."""
         print("🔍 Checking server status...")
         req = pb.StatusReq()
 
@@ -43,16 +32,7 @@ class Client:
             raise
 
     def start(self, num_epochs: int, confirmed: bool = True) -> pb.StartRes:
-        """
-        Start training on the server.
-
-        Args:
-            num_epochs: Number of epochs to train
-            confirmed: Must be True to actually start training
-
-        Returns:
-            StartRes containing status and message
-        """
+        """Start training on the server."""
         print(f"🎬 Starting training ({num_epochs} epochs, confirmed={confirmed})...")
         req = pb.StartReq(num_epochs=num_epochs, confirmed=confirmed)
 
@@ -66,12 +46,7 @@ class Client:
             raise
 
     def subscribe(self) -> Iterator[pb.TrainingMetric]:
-        """
-        Subscribe to streaming training metrics from the server.
-
-        Yields:
-            TrainingMetric objects as they arrive from the server
-        """
+        """Subscribe to streaming training metrics from the server."""
         print("📡 Subscribing to metrics stream...")
         req = pb.SubscribeReq()
 

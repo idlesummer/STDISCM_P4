@@ -3,13 +3,7 @@ from src.services.client import Client
 
 
 def subscribe_to_metrics(target: str = 'localhost:50051', num_epochs: int = 3) -> None:
-    """
-    Subscribe to the metrics stream and print incoming metrics.
-
-    Args:
-        target: gRPC server address
-        num_epochs: Number of epochs to train
-    """
+    """Subscribe to the metrics stream and print incoming metrics."""
     print(f"📡 Connecting to training server at {target}...\n")
 
     client = Client(target=target)
