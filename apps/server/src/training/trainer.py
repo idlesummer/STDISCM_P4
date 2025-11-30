@@ -5,7 +5,7 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
 
-class BatchMetric(TypedDict):
+class TrainingMetric(TypedDict):
     """Training metrics for a single batch."""
 
     epoch: int
@@ -23,10 +23,10 @@ class Trainer:
     criterion: nn.Module
     optimizer: Optimizer
     dataloader: DataLoader
-    tolerance: float                    # Minimum loss change required to continue training
-    converged: bool                     # True if training stopped due to convergence
-    metrics: Queue[BatchMetric | None]  # Queue of batch metrics for async consumption
-    update_interval: int                # Record metrics every N batches
+    tolerance: float                        # Minimum loss change required to continue training
+    converged: bool                         # True if training stopped due to convergence
+    metrics: Queue[TrainingMetric | None]   # Queue of batch metrics for async consumption
+    update_interval: int                    # Record metrics every N batches
   
     def __init__(self, model: nn.Module, criterion: nn.Module, 
                  optimizer: Optimizer, dataloader: DataLoader, 
@@ -43,7 +43,7 @@ class Trainer:
 
     def train_batch(self, inputs: Tensor, targets: Tensor) -> tuple[float, list[int], list[int]]:
         """Train on a single batch and return loss, predictions, and ground truths."""
-        
+    
         # Standard training step
         self.optimizer.zero_grad(set_to_none=True)
         outputs = self.model(inputs)
@@ -69,14 +69,14 @@ class Trainer:
             # Record at interval boundaries, and always for the final batch
             is_update_boundary = batch % self.update_interval == 0
             is_last_batch = batch == num_batches - 1
-            
+  
             if is_update_boundary or is_last_batch:
                 self.metrics.put({
                     'epoch': epoch,
                     'batch': batch,
                     'batch_size': int(inputs.shape[0]),
                     'batch_loss': batch_loss,
-                    'predictions': preds,
+                    'preds': preds,
                     'truths': truths,
                 })
 
@@ -85,11 +85,11 @@ class Trainer:
     def train(self, num_epochs: int) -> None:
         """Train for multiple epochs, stopping early if loss converges."""
         prev_loss = float('inf')
-    
+
         for epoch in range(num_epochs):
             epoch_loss = self.train_epoch(epoch)
             delta_loss = prev_loss - epoch_loss
-            
+
             # Stop if loss change is smaller than tolerance
             if abs(delta_loss) < self.tolerance: 
                 self.converged = True

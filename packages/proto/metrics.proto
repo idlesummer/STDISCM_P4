@@ -1,53 +1,59 @@
 syntax = "proto3";
 package services;
 
-message Metric {
-  int32 epoch       = 1;
-  int32 batch       = 2;
-  int32 batch_size  = 3;
-  float batch_loss  = 4;
-  repeated int32 predictions = 5;
-  repeated int32 truths      = 6;
+
+// =========================
+// ======== MESSAGES =======
+// =========================
+
+message TrainingMetric {
+  int32 epoch           = 1;
+  int32 batch           = 2;
+  int32 batch_size      = 3;
+  float batch_loss      = 4;
+  repeated int32 preds  = 5;
+  repeated int32 truths = 6;
 }
 
-message SubscribeRequest {
+message SubscribeReq {
   // Empty for now, can add filters later
 }
 
-message GetStatusRequest {
+message StatusReq {
   // Empty - just checking server status
 }
 
-message GetStatusReply {
-  string status = 1;        // "ready", "training", "idle"
-  string message = 2;       // Additional info
-  int32 current_epoch = 3;  // If training, which epoch (0 if not training)
+message StatusRes {
+  string status  = 1;   // "ready", "training", "idle"
+  string message = 2;   // Additional info
+  int32 epoch    = 3;   // If training, which epoch (0 if not training)
 }
 
-message StartTrainingRequest {
-  int32 num_epochs = 1;  // Number of epochs to train
-  bool confirmed = 2;    // Must be true to actually start
+message StartReq {
+  int32 num_epochs = 1; // Number of epochs to train
+  bool confirmed = 2;   // Must be true to actually start
 }
 
-message StartTrainingReply {
-  string status = 1;   // "started", "already_running", "not_confirmed"
-  string message = 2;  // Additional info
+message StartRes {
+  string status = 1;    // "started", "already_running", "not_confirmed"
+  string message = 2;   // Additional info
 }
 
-message PublishReply {
-  string status = 1; // e.g., "ok"
+message PublishRes {
+  string status = 1;    // e.g., "ok"
 }
 
-service Metrics {
+// =========================
+// ======== SERVICE ========
+// =========================
+
+service Training {
   // Check server status (handshake)
-  rpc GetStatus (GetStatusRequest) returns (GetStatusReply);
+  rpc Status (StatusReq) returns (StatusRes);
 
   // Start training with epochs and confirmation (stateless)
-  rpc StartTraining (StartTrainingRequest) returns (StartTrainingReply);
+  rpc Start (StartReq) returns (StartRes);
 
   // Client subscribes to stream of metrics from server
-  rpc Subscribe (SubscribeRequest) returns (stream Metric);
-
-  // Push model: client sends metrics to server (kept for compatibility)
-  rpc Publish (Metric) returns (PublishReply);
+  rpc Subscribe (SubscribeReq) returns (stream TrainingMetric);
 }

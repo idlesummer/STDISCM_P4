@@ -1,8 +1,11 @@
+from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
+from grpc import server as Server
 
-from src.services.metrics_servicer import serve
+from src.proto import metrics_pb2_grpc as pbg
+from src.services.servicer import Servicer
 from src.training.data_module import DataModule
 from src.training.model import Model
 from src.training.trainer import Trainer
@@ -31,27 +34,24 @@ def main() -> None:
     )
 
     # 4. Define training callback
-    def start_training(num_epochs: int) -> None:
+    def worker(num_epochs: int) -> None:
         """Callback that runs training in a background thread."""
-        def run():
-            print(f"🏋️  Starting training for {num_epochs} epochs...")
-            trainer.train(num_epochs=num_epochs)
-            print("✅ Training complete!")
-
-        Thread(target=run, daemon=False).start()
+        thread = Thread(target=trainer.train, args=(num_epochs,), daemon=True)
+        thread.start()
 
     # 5. Start gRPC server that streams metrics
-    server = serve(
-        metrics_queue=trainer.metrics,
-        on_training_start=start_training,
-        port=50051
-    )
+    port = 50051
+    queue = trainer.metrics
+    servicer = Servicer(queue, on_start=worker)             # Equivalent of router with set routes
+    server = Server(ThreadPoolExecutor(max_workers=10))     # Equivalent of app = express()
+    pbg.add_TrainingServicer_to_server(servicer, server)    # Equivalent of app.use(router)
+    server.add_insecure_port(f'[::]:{port}')                # |
+    server.start()                                          # Equivalent of app.listen(port, ...)
 
+    # 6. Keep server running until interrupted
     try:
-        # 6. Keep server running until interrupted
         server.wait_for_termination()
     except KeyboardInterrupt:
-        print("\n⏹️  Shutting down gRPC server...")
         server.stop(grace=2)
 
 

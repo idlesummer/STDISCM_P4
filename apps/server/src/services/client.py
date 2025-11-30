@@ -1,32 +1,39 @@
 from typing import Any, Mapping
 import grpc
-from src.proto import metrics_pb2 as pb
-from src.proto import metrics_pb2_grpc as pbg
+from src.proto.metrics_pb2_grpc import TrainingStub
+from src.proto.metrics_pb2 import TrainingMetric
 
 
-class MetricsClient:
-    """Thin synchronous gRPC client for publishing batch metrics."""
+class Client:
+    """A gRPC client that subscribes to training metrics from the server."""
 
     def __init__(self, target: str, timeout: float = 2.0) -> None:
-        self._channel = grpc.insecure_channel(target)
-        self._stub = pbg.MetricsStub(self._channel)
-        self._timeout = timeout
+        self.channel = grpc.insecure_channel(target)
+        self.stub = TrainingStub(self.channel)
+        self.timeout = timeout
 
     def publish(self, metric: Mapping[str, Any]) -> None:
-        req = pb.Metric(
+        
+        # Equivalent to const req = {...}
+        req = TrainingMetric(
             epoch=int(metric['epoch']),
             batch=int(metric['batch']),
             batch_size=int(metric['batch_size']),
             batch_loss=float(metric['batch_loss']),
-            predictions=[int(x) for x in metric['predictions']],
+            preds=[int(x) for x in metric['preds']],
             truths=[int(x) for x in metric['truths']],
         )
+
         # Best-effort: set deadline; ignore transient failures or log as needed.
         try:
-            self._stub.Publish(req, timeout=self._timeout)
+            # Equivalent to axios.post('/Publish', req)
+            self.stub.Publish(req, timeout=self.timeout)
+
         except grpc.RpcError:
             # TODO: add logging / metrics / retry policy if desired
             pass
 
+    
+    
     def close(self) -> None:
-        self._channel.close()
+        self.channel.close()
