@@ -76,7 +76,7 @@ class Trainer:
                     'batch': batch,
                     'batch_size': int(inputs.shape[0]),
                     'batch_loss': batch_loss,
-                    'preds': preds,
+                    'predictions': preds,
                     'truths': truths,
                 })
 

@@ -14,6 +14,8 @@ gen-py:
 		--grpc_python_out="$(ROOT)/apps/server/src/proto" \
 		--pyi_out="$(ROOT)/apps/server/src/proto" \
 		"$(ROOT)/packages/proto/metrics.proto"
+	@cd $(ROOT)/apps/server && \
+	uv run python -c "import sys; data = open('src/proto/metrics_pb2_grpc.py').read(); open('src/proto/metrics_pb2_grpc.py', 'w').write(data.replace('import metrics_pb2 as metrics__pb2', 'from . import metrics_pb2 as metrics__pb2'))"
 	@echo Python proto generation done
 
 gen-ts:
