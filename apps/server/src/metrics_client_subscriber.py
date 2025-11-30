@@ -21,19 +21,41 @@ def subscribe_to_metrics(target: str = 'localhost:50051', num_epochs: int = 3) -
         print("✅ Connected!")
 
         try:
-            # 1. Request training to start
-            print(f"🎬 Requesting training start ({num_epochs} epochs)...")
+            # Step 1: Request training preparation
+            print(f"\n🎬 Requesting training preparation ({num_epochs} epochs)...")
             start_request = metrics_pb2.StartTrainingRequest(num_epochs=num_epochs)
             start_reply = stub.StartTraining(start_request)
-            print(f"   Server response: {start_reply.status}")
+            print(f"   Status: {start_reply.status}")
+            print(f"   Message: {start_reply.message}")
 
-            if start_reply.status != "started":
+            if start_reply.status not in ["ready", "already_ready"]:
+                print("⚠️  Server not ready. Exiting.")
+                return
+
+            # Step 2: Ask user for confirmation
+            print("\n❓ Confirm to start training?")
+            confirmation = input("   Type 'yes' to proceed, anything else to cancel: ").strip().lower()
+
+            if confirmation != 'yes':
+                print("\n❌ Sending cancellation...")
+                confirm_request = metrics_pb2.ConfirmTrainingRequest(confirmed=False)
+                confirm_reply = stub.ConfirmTraining(confirm_request)
+                print(f"   Server response: {confirm_reply.status}")
+                return
+
+            # Step 3: Send confirmation
+            print("\n✅ Sending confirmation...")
+            confirm_request = metrics_pb2.ConfirmTrainingRequest(confirmed=True)
+            confirm_reply = stub.ConfirmTraining(confirm_request)
+            print(f"   Status: {confirm_reply.status}")
+
+            if confirm_reply.status != "started":
                 print("⚠️  Training not started. Exiting.")
                 return
 
-            print("📡 Subscribing to metrics stream...\n")
+            print("\n📡 Subscribing to metrics stream...\n")
 
-            # 2. Subscribe to the metrics stream
+            # Step 4: Subscribe to the metrics stream
             subscribe_request = metrics_pb2.SubscribeRequest()
             for metric in stub.Subscribe(subscribe_request):
                 print(f"📊 Received Metric:")

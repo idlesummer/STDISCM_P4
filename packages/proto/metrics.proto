@@ -19,7 +19,16 @@ message StartTrainingRequest {
 }
 
 message StartTrainingReply {
-  string status = 1;  // e.g., "started", "already_running"
+  string status = 1;  // e.g., "ready", "already_running"
+  string message = 2; // Additional info
+}
+
+message ConfirmTrainingRequest {
+  bool confirmed = 1;  // true to proceed, false to cancel
+}
+
+message ConfirmTrainingReply {
+  string status = 1;  // e.g., "started", "cancelled", "not_ready"
 }
 
 message PublishReply {
@@ -27,8 +36,11 @@ message PublishReply {
 }
 
 service Metrics {
-  // Client triggers training to start
+  // Step 1: Client requests training with parameters
   rpc StartTraining (StartTrainingRequest) returns (StartTrainingReply);
+
+  // Step 2: Client confirms to actually begin training
+  rpc ConfirmTraining (ConfirmTrainingRequest) returns (ConfirmTrainingReply);
 
   // Client subscribes to stream of metrics from server
   rpc Subscribe (SubscribeRequest) returns (stream Metric);

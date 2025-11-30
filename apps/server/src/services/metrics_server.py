@@ -25,25 +25,66 @@ class MetricsServicer(metrics_pb2_grpc.MetricsServicer):
         self.metrics_queue = metrics_queue
         self.on_training_start = on_training_start
         self.training_started = False
+        self.pending_num_epochs = None  # Stores num_epochs awaiting confirmation
 
     def StartTraining(
         self,
         request: metrics_pb2.StartTrainingRequest,
         context
     ) -> metrics_pb2.StartTrainingReply:
-        """Client requests to start training."""
+        """Client requests to prepare training (step 1 of 2)."""
         if self.training_started:
             print("⚠️  Training already running")
-            return metrics_pb2.StartTrainingReply(status="already_running")
+            return metrics_pb2.StartTrainingReply(
+                status="already_running",
+                message="Training is already in progress"
+            )
 
-        self.training_started = True
+        if self.pending_num_epochs is not None:
+            print("⚠️  Training already prepared, awaiting confirmation")
+            return metrics_pb2.StartTrainingReply(
+                status="already_ready",
+                message=f"Training ready with {self.pending_num_epochs} epochs. Send confirmation to start."
+            )
+
         num_epochs = request.num_epochs if request.num_epochs > 0 else 3
-        print(f"🎬 Client requested training start: {num_epochs} epochs")
+        self.pending_num_epochs = num_epochs
+        print(f"📋 Training prepared: {num_epochs} epochs")
+        print("⏸️  Waiting for client confirmation...")
 
-        # Trigger training in background thread
+        return metrics_pb2.StartTrainingReply(
+            status="ready",
+            message=f"Ready to train for {num_epochs} epochs. Send confirmation to proceed."
+        )
+
+    def ConfirmTraining(
+        self,
+        request: metrics_pb2.ConfirmTrainingRequest,
+        context
+    ) -> metrics_pb2.ConfirmTrainingReply:
+        """Client confirms to actually start training (step 2 of 2)."""
+        if self.training_started:
+            print("⚠️  Training already running")
+            return metrics_pb2.ConfirmTrainingReply(status="already_running")
+
+        if self.pending_num_epochs is None:
+            print("⚠️  No training prepared. Call StartTraining first.")
+            return metrics_pb2.ConfirmTrainingReply(status="not_ready")
+
+        if not request.confirmed:
+            print("❌ Client cancelled training")
+            self.pending_num_epochs = None
+            return metrics_pb2.ConfirmTrainingReply(status="cancelled")
+
+        # Start training
+        num_epochs = self.pending_num_epochs
+        self.pending_num_epochs = None
+        self.training_started = True
+
+        print(f"✅ Client confirmed! Starting training: {num_epochs} epochs")
         self.on_training_start(num_epochs)
 
-        return metrics_pb2.StartTrainingReply(status="started")
+        return metrics_pb2.ConfirmTrainingReply(status="started")
 
     def Subscribe(
         self,
