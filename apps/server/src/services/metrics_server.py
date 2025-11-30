@@ -25,14 +25,34 @@ class MetricsServicer(metrics_pb2_grpc.MetricsServicer):
         self.metrics_queue = metrics_queue
         self.on_training_start = on_training_start
         self.training_started = False
-        self.pending_num_epochs = None  # Stores num_epochs awaiting confirmation
+        self.current_epoch = 0
+
+    def GetStatus(
+        self,
+        request: metrics_pb2.GetStatusRequest,
+        context
+    ) -> metrics_pb2.GetStatusReply:
+        """Check server status (handshake/health check)."""
+        if self.training_started:
+            return metrics_pb2.GetStatusReply(
+                status="training",
+                message="Training in progress",
+                current_epoch=self.current_epoch
+            )
+        else:
+            return metrics_pb2.GetStatusReply(
+                status="ready",
+                message="Server ready to start training",
+                current_epoch=0
+            )
 
     def StartTraining(
         self,
         request: metrics_pb2.StartTrainingRequest,
         context
     ) -> metrics_pb2.StartTrainingReply:
-        """Client requests to prepare training (step 1 of 2)."""
+        """Start training with epochs and confirmation (stateless)."""
+        # Check if already training
         if self.training_started:
             print("⚠️  Training already running")
             return metrics_pb2.StartTrainingReply(
@@ -40,51 +60,26 @@ class MetricsServicer(metrics_pb2_grpc.MetricsServicer):
                 message="Training is already in progress"
             )
 
-        if self.pending_num_epochs is not None:
-            print("⚠️  Training already prepared, awaiting confirmation")
+        # Require confirmation
+        if not request.confirmed:
+            print("⚠️  Training request received but not confirmed")
             return metrics_pb2.StartTrainingReply(
-                status="already_ready",
-                message=f"Training ready with {self.pending_num_epochs} epochs. Send confirmation to start."
+                status="not_confirmed",
+                message="Set confirmed=true to start training"
             )
 
-        num_epochs = request.num_epochs if request.num_epochs > 0 else 3
-        self.pending_num_epochs = num_epochs
-        print(f"📋 Training prepared: {num_epochs} epochs")
-        print("⏸️  Waiting for client confirmation...")
-
-        return metrics_pb2.StartTrainingReply(
-            status="ready",
-            message=f"Ready to train for {num_epochs} epochs. Send confirmation to proceed."
-        )
-
-    def ConfirmTraining(
-        self,
-        request: metrics_pb2.ConfirmTrainingRequest,
-        context
-    ) -> metrics_pb2.ConfirmTrainingReply:
-        """Client confirms to actually start training (step 2 of 2)."""
-        if self.training_started:
-            print("⚠️  Training already running")
-            return metrics_pb2.ConfirmTrainingReply(status="already_running")
-
-        if self.pending_num_epochs is None:
-            print("⚠️  No training prepared. Call StartTraining first.")
-            return metrics_pb2.ConfirmTrainingReply(status="not_ready")
-
-        if not request.confirmed:
-            print("❌ Client cancelled training")
-            self.pending_num_epochs = None
-            return metrics_pb2.ConfirmTrainingReply(status="cancelled")
-
         # Start training
-        num_epochs = self.pending_num_epochs
-        self.pending_num_epochs = None
+        num_epochs = request.num_epochs if request.num_epochs > 0 else 3
         self.training_started = True
+        self.current_epoch = 0
 
-        print(f"✅ Client confirmed! Starting training: {num_epochs} epochs")
+        print(f"✅ Starting training: {num_epochs} epochs")
         self.on_training_start(num_epochs)
 
-        return metrics_pb2.ConfirmTrainingReply(status="started")
+        return metrics_pb2.StartTrainingReply(
+            status="started",
+            message=f"Training started for {num_epochs} epochs"
+        )
 
     def Subscribe(
         self,
@@ -150,5 +145,5 @@ def serve(
     server.start()
 
     print(f"🚀 Metrics gRPC Server listening on port {port}")
-    print("⏸️  Waiting for client to start training...")
+    print("✅ Server ready. Waiting for client connection...")
     return server

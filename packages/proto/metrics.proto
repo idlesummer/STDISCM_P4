@@ -14,21 +14,24 @@ message SubscribeRequest {
   // Empty for now, can add filters later
 }
 
+message GetStatusRequest {
+  // Empty - just checking server status
+}
+
+message GetStatusReply {
+  string status = 1;        // "ready", "training", "idle"
+  string message = 2;       // Additional info
+  int32 current_epoch = 3;  // If training, which epoch (0 if not training)
+}
+
 message StartTrainingRequest {
   int32 num_epochs = 1;  // Number of epochs to train
+  bool confirmed = 2;    // Must be true to actually start
 }
 
 message StartTrainingReply {
-  string status = 1;  // e.g., "ready", "already_running"
-  string message = 2; // Additional info
-}
-
-message ConfirmTrainingRequest {
-  bool confirmed = 1;  // true to proceed, false to cancel
-}
-
-message ConfirmTrainingReply {
-  string status = 1;  // e.g., "started", "cancelled", "not_ready"
+  string status = 1;   // "started", "already_running", "not_confirmed"
+  string message = 2;  // Additional info
 }
 
 message PublishReply {
@@ -36,11 +39,11 @@ message PublishReply {
 }
 
 service Metrics {
-  // Step 1: Client requests training with parameters
-  rpc StartTraining (StartTrainingRequest) returns (StartTrainingReply);
+  // Check server status (handshake)
+  rpc GetStatus (GetStatusRequest) returns (GetStatusReply);
 
-  // Step 2: Client confirms to actually begin training
-  rpc ConfirmTraining (ConfirmTrainingRequest) returns (ConfirmTrainingReply);
+  // Start training with epochs and confirmation (stateless)
+  rpc StartTraining (StartTrainingRequest) returns (StartTrainingReply);
 
   // Client subscribes to stream of metrics from server
   rpc Subscribe (SubscribeRequest) returns (stream Metric);

@@ -21,35 +21,41 @@ def subscribe_to_metrics(target: str = 'localhost:50051', num_epochs: int = 3) -
         print("✅ Connected!")
 
         try:
-            # Step 1: Request training preparation
-            print(f"\n🎬 Requesting training preparation ({num_epochs} epochs)...")
-            start_request = metrics_pb2.StartTrainingRequest(num_epochs=num_epochs)
-            start_reply = stub.StartTraining(start_request)
-            print(f"   Status: {start_reply.status}")
-            print(f"   Message: {start_reply.message}")
+            # Step 1: Check server status (handshake)
+            print("\n🔍 Checking server status...")
+            status_request = metrics_pb2.GetStatusRequest()
+            status_reply = stub.GetStatus(status_request)
+            print(f"   Status: {status_reply.status}")
+            print(f"   Message: {status_reply.message}")
 
-            if start_reply.status not in ["ready", "already_ready"]:
+            if status_reply.status == "training":
+                print(f"   Currently at epoch: {status_reply.current_epoch}")
+                print("⚠️  Server is already training. Exiting.")
+                return
+
+            if status_reply.status != "ready":
                 print("⚠️  Server not ready. Exiting.")
                 return
 
             # Step 2: Ask user for confirmation
-            print("\n❓ Confirm to start training?")
-            confirmation = input("   Type 'yes' to proceed, anything else to cancel: ").strip().lower()
+            print(f"\n❓ Start training with {num_epochs} epochs?")
+            confirmation = input("   Type 'yes' to proceed: ").strip().lower()
 
             if confirmation != 'yes':
-                print("\n❌ Sending cancellation...")
-                confirm_request = metrics_pb2.ConfirmTrainingRequest(confirmed=False)
-                confirm_reply = stub.ConfirmTraining(confirm_request)
-                print(f"   Server response: {confirm_reply.status}")
+                print("❌ Training cancelled by user.")
                 return
 
-            # Step 3: Send confirmation
-            print("\n✅ Sending confirmation...")
-            confirm_request = metrics_pb2.ConfirmTrainingRequest(confirmed=True)
-            confirm_reply = stub.ConfirmTraining(confirm_request)
-            print(f"   Status: {confirm_reply.status}")
+            # Step 3: Start training with confirmation (stateless - all in one call)
+            print(f"\n✅ Starting training ({num_epochs} epochs)...")
+            start_request = metrics_pb2.StartTrainingRequest(
+                num_epochs=num_epochs,
+                confirmed=True
+            )
+            start_reply = stub.StartTraining(start_request)
+            print(f"   Status: {start_reply.status}")
+            print(f"   Message: {start_reply.message}")
 
-            if confirm_reply.status != "started":
+            if start_reply.status != "started":
                 print("⚠️  Training not started. Exiting.")
                 return
 
