@@ -1,65 +1,214 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useCallback, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+
+type TrainingMetric = {
+  epoch: number
+  batch: number
+  batch_size: number
+  batch_loss: number
+  preds: number[]
+  truths: number[]
+}
+
+type LossDataPoint = {
+  batch: number
+  loss: number
+}
+
+export default function Dashboard() {
+  const [isTraining, setIsTraining] = useState(false)
+  const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
+  const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
+
+  // Simulate training data for demonstration
+  useEffect(() => {
+    if (!isTraining) return
+
+    const interval = setInterval(() => {
+      const batch = lossHistory.length + 1
+      const loss = Math.max(0.1, 2.5 * Math.exp(-batch * 0.05) + Math.random() * 0.2)
+
+      const metric: TrainingMetric = {
+        epoch: Math.floor(batch / 10) + 1,
+        batch,
+        batch_size: 32,
+        batch_loss: loss,
+        preds: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
+        truths: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
+      }
+
+      setCurrentMetric(metric)
+      setLossHistory(prev => [...prev, { batch, loss }])
+
+      // Stop after 50 batches
+      if (batch >= 50) {
+        setIsTraining(false)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [isTraining, lossHistory.length])
+
+  const handleStart = useCallback(() => {
+    setIsTraining(true)
+    setLossHistory([])
+    setCurrentMetric(null)
+  }, [])
+
+  const handleStop = useCallback(() => {
+    setIsTraining(false)
+  }, [])
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-background p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Training Dashboard</h1>
+            <p className="text-muted-foreground">
+              Monitor real-time training metrics and model predictions
+            </p>
+          </div>
+          <Button
+            onClick={isTraining ? handleStop : handleStart}
+            variant={isTraining ? 'destructive' : 'default'}
+            size="lg"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {isTraining ? 'Stop Training' : 'Start Training'}
+          </Button>
         </div>
-      </main>
+
+        {/* Training Loss Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Training Loss</CardTitle>
+            <CardDescription>Batch loss over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={{
+                loss: {
+                  label: 'Loss',
+                  color: 'hsl(var(--chart-1))',
+                },
+              }}
+              className="h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={lossHistory}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="batch"
+                    label={{ value: 'Batch', position: 'insideBottom', offset: -5 }}
+                    className="text-xs"
+                  />
+                  <YAxis
+                    label={{ value: 'Loss', angle: -90, position: 'insideLeft' }}
+                    className="text-xs"
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line
+                    type="monotone"
+                    dataKey="loss"
+                    stroke="hsl(var(--chart-1))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Current Batch Info */}
+        {currentMetric && (
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Epoch</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetric.epoch}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Batch</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetric.batch}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Batch Size</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetric.batch_size}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Batch Loss</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{currentMetric.batch_loss.toFixed(4)}</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Predictions Grid */}
+        {currentMetric && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Batch Predictions</CardTitle>
+              <CardDescription>
+                Showing {Math.min(16, currentMetric.preds.length)} samples from batch
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-8 gap-4">
+                {currentMetric.preds.slice(0, 16).map((pred, idx) => (
+                  <div key={idx} className="space-y-2">
+                    {/* Placeholder for image - would show actual MNIST digit */}
+                    <div className="aspect-square rounded-md bg-muted flex items-center justify-center text-4xl font-bold text-muted-foreground">
+                      {currentMetric.truths[idx]}
+                    </div>
+                    {/* Prediction and Ground Truth */}
+                    <div className="text-center space-y-1">
+                      <div className="text-xs text-muted-foreground">Pred</div>
+                      <div className={`text-sm font-bold ${pred === currentMetric.truths[idx] ? 'text-green-600' : 'text-red-600'}`}>
+                        {pred}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Truth</div>
+                      <div className="text-sm font-medium">{currentMetric.truths[idx]}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Placeholder when not training */}
+        {!currentMetric && !isTraining && (
+          <Card>
+            <CardContent className="flex items-center justify-center py-16">
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground">No training data available</p>
+                <p className="text-sm text-muted-foreground">Click "Start Training" to begin</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
-  );
+  )
 }
