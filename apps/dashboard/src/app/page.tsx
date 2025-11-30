@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 
 type TrainingMetric = {
   epoch: number
@@ -91,185 +91,239 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-screen-2xl px-4 py-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto max-w-screen-2xl px-8 py-6">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between border-b pb-3">
+        <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Training Dashboard</h1>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Real-time training metrics and model performance monitoring
-            </p>
+            <h1 className="text-3xl font-semibold text-gray-900">Dashboard</h1>
           </div>
           <Button
             onClick={isTraining ? handleStop : handleStart}
             variant={isTraining ? 'destructive' : 'default'}
-            className="min-w-[120px]"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             {isTraining ? 'Stop Training' : 'Start Training'}
           </Button>
         </div>
 
         {/* Metrics Overview */}
-        <div className="mb-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <Card className="border-l-4 border-l-blue-500">
+        <div className="mb-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <Card className="border-0 shadow-sm bg-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">FPS</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">FPS</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold tabular-nums">{fps}</div>
-              <p className="mt-0.5 text-xs text-muted-foreground">Frames per second</p>
+              <div className="text-3xl font-semibold text-gray-900 tabular-nums">{fps}</div>
+              <p className="mt-1 text-xs text-gray-500">frames per second</p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-purple-500">
+          <Card className="border-0 shadow-sm bg-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Epoch</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">Epoch</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-3xl font-semibold text-gray-900 tabular-nums">
                 {currentMetric?.epoch ?? '—'}
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">Current epoch</p>
+              <p className="mt-1 text-xs text-gray-500">current epoch</p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-green-500">
+          <Card className="border-0 shadow-sm bg-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Batch</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">Batch</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-3xl font-semibold text-gray-900 tabular-nums">
                 {currentMetric?.batch ?? '—'}
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">Current batch</p>
+              <p className="mt-1 text-xs text-gray-500">current batch</p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-orange-500">
+          <Card className="border-0 shadow-sm bg-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Batch Size</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">Batch Size</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-3xl font-semibold text-gray-900 tabular-nums">
                 {currentMetric?.batch_size ?? '—'}
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">Samples per batch</p>
+              <p className="mt-1 text-xs text-gray-500">samples per batch</p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-red-500">
+          <Card className="border-0 shadow-sm bg-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Loss</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-medium text-gray-500 uppercase tracking-wide">Loss</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-3xl font-semibold text-gray-900 tabular-nums">
                 {currentMetric?.batch_loss.toFixed(4) ?? '—'}
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">Current batch loss</p>
+              <p className="mt-1 text-xs text-gray-500">current batch loss</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Training Loss Chart */}
-        <Card className="mb-3">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Training Loss</CardTitle>
-            <CardDescription className="text-xs">Real-time batch loss progression</CardDescription>
+        <Card className="mb-6 border-0 shadow-sm bg-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">Training Loss</CardTitle>
           </CardHeader>
-          <CardContent className="pb-2">
+          <CardContent className="pb-4">
             <ChartContainer
               config={{
                 loss: {
                   label: 'Loss',
-                  color: '#3b82f6',
+                  color: '#6366f1',
                 },
               }}
-              className="h-[220px] w-full"
+              className="h-[280px] w-full"
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={lossHistory} margin={{ top: 5, right: 5, bottom: 15, left: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-zinc-800" opacity={0.5} />
+                <AreaChart data={lossHistory} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                  <defs>
+                    <linearGradient id="colorLoss" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.05}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
                   <XAxis
                     dataKey="batch"
-                    label={{ value: 'Batch', position: 'insideBottom', offset: -10 }}
-                    tick={{ fontSize: 11 }}
-                    stroke="#6b7280"
+                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                    stroke="#e5e7eb"
+                    tickLine={false}
                   />
                   <YAxis
-                    label={{ value: 'Loss', angle: -90, position: 'insideLeft' }}
-                    tick={{ fontSize: 11 }}
-                    stroke="#6b7280"
+                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                    stroke="#e5e7eb"
+                    tickLine={false}
+                    axisLine={false}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="loss"
-                    stroke="#3b82f6"
-                    strokeWidth={2.5}
-                    dot={false}
+                    stroke="#6366f1"
+                    strokeWidth={2}
+                    fill="url(#colorLoss)"
                     animationDuration={300}
-                    isAnimationActive={true}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        {/* Predictions Grid */}
+        {/* Predictions - Two Column Layout */}
         {currentMetric && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Model Predictions</CardTitle>
-              <CardDescription className="text-xs">
-                Displaying {Math.min(16, currentMetric.preds.length)} samples from current batch
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
-                {currentMetric.preds.slice(0, 16).map((pred, idx) => {
-                  const isCorrect = pred === currentMetric.truths[idx]
-                  return (
-                    <div key={idx} className="flex flex-col items-center space-y-2">
-                      {/* Placeholder for MNIST image */}
-                      <div className="relative aspect-square w-full overflow-hidden rounded-md border border-border bg-muted shadow-sm transition-all hover:shadow-md">
-                        <div className="flex h-full items-center justify-center text-3xl font-bold text-muted-foreground/40">
-                          {currentMetric.truths[idx]}
-                        </div>
-                      </div>
-
-                      {/* Prediction vs Truth */}
-                      <div className="flex w-full flex-col items-center gap-0.5">
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                          <span className="text-[10px]">Pred:</span>
-                          <span className={`rounded px-1 py-0.5 text-xs font-bold tabular-nums ${
-                            isCorrect
-                              ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400'
-                              : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400'
-                          }`}>
-                            {pred}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Left Column - First 8 predictions */}
+            <Card className="border-0 shadow-sm bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (1-8)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {currentMetric.preds.slice(0, 8).map((pred, idx) => {
+                    const isCorrect = pred === currentMetric.truths[idx]
+                    return (
+                      <div key={idx} className="flex items-center gap-4 py-2">
+                        {/* Image placeholder */}
+                        <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                          <span className="text-3xl font-bold text-gray-400">
+                            {currentMetric.truths[idx]}
                           </span>
                         </div>
-                        <div className="text-[10px] text-muted-foreground">
-                          Truth: <span className="font-semibold tabular-nums">{currentMetric.truths[idx]}</span>
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium text-gray-900">Sample {idx + 1}</p>
+                          </div>
+                          <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
+                            <span>Ground Truth: <span className="font-semibold text-gray-700">{currentMetric.truths[idx]}</span></span>
+                          </div>
+                        </div>
+                        {/* Prediction Badge */}
+                        <div className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-semibold ${
+                          isCorrect
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-red-50 text-red-700'
+                        }`}>
+                          Pred: {pred}
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Right Column - Last 8 predictions */}
+            <Card className="border-0 shadow-sm bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (9-16)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {currentMetric.preds.slice(8, 16).map((pred, idx) => {
+                    const actualIdx = idx + 8
+                    const isCorrect = pred === currentMetric.truths[actualIdx]
+                    return (
+                      <div key={actualIdx} className="flex items-center gap-4 py-2">
+                        {/* Image placeholder */}
+                        <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                          <span className="text-3xl font-bold text-gray-400">
+                            {currentMetric.truths[actualIdx]}
+                          </span>
+                        </div>
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium text-gray-900">Sample {actualIdx + 1}</p>
+                          </div>
+                          <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
+                            <span>Ground Truth: <span className="font-semibold text-gray-700">{currentMetric.truths[actualIdx]}</span></span>
+                          </div>
+                        </div>
+                        {/* Prediction Badge */}
+                        <div className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-semibold ${
+                          isCorrect
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-red-50 text-red-700'
+                        }`}>
+                          Pred: {pred}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* Empty State */}
         {!currentMetric && !isTraining && (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="rounded-full bg-muted p-3 mb-3">
+          <Card className="border-0 shadow-sm bg-white">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="rounded-full bg-gray-100 p-4 mb-4">
                 <svg
-                  className="h-6 w-6 text-muted-foreground"
+                  className="h-8 w-8 text-gray-400"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -282,8 +336,8 @@ export default function Dashboard() {
                   />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-muted-foreground">No training session active</p>
-              <p className="mt-1 text-xs text-muted-foreground">Click "Start Training" to begin monitoring</p>
+              <p className="text-base font-medium text-gray-900">No training session active</p>
+              <p className="mt-1 text-sm text-gray-500">Click "Start Training" to begin monitoring</p>
             </CardContent>
           </Card>
         )}
