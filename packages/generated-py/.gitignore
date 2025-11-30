@@ -1,13 +1,9 @@
+# Generated code
+generated/
+
 # Python bytecode cache
 __pycache__/
 *.py[cod]
-
-# Virtual environments
-venv/
-.venv/
-env/
-.env/
-ENV/
 
 # Build artifacts
 *.egg-info/
