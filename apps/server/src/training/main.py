@@ -1,13 +1,10 @@
-import torch
 import threading
+import torch
 from torch import nn
-from torch.optim import SGD  # Tutorial uses SGD
-from collections import defaultdict
-
-from src.model.DataModule import DataModule
-from src.model.Model import Model
-from src.model.Trainer import Trainer
-
+from torch.optim import SGD
+from src.training.data_module import DataModule
+from src.training.model import Model
+from src.training.trainer import Trainer
 
 
 def metric_consumer(trainer):
