@@ -10,10 +10,18 @@ message Metric {
   repeated int32 truths      = 6;
 }
 
+message SubscribeRequest {
+  // Empty for now, can add filters later
+}
+
 message PublishReply {
   string status = 1; // e.g., "ok"
 }
 
 service Metrics {
+  // Push model: client sends metrics to server
   rpc Publish (Metric) returns (PublishReply);
+
+  // Pull model: client subscribes to stream of metrics from server
+  rpc Subscribe (SubscribeRequest) returns (stream Metric);
 }
