@@ -28,7 +28,6 @@ class Trainer:
     metrics: Queue[BatchMetric | None]  # Queue of batch metrics for async consumption
     update_interval: int                # Record metrics every N batches
   
-  
     def __init__(self, model: nn.Module, criterion: nn.Module, 
                  optimizer: Optimizer, dataloader: DataLoader, 
                  tolerance: float = 0.001, update_interval: int = 1) -> None:
@@ -41,7 +40,6 @@ class Trainer:
         self.converged = False
         self.metrics = Queue()
         self.update_interval = update_interval
-
 
     def train_batch(self, inputs: Tensor, targets: Tensor) -> tuple[float, list[int], list[int]]:
         """Train on a single batch and return loss, predictions, and ground truths."""
@@ -57,7 +55,6 @@ class Trainer:
         preds = outputs.argmax(dim=-1).tolist()
         truths = targets.tolist()
         return loss.item(), preds, truths
-
 
     def train_epoch(self, epoch: int) -> float:
         """Train for one epoch and return average loss."""
@@ -85,10 +82,8 @@ class Trainer:
 
         return running_loss / len(self.dataloader)
 
-
     def train(self, num_epochs: int) -> None:
         """Train for multiple epochs, stopping early if loss converges."""
-        
         prev_loss = float('inf')
     
         for epoch in range(num_epochs):

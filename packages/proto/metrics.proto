@@ -1,0 +1,19 @@
+syntax = "proto3";
+package services;
+
+message Metric {
+  int32 epoch       = 1;
+  int32 batch       = 2;
+  int32 batch_size  = 3;
+  float batch_loss  = 4;
+  repeated int32 predictions = 5;
+  repeated int32 truths      = 6;
+}
+
+message PublishReply {
+  string status = 1; // e.g., "ok"
+}
+
+service Metrics {
+  rpc Publish (Metric) returns (PublishReply);
+}

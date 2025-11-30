@@ -10,14 +10,12 @@ class Model(nn.Module):
     fc3: nn.Linear     # fully connected: 50 → 10 (logits)
     relu: nn.ReLU      # ReLU non-linearity
     
-    
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(28**2, 100)   # first linear layer
         self.fc2 = nn.Linear(100, 50)      # second linear layer
         self.fc3 = nn.Linear(50, 10)       # output layer (10 classes)
         self.relu = nn.ReLU()              # activation function
-    
     
     def forward(self, x: Tensor) -> Tensor:
         x = x.view(-1, 28**2)              # flatten 28×28 → 784
