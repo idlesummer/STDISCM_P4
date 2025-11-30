@@ -33,13 +33,17 @@ class MetricsServicer(metrics_pb2_grpc.MetricsServicer):
         context
     ) -> metrics_pb2.GetStatusReply:
         """Check server status (handshake/health check)."""
+        print("🤝 Client connected and checking status")
+
         if self.training_started:
+            print(f"   → Status: training (epoch {self.current_epoch})")
             return metrics_pb2.GetStatusReply(
                 status="training",
                 message="Training in progress",
                 current_epoch=self.current_epoch
             )
         else:
+            print("   → Status: ready")
             return metrics_pb2.GetStatusReply(
                 status="ready",
                 message="Server ready to start training",
