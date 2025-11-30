@@ -1,9 +1,0 @@
-pyproject.toml
-generated/__init__.py
-generated/metrics_pb2.py
-generated/metrics_pb2.pyi
-generated/metrics_pb2_grpc.py
-generated.egg-info/PKG-INFO
-generated.egg-info/SOURCES.txt
-generated.egg-info/dependency_links.txt
-generated.egg-info/top_level.txt
