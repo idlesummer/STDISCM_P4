@@ -14,14 +14,25 @@ message SubscribeRequest {
   // Empty for now, can add filters later
 }
 
+message StartTrainingRequest {
+  int32 num_epochs = 1;  // Number of epochs to train
+}
+
+message StartTrainingReply {
+  string status = 1;  // e.g., "started", "already_running"
+}
+
 message PublishReply {
   string status = 1; // e.g., "ok"
 }
 
 service Metrics {
-  // Push model: client sends metrics to server
-  rpc Publish (Metric) returns (PublishReply);
+  // Client triggers training to start
+  rpc StartTraining (StartTrainingRequest) returns (StartTrainingReply);
 
-  // Pull model: client subscribes to stream of metrics from server
+  // Client subscribes to stream of metrics from server
   rpc Subscribe (SubscribeRequest) returns (stream Metric);
+
+  // Push model: client sends metrics to server (kept for compatibility)
+  rpc Publish (Metric) returns (PublishReply);
 }

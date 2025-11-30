@@ -5,24 +5,37 @@ from src.proto import metrics_pb2
 from src.proto import metrics_pb2_grpc
 
 
-def subscribe_to_metrics(target: str = 'localhost:50051') -> None:
+def subscribe_to_metrics(target: str = 'localhost:50051', num_epochs: int = 3) -> None:
     """
     Subscribe to the metrics stream and print incoming metrics.
 
     Args:
         target: gRPC server address
+        num_epochs: Number of epochs to train
     """
     print(f"📡 Connecting to metrics server at {target}...")
 
     with grpc.insecure_channel(target) as channel:
         stub = metrics_pb2_grpc.MetricsStub(channel)
 
-        print("✅ Connected! Waiting for metrics...\n")
+        print("✅ Connected!")
 
         try:
-            # Subscribe to the stream
-            request = metrics_pb2.SubscribeRequest()
-            for metric in stub.Subscribe(request):
+            # 1. Request training to start
+            print(f"🎬 Requesting training start ({num_epochs} epochs)...")
+            start_request = metrics_pb2.StartTrainingRequest(num_epochs=num_epochs)
+            start_reply = stub.StartTraining(start_request)
+            print(f"   Server response: {start_reply.status}")
+
+            if start_reply.status != "started":
+                print("⚠️  Training not started. Exiting.")
+                return
+
+            print("📡 Subscribing to metrics stream...\n")
+
+            # 2. Subscribe to the metrics stream
+            subscribe_request = metrics_pb2.SubscribeRequest()
+            for metric in stub.Subscribe(subscribe_request):
                 print(f"📊 Received Metric:")
                 print(f"   Epoch: {metric.epoch}")
                 print(f"   Batch: {metric.batch}")

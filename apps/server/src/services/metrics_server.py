@@ -1,7 +1,8 @@
 """gRPC server that streams training metrics to subscribers."""
 from concurrent import futures
 from queue import Queue, Empty
-from typing import Iterator
+from threading import Event
+from typing import Iterator, Callable
 import grpc
 
 from src.proto import metrics_pb2
@@ -11,12 +12,38 @@ from src.proto import metrics_pb2_grpc
 class MetricsServicer(metrics_pb2_grpc.MetricsServicer):
     """Implements the Metrics gRPC service with streaming support."""
 
-    def __init__(self, metrics_queue: Queue) -> None:
+    def __init__(
+        self,
+        metrics_queue: Queue,
+        on_training_start: Callable[[int], None]
+    ) -> None:
         """
         Args:
             metrics_queue: Queue that receives metrics from the training loop
+            on_training_start: Callback to trigger training start with num_epochs
         """
         self.metrics_queue = metrics_queue
+        self.on_training_start = on_training_start
+        self.training_started = False
+
+    def StartTraining(
+        self,
+        request: metrics_pb2.StartTrainingRequest,
+        context
+    ) -> metrics_pb2.StartTrainingReply:
+        """Client requests to start training."""
+        if self.training_started:
+            print("⚠️  Training already running")
+            return metrics_pb2.StartTrainingReply(status="already_running")
+
+        self.training_started = True
+        num_epochs = request.num_epochs if request.num_epochs > 0 else 3
+        print(f"🎬 Client requested training start: {num_epochs} epochs")
+
+        # Trigger training in background thread
+        self.on_training_start(num_epochs)
+
+        return metrics_pb2.StartTrainingReply(status="started")
 
     def Subscribe(
         self,
@@ -57,12 +84,17 @@ class MetricsServicer(metrics_pb2_grpc.MetricsServicer):
             print("🔌 Client unsubscribed from metrics stream")
 
 
-def serve(metrics_queue: Queue, port: int = 50051) -> grpc.Server:
+def serve(
+    metrics_queue: Queue,
+    on_training_start: Callable[[int], None],
+    port: int = 50051
+) -> grpc.Server:
     """
     Start the gRPC server that streams metrics.
 
     Args:
         metrics_queue: Queue containing training metrics
+        on_training_start: Callback to trigger training start
         port: Port to listen on
 
     Returns:
@@ -70,11 +102,12 @@ def serve(metrics_queue: Queue, port: int = 50051) -> grpc.Server:
     """
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     metrics_pb2_grpc.add_MetricsServicer_to_server(
-        MetricsServicer(metrics_queue),
+        MetricsServicer(metrics_queue, on_training_start),
         server
     )
     server.add_insecure_port(f'[::]:{port}')
     server.start()
 
-    print(f"🚀 Metrics gRPC Server streaming on port {port}")
+    print(f"🚀 Metrics gRPC Server listening on port {port}")
+    print("⏸️  Waiting for client to start training...")
     return server

@@ -1,3 +1,4 @@
+from threading import Thread
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 
@@ -29,17 +30,28 @@ def main() -> None:
         update_interval=160,
     )
 
-    # 4. Start gRPC server that streams metrics
-    server = serve(metrics_queue=trainer.metrics, port=50051)
+    # 4. Define training callback
+    def start_training(num_epochs: int) -> None:
+        """Callback that runs training in a background thread."""
+        def run():
+            print(f"🏋️  Starting training for {num_epochs} epochs...")
+            trainer.train(num_epochs=num_epochs)
+            print("✅ Training complete!")
+
+        Thread(target=run, daemon=False).start()
+
+    # 5. Start gRPC server that streams metrics
+    server = serve(
+        metrics_queue=trainer.metrics,
+        on_training_start=start_training,
+        port=50051
+    )
 
     try:
-        # 5. Run training (metrics will be streamed via gRPC)
-        print("🏋️  Starting training...")
-        trainer.train(num_epochs=3)
-        print("✅ Training complete!")
-    finally:
-        # 6. Cleanup
-        print("⏹️  Shutting down gRPC server...")
+        # 6. Keep server running until interrupted
+        server.wait_for_termination()
+    except KeyboardInterrupt:
+        print("\n⏹️  Shutting down gRPC server...")
         server.stop(grace=2)
 
 
