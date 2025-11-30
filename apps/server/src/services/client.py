@@ -65,11 +65,13 @@ class Client:
         self.channel.close()
 
 
-def main(target: str = 'localhost:50051', num_epochs: int = 3) -> None:
+def main() -> None:
     """Main function to run the client."""
-    print(f"📡 Connecting to training server at {target}...\n")
 
+    target: str = 'localhost:50051'
+    num_epochs: int = 3
     client = Client(target=target)
+    print(f"📡 Connected to training server at {target}.\n")
 
     try:
         # Step 1: Check server status (handshake)

@@ -48,12 +48,14 @@ class Servicer(pbg.TrainingServicer):
     def Subscribe(self, req: pb.SubscribeReq, ctx: grpc.ServicerContext) -> Iterator[pb.TrainingMetric]:
         """Stream metrics to subscribers as they arrive."""
         try:
+            print("Client connected to stream")
+            
             # Check if client disconnected
             while ctx.is_active():
                 try: 
-                    metric = self.queue.get(timeout=1.0)  # Block until a metric is available
+                    metric = self.queue.get(timeout=1.0)        # Block until a metric is available
                 except Empty: 
-                    continue                                # No metric yet, loop again
+                    continue                                    # No metric yet, loop again
 
                 # Convert dict to protobuf message
                 yield pb.TrainingMetric(
