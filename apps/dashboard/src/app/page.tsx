@@ -90,7 +90,7 @@ export default function Dashboard() {
             <CardTitle>Training Loss</CardTitle>
             <CardDescription>Batch loss over time</CardDescription>
           </CardHeader>
-          <CardContent className="px-0 pb-0">
+          <CardContent className="pb-0">
             <ChartContainer
               config={{
                 loss: {
