@@ -183,33 +183,34 @@ export default function Dashboard() {
               config={{
                 loss: {
                   label: 'Loss',
-                  color: 'hsl(var(--chart-1))',
+                  color: '#3b82f6',
                 },
               }}
               className="h-[400px] w-full"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={lossHistory} margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" opacity={0.3} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-zinc-800" opacity={0.5} />
                   <XAxis
                     dataKey="batch"
                     label={{ value: 'Batch', position: 'insideBottom', offset: -10 }}
-                    className="text-xs"
-                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
+                    stroke="#6b7280"
                   />
                   <YAxis
                     label={{ value: 'Loss', angle: -90, position: 'insideLeft' }}
-                    className="text-xs"
-                    stroke="hsl(var(--muted-foreground))"
+                    tick={{ fontSize: 12 }}
+                    stroke="#6b7280"
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line
                     type="monotone"
                     dataKey="loss"
-                    stroke="hsl(var(--chart-1))"
-                    strokeWidth={2.5}
+                    stroke="#3b82f6"
+                    strokeWidth={3}
                     dot={false}
                     animationDuration={300}
+                    isAnimationActive={true}
                   />
                 </LineChart>
               </ResponsiveContainer>
