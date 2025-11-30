@@ -2,18 +2,14 @@ from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 
 from src.services.queue_consumer import QueueConsumer
+from src.services.metrics_client import MetricsClient
 from src.training.data_module import DataModule
 from src.training.model import Model
 from src.training.trainer import Trainer
 
 
-def stream_metrics(metric: dict) -> None:
-    """Process or stream each metric (e.g., send to API)."""
-    print(metric)  # replace with API call, WebSocket push, etc.
-
-
 def main() -> None:
-    """Entry point for training with background metric streaming."""
+    """Entry point for training with gRPC metric streaming."""
 
     # 1. Load data
     data = DataModule(root='./data', batch_size=16, download=True)
@@ -34,9 +30,16 @@ def main() -> None:
         update_interval=160,
     )
 
-    # 4. Use QueueConsumer to stream metrics while training
-    with QueueConsumer(queue=trainer.metrics, handler=stream_metrics):
-        trainer.train(num_epochs=3)
+    # 4. Create gRPC client
+    client = MetricsClient(target='localhost:50051')
+
+    try:
+        # 5. Use QueueConsumer to stream metrics via gRPC while training
+        with QueueConsumer(queue=trainer.metrics, handler=client.publish):
+            trainer.train(num_epochs=3)
+    finally:
+        # 6. Cleanup
+        client.close()
 
 
 if __name__ == '__main__':
