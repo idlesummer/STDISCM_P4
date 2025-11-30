@@ -1,48 +1,90 @@
-from typing import Any, Mapping
+from typing import Iterator
 import grpc
-from src.proto.metrics_pb2_grpc import TrainingStub
-from src.proto.metrics_pb2 import TrainingMetric
+
+from src.proto import metrics_pb2 as pb
+from src.proto import metrics_pb2_grpc as pbg
 
 
 class Client:
     """A gRPC client that subscribes to training metrics from the server."""
 
-    def __init__(self, target: str, timeout: float = 2.0) -> None:
-        """Initialize metrics client."""
+    def __init__(self, target: str, timeout: float = 10.0) -> None:
+        """
+        Initialize training client.
+
+        Args:
+            target: gRPC server address (e.g., 'localhost:50051')
+            timeout: Request timeout in seconds
+        """
         self.channel = grpc.insecure_channel(target)
-        self.stub = TrainingStub(self.channel)
+        self.stub = pbg.TrainingStub(self.channel)
         self.timeout = timeout
         print(f"📡 Client initialized (target={target}, timeout={timeout}s)")
 
-    def publish(self, metric: Mapping[str, Any]) -> None:
+    def status(self) -> pb.StatusRes:
         """
-        Publish a single batch metric to the server.
+        Check server status (handshake).
 
-        Args:
-            metric: Dictionary containing epoch, batch, batch_size, batch_loss, preds, truths
+        Returns:
+            StatusRes containing status, message, and current epoch
         """
-        # Equivalent to const req = {...}
-        req = TrainingMetric(
-            epoch=int(metric['epoch']),
-            batch=int(metric['batch']),
-            batch_size=int(metric['batch_size']),
-            batch_loss=float(metric['batch_loss']),
-            preds=[int(x) for x in metric['preds']],
-            truths=[int(x) for x in metric['truths']],
-        )
+        print("🔍 Checking server status...")
+        req = pb.StatusReq()
 
         try:
-            # Equivalent to axios.post('/Publish', req)
-            response = self.stub.Publish(req, timeout=self.timeout)
-            print(f"✅ Published metric: epoch={req.epoch}, batch={req.batch}, loss={req.batch_loss:.4f}")
-            print(f"   Server response: {response.status}")
+            res = self.stub.Status(req, timeout=self.timeout)
+            print(f"   Status: {res.status}")
+            print(f"   Message: {res.message}")
+            if res.epoch > 0:
+                print(f"   Current epoch: {res.epoch}")
+            return res
         except grpc.RpcError as e:
-            print(f"❌ Failed to publish metric: {e.code()} - {e.details()}")
-            # Best-effort: log error but don't raise to avoid blocking training
+            print(f"❌ Failed to get status: {e.code()} - {e.details()}")
+            raise
 
+    def start(self, num_epochs: int, confirmed: bool = True) -> pb.StartRes:
+        """
+        Start training on the server.
 
+        Args:
+            num_epochs: Number of epochs to train
+            confirmed: Must be True to actually start training
+
+        Returns:
+            StartRes containing status and message
+        """
+        print(f"🎬 Starting training ({num_epochs} epochs, confirmed={confirmed})...")
+        req = pb.StartReq(num_epochs=num_epochs, confirmed=confirmed)
+
+        try:
+            res = self.stub.Start(req, timeout=self.timeout)
+            print(f"   Status: {res.status}")
+            print(f"   Message: {res.message}")
+            return res
+        except grpc.RpcError as e:
+            print(f"❌ Failed to start training: {e.code()} - {e.details()}")
+            raise
+
+    def subscribe(self) -> Iterator[pb.TrainingMetric]:
+        """
+        Subscribe to streaming training metrics from the server.
+
+        Yields:
+            TrainingMetric objects as they arrive from the server
+        """
+        print("📡 Subscribing to metrics stream...")
+        req = pb.SubscribeReq()
+
+        try:
+            for metric in self.stub.Subscribe(req):
+                yield metric
+        except grpc.RpcError as e:
+            print(f"❌ Streaming error: {e.code()} - {e.details()}")
+            raise
+        finally:
+            print("🔌 Unsubscribed from metrics stream")
 
     def close(self) -> None:
         """Close the gRPC channel."""
-        print("🔌 Closing Client channel")
+        print("🔌 Closing client channel")
         self.channel.close()
