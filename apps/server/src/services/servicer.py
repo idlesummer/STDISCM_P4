@@ -1,17 +1,9 @@
 from queue import Queue, Empty
 from typing import Iterator, Callable
-from grpc import ServicerContext
 import grpc
 
+from src.proto import metrics_pb2 as pb
 from src.proto import metrics_pb2_grpc as pbg
-from src.proto.metrics_pb2 import (
-    StatusReq,
-    StatusRes,
-    StartReq,
-    StartRes,
-    SubscribeReq,
-    TrainingMetric,
-)
 
 
 class Servicer(pbg.TrainingServicer):
@@ -28,32 +20,32 @@ class Servicer(pbg.TrainingServicer):
         self.is_started = False
         self.epoch = 0
 
-    def Status(self, req: StatusReq, ctx: ServicerContext) -> StatusRes:
+    def Status(self, req: pb.StatusReq, ctx: grpc.ServicerContext) -> pb.StatusRes:
         """Check server status (handshake/health check)."""
         if self.is_started:
-            return StatusRes(status='training', message='Training in progress', epoch=self.epoch)
+            return pb.StatusRes(status='training', message='Training in progress', epoch=self.epoch)
         else:
-            return StatusRes(status='ready', message='Server ready to start training', epoch=0)
+            return pb.StatusRes(status='ready', message='Server ready to start training', epoch=0)
 
-    def Start(self, req: StartReq, ctx: ServicerContext) -> StartRes:
+    def Start(self, req: pb.StartReq, ctx: grpc.ServicerContext) -> pb.StartRes:
         """Start training with epochs and confirmation (stateless)."""
   
         # Check if already training
         if self.is_started:
-            return StartRes(status='already_running', message='Training is already in progress')
+            return pb.StartRes(status='already_running', message='Training is already in progress')
 
         # Require confirmation
         if not req.confirmed:
-            return StartRes(status='not_confirmed', message='Set confirmed=true to start training')
+            return pb.StartRes(status='not_confirmed', message='Set confirmed=true to start training')
 
         # Start training
         num_epochs = req.num_epochs or 3
         self.is_started = True
         self.epoch = 0
         self.on_start(num_epochs)
-        return StartRes(status='started', message=f'Training started for {num_epochs} epochs')
+        return pb.StartRes(status='started', message=f'Training started for {num_epochs} epochs')
 
-    def Subscribe(self, req: SubscribeReq, ctx: ServicerContext) -> Iterator[TrainingMetric]:
+    def Subscribe(self, req: pb.SubscribeReq, ctx: grpc.ServicerContext) -> Iterator[pb.TrainingMetric]:
         """Stream metrics to subscribers as they arrive."""
         try:
             # Check if client disconnected
@@ -64,7 +56,7 @@ class Servicer(pbg.TrainingServicer):
                     continue                                # No metric yet, loop again
 
                 # Convert dict to protobuf message
-                yield TrainingMetric(
+                yield pb.TrainingMetric(
                     epoch=int(metric['epoch']),
                     batch=int(metric['batch']),
                     batch_size=int(metric['batch_size']),
