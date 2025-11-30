@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 
 type TrainingMetric = {
@@ -237,39 +238,39 @@ export default function Dashboard() {
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (1-8)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {currentMetric.preds.slice(0, 8).map((pred, idx) => {
-                    const isCorrect = pred === currentMetric.truths[idx]
-                    return (
-                      <div key={idx} className="flex items-center gap-4 py-2">
-                        {/* Image placeholder */}
-                        <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                          <span className="text-3xl font-bold text-gray-400">
-                            {currentMetric.truths[idx]}
-                          </span>
-                        </div>
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-gray-900">Sample {idx + 1}</p>
-                          </div>
-                          <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
-                            <span>Ground Truth: <span className="font-semibold text-gray-700">{currentMetric.truths[idx]}</span></span>
-                          </div>
-                        </div>
-                        {/* Prediction Badge */}
-                        <div className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-semibold ${
-                          isCorrect
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-red-50 text-red-700'
-                        }`}>
-                          Pred: {pred}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-20">Image</TableHead>
+                      <TableHead>Sample</TableHead>
+                      <TableHead>Prediction</TableHead>
+                      <TableHead>Ground Truth</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentMetric.preds.slice(0, 8).map((pred, idx) => {
+                      const isCorrect = pred === currentMetric.truths[idx]
+                      return (
+                        <TableRow
+                          key={idx}
+                          className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
+                        >
+                          <TableCell>
+                            <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                              <span className="text-3xl font-bold text-gray-400">
+                                {currentMetric.truths[idx]}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium">Sample {idx + 1}</TableCell>
+                          <TableCell className="font-semibold text-lg">{pred}</TableCell>
+                          <TableCell className="font-semibold text-lg">{currentMetric.truths[idx]}</TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
 
@@ -278,40 +279,40 @@ export default function Dashboard() {
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (9-16)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {currentMetric.preds.slice(8, 16).map((pred, idx) => {
-                    const actualIdx = idx + 8
-                    const isCorrect = pred === currentMetric.truths[actualIdx]
-                    return (
-                      <div key={actualIdx} className="flex items-center gap-4 py-2">
-                        {/* Image placeholder */}
-                        <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                          <span className="text-3xl font-bold text-gray-400">
-                            {currentMetric.truths[actualIdx]}
-                          </span>
-                        </div>
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-gray-900">Sample {actualIdx + 1}</p>
-                          </div>
-                          <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
-                            <span>Ground Truth: <span className="font-semibold text-gray-700">{currentMetric.truths[actualIdx]}</span></span>
-                          </div>
-                        </div>
-                        {/* Prediction Badge */}
-                        <div className={`flex-shrink-0 px-3 py-1 rounded-full text-sm font-semibold ${
-                          isCorrect
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-red-50 text-red-700'
-                        }`}>
-                          Pred: {pred}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-20">Image</TableHead>
+                      <TableHead>Sample</TableHead>
+                      <TableHead>Prediction</TableHead>
+                      <TableHead>Ground Truth</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {currentMetric.preds.slice(8, 16).map((pred, idx) => {
+                      const actualIdx = idx + 8
+                      const isCorrect = pred === currentMetric.truths[actualIdx]
+                      return (
+                        <TableRow
+                          key={actualIdx}
+                          className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
+                        >
+                          <TableCell>
+                            <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                              <span className="text-3xl font-bold text-gray-400">
+                                {currentMetric.truths[actualIdx]}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium">Sample {actualIdx + 1}</TableCell>
+                          <TableCell className="font-semibold text-lg">{pred}</TableCell>
+                          <TableCell className="font-semibold text-lg">{currentMetric.truths[actualIdx]}</TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </div>
