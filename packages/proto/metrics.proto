@@ -39,9 +39,6 @@ message StartRes {
   string message = 2;   // Additional info
 }
 
-message PublishRes {
-  string status = 1;    // e.g., "ok"
-}
 
 // =========================
 // ======== SERVICE ========
