@@ -21,6 +21,11 @@ wheels = [
 ]
 
 [[package]]
+name = "generated"
+version = "0.1.0"
+source = { directory = "../../packages/generated-py" }
+
+[[package]]
 name = "grpcio"
 version = "1.76.0"
 source = { registry = "https://pypi.org/simple" }
@@ -430,6 +435,7 @@ name = "server"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "generated" },
     { name = "grpcio" },
     { name = "grpcio-tools" },
     { name = "pillow" },
@@ -439,6 +445,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "generated", directory = "../../packages/generated-py" },
     { name = "grpcio", specifier = ">=1.76.0" },
     { name = "grpcio-tools", specifier = ">=1.76.0" },
     { name = "pillow", specifier = ">=12.0.0" },
