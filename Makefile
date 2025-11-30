@@ -8,7 +8,7 @@ gen: gen-py gen-ts
 
 # Python gRPC stubs (.py + .pyi)
 gen-py:
-	@mkdir -p "$(ROOT)/apps/server/src/proto"
+	@mkdir -p "$(ROOT)/apps/server/src/proto" 2>/dev/null || mkdir "$(ROOT)/apps/server/src/proto" 2>nul || exit 0
 	cd "$(ROOT)/apps/server" && \
 	uv run python -m grpc_tools.protoc \
 		-I "$(ROOT)/packages/proto" \
@@ -19,7 +19,7 @@ gen-py:
 
 # TypeScript gRPC stubs (ts-proto)
 gen-ts:
-	@mkdir -p "$(ROOT)/apps/dashboard/src/proto"
+	@mkdir -p "$(ROOT)/apps/dashboard/src/proto" 2>/dev/null || mkdir "$(ROOT)/apps/dashboard/src/proto" 2>nul || exit 0
 	@echo "TypeScript proto generation not yet configured"
 # TODO: enable once ts-proto is ready
 # cd "$(ROOT)/apps/dashboard" && \
