@@ -2,7 +2,7 @@ from threading import Thread
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 
-from src.services.metrics_server import serve
+from src.services.metrics_servicer import serve
 from src.training.data_module import DataModule
 from src.training.model import Model
 from src.training.trainer import Trainer

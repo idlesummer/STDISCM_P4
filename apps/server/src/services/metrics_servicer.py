@@ -1,8 +1,7 @@
 """gRPC server that streams training metrics to subscribers."""
 from concurrent import futures
-from queue import Queue, Empty
-from threading import Event
 from typing import Iterator, Callable
+from queue import Queue, Empty
 import grpc
 
 from src.proto import metrics_pb2
