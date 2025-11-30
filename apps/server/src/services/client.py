@@ -8,13 +8,7 @@ class Client:
     """A gRPC client that subscribes to training metrics from the server."""
 
     def __init__(self, target: str, timeout: float = 2.0) -> None:
-        """
-        Initialize metrics client.
-
-        Args:
-            target: gRPC server address (e.g., 'localhost:50051')
-            timeout: Request timeout in seconds
-        """
+        """Initialize metrics client."""
         self.channel = grpc.insecure_channel(target)
         self.stub = TrainingStub(self.channel)
         self.timeout = timeout
