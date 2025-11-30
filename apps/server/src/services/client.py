@@ -8,12 +8,25 @@ class Client:
     """A gRPC client that subscribes to training metrics from the server."""
 
     def __init__(self, target: str, timeout: float = 2.0) -> None:
+        """
+        Initialize metrics client.
+
+        Args:
+            target: gRPC server address (e.g., 'localhost:50051')
+            timeout: Request timeout in seconds
+        """
         self.channel = grpc.insecure_channel(target)
         self.stub = TrainingStub(self.channel)
         self.timeout = timeout
+        print(f"📡 Client initialized (target={target}, timeout={timeout}s)")
 
     def publish(self, metric: Mapping[str, Any]) -> None:
-        
+        """
+        Publish a single batch metric to the server.
+
+        Args:
+            metric: Dictionary containing epoch, batch, batch_size, batch_loss, preds, truths
+        """
         # Equivalent to const req = {...}
         req = TrainingMetric(
             epoch=int(metric['epoch']),
@@ -24,16 +37,18 @@ class Client:
             truths=[int(x) for x in metric['truths']],
         )
 
-        # Best-effort: set deadline; ignore transient failures or log as needed.
         try:
             # Equivalent to axios.post('/Publish', req)
-            self.stub.Publish(req, timeout=self.timeout)
+            response = self.stub.Publish(req, timeout=self.timeout)
+            print(f"✅ Published metric: epoch={req.epoch}, batch={req.batch}, loss={req.batch_loss:.4f}")
+            print(f"   Server response: {response.status}")
+        except grpc.RpcError as e:
+            print(f"❌ Failed to publish metric: {e.code()} - {e.details()}")
+            # Best-effort: log error but don't raise to avoid blocking training
 
-        except grpc.RpcError:
-            # TODO: add logging / metrics / retry policy if desired
-            pass
 
-    
-    
+
     def close(self) -> None:
+        """Close the gRPC channel."""
+        print("🔌 Closing Client channel")
         self.channel.close()
