@@ -90,7 +90,7 @@ export default function Dashboard() {
             <CardTitle>Training Loss</CardTitle>
             <CardDescription>Batch loss over time</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0 pb-0">
             <ChartContainer
               config={{
                 loss: {
@@ -98,7 +98,7 @@ export default function Dashboard() {
                   color: 'hsl(var(--chart-1))',
                 },
               }}
-              className="h-[300px]"
+              className="h-[300px] w-full"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={lossHistory}>
