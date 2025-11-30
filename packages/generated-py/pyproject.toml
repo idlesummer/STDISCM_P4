@@ -1,5 +1,5 @@
 [project]
-name = "metrics-proto"
+name = "metrics_proto"
 version = "0.1.0"
 description = "Generated gRPC Python stubs"
 requires-python = ">=3.11"
