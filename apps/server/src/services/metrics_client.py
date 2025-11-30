@@ -1,7 +1,7 @@
 from typing import Any, Mapping
 import grpc
-from src.services import metrics_pb2 as pb
-from src.services import metrics_pb2_grpc as pbg
+from proto import metrics_pb2 as pb
+from proto import metrics_pb2_grpc as pbg
 
 
 class MetricsClient:
