@@ -30,10 +30,6 @@ type LossDataPoint = {
 }
 
 export default function DashboardPage() {
-  // UI hooks
-  const [activeTab, setActiveTab] = useState('overview')
-
-  // Training-related hooks
   const [isTraining, setIsTraining] = useState(false)
   const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
@@ -97,10 +93,20 @@ export default function DashboardPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="overview" className="mb-6">
-          <TabsList className="mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="playground">Playground</TabsTrigger>
+        <Tabs defaultValue="overview">
+          <TabsList className="mb-6 h-auto w-full justify-start gap-8 rounded-none border-b border-gray-200 bg-transparent p-0">
+            <TabsTrigger
+              value="overview"
+              className="rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 font-medium text-gray-500 shadow-none transition-colors hover:text-gray-700 data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="playground"
+              className="rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 font-medium text-gray-500 shadow-none transition-colors hover:text-gray-700 data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
+            >
+              Playground
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
