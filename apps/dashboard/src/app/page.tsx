@@ -436,7 +436,7 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <p className="text-base font-medium text-gray-900">No training session active</p>
-                  <p className="mt-1 text-sm text-gray-500">Click "Start Training" to begin monitoring</p>
+                  <p className="mt-1 text-sm text-gray-500">{'Click "Start Training" to begin monitoring'}</p>
                 </CardContent>
               </Card>
             )}
