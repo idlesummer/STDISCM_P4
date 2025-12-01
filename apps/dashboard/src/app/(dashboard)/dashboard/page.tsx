@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Smile } from 'lucide-react'
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
+import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
@@ -422,21 +425,12 @@ export default function DashboardPage() {
         {activeTab === 'playground' && (
           <Card className="border shadow-sm bg-white rounded-lg">
             <CardContent className="flex flex-col items-center justify-center py-20">
-              <div className="rounded-full bg-gray-100 p-4 mb-4">
-                <svg
-                  className="h-8 w-8 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
+              {/* <div className="rounded-full bg-gray-100 p-4 mb-4">
+                <Smile className="h-8 w-8 text-gray-400" />
+              </div> */}
+              <Avatar className="items-center justify-center mb-4 size-16 bg-gray-100">
+                <Smile className="size-8 text-gray-400" />
+              </Avatar>
               <p className="text-base font-medium text-gray-900">Playground Coming Soon</p>
               <p className="mt-1 text-sm text-gray-500">Draw digits and see live predictions</p>
             </CardContent>
