@@ -8,7 +8,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 // Local imports
-import { useFPS } from './(hooks)/use-fps'
+import { useFPS } from './_hooks/use-fps'
 
 type TrainingMetric = {
   epoch: number
