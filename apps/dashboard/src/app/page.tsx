@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 
 type TrainingMetric = {
   epoch: number
@@ -21,16 +21,23 @@ type LossDataPoint = {
   loss: number
 }
 
+type FPSDataPoint = {
+  time: number
+  fps: number
+}
+
 export default function Dashboard() {
   const [isTraining, setIsTraining] = useState(false)
   const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
   const [fps, setFps] = useState(60)
+  const [fpsHistory, setFpsHistory] = useState<FPSDataPoint[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const frameCountRef = useRef(0)
   const lastTimeRef = useRef(performance.now())
+  const fpsTimeRef = useRef(0)
 
-  // FPS tracking
+  // FPS tracking with history
   useEffect(() => {
     let animationFrameId: number
 
@@ -40,7 +47,15 @@ export default function Dashboard() {
       const elapsed = currentTime - lastTimeRef.current
 
       if (elapsed >= 1000) {
-        setFps(Math.round((frameCountRef.current * 1000) / elapsed))
+        const newFps = Math.round((frameCountRef.current * 1000) / elapsed)
+        setFps(newFps)
+
+        // Update FPS history (keep last 20 data points)
+        setFpsHistory(prev => {
+          const updated = [...prev, { time: fpsTimeRef.current++, fps: newFps }]
+          return updated.slice(-20)
+        })
+
         frameCountRef.current = 0
         lastTimeRef.current = currentTime
       }
@@ -92,21 +107,17 @@ export default function Dashboard() {
     setIsTraining(false)
   }, [])
 
+  // Calculate FPS trend
+  const fpsTrend = fpsHistory.length >= 2
+    ? fpsHistory[fpsHistory.length - 1].fps - fpsHistory[fpsHistory.length - 2].fps
+    : 0
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-screen-2xl px-8 py-6">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold text-gray-900">Dashboard</h1>
-          </div>
-          <Button
-            onClick={isTraining ? handleStop : handleStart}
-            variant={isTraining ? 'destructive' : 'default'}
-            className="bg-gray-900 hover:bg-gray-800 text-white"
-          >
-            {isTraining ? 'Stop Training' : 'Start Training'}
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-gray-900">Dashboard</h1>
         </div>
 
         {/* Tabs */}
@@ -140,44 +151,120 @@ export default function Dashboard() {
             {/* Training Metrics Report with Chart */}
             <Card className="mb-6 border shadow-sm bg-white rounded-lg">
               <CardHeader className="pb-6">
-                <CardTitle className="text-lg font-semibold text-gray-900">Training Report</CardTitle>
-                <p className="text-sm text-gray-500 mt-1">Real-time batch metrics and loss progression</p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg font-semibold text-gray-900">Training Report</CardTitle>
+                    <p className="text-sm text-gray-500 mt-1">Real-time batch metrics and loss progression</p>
+                  </div>
+                  <Button
+                    onClick={isTraining ? handleStop : handleStart}
+                    variant={isTraining ? 'destructive' : 'default'}
+                    className="bg-gray-900 hover:bg-gray-800 text-white"
+                  >
+                    {isTraining ? (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <rect x="6" y="5" width="2.5" height="10" />
+                          <rect x="11.5" y="5" width="2.5" height="10" />
+                        </svg>
+                        Stop Training
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                        </svg>
+                        Start Training
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="pt-0">
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-5 gap-6 mb-6">
-                  <div className="border-r border-gray-200 pr-6 last:border-r-0">
-                    <p className="text-xs text-gray-500 font-medium mb-2">FPS</p>
-                    <p className="text-3xl font-bold text-gray-900 tabular-nums">{fps}</p>
-                    <p className="text-xs text-gray-500 mt-1">frames per second</p>
-                  </div>
-                  <div className="border-r border-gray-200 pr-6 last:border-r-0">
-                    <p className="text-xs text-gray-500 font-medium mb-2">Epoch</p>
+                  <div className="border-r border-gray-200 pr-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                      </svg>
+                      <p className="text-xs text-gray-500 font-medium">Epoch</p>
+                    </div>
                     <p className="text-3xl font-bold text-gray-900 tabular-nums">
                       {currentMetric?.epoch ?? '—'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">current epoch</p>
                   </div>
-                  <div className="border-r border-gray-200 pr-6 last:border-r-0">
-                    <p className="text-xs text-gray-500 font-medium mb-2">Batch</p>
+                  <div className="border-r border-gray-200 pr-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      <p className="text-xs text-gray-500 font-medium">Batch</p>
+                    </div>
                     <p className="text-3xl font-bold text-gray-900 tabular-nums">
                       {currentMetric?.batch ?? '—'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">current batch</p>
                   </div>
-                  <div className="border-r border-gray-200 pr-6 last:border-r-0">
-                    <p className="text-xs text-gray-500 font-medium mb-2">Batch Size</p>
+                  <div className="border-r border-gray-200 pr-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                      </svg>
+                      <p className="text-xs text-gray-500 font-medium">Batch Size</p>
+                    </div>
                     <p className="text-3xl font-bold text-gray-900 tabular-nums">
                       {currentMetric?.batch_size ?? '—'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">samples per batch</p>
                   </div>
-                  <div className="last:border-r-0">
-                    <p className="text-xs text-gray-500 font-medium mb-2">Loss</p>
+                  <div className="border-r border-gray-200 pr-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                      </svg>
+                      <p className="text-xs text-gray-500 font-medium">Loss</p>
+                    </div>
                     <p className="text-3xl font-bold text-gray-900 tabular-nums">
                       {currentMetric?.batch_loss.toFixed(4) ?? '—'}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">current batch loss</p>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <p className="text-xs text-gray-500 font-medium">FPS</p>
+                    </div>
+                    <div className="flex items-end gap-3">
+                      <p className="text-3xl font-bold text-gray-900 tabular-nums">{fps}</p>
+                      {fpsHistory.length > 1 && (
+                        <div className="flex-1 h-8 mb-1">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={fpsHistory}>
+                              <Line
+                                type="monotone"
+                                dataKey="fps"
+                                stroke={fpsTrend >= 0 ? '#10b981' : '#ef4444'}
+                                strokeWidth={2}
+                                dot={false}
+                                isAnimationActive={false}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      frames per second
+                      {fpsTrend !== 0 && (
+                        <span className={`ml-1 ${fpsTrend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {fpsTrend >= 0 ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </p>
                   </div>
                 </div>
 
@@ -237,7 +324,12 @@ export default function Dashboard() {
                 {/* Left Column - First 8 predictions */}
                 <Card className="border shadow-sm bg-white rounded-lg">
                   <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (1-8)</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                      <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (1-8)</CardTitle>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <Table>
@@ -278,7 +370,12 @@ export default function Dashboard() {
                 {/* Right Column - Last 8 predictions */}
                 <Card className="border shadow-sm bg-white rounded-lg">
                   <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (9-16)</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                      <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (9-16)</CardTitle>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <Table>
