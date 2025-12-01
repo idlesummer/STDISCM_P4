@@ -14,6 +14,7 @@ type TrainingMetric = {
   batch_loss: number
   preds: number[]
   truths: number[]
+  scores: number[]
 }
 
 type LossDataPoint = {
@@ -84,6 +85,7 @@ export default function Dashboard() {
         batch_loss: loss,
         preds: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
         truths: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
+        scores: Array.from({ length: 16 }, () => Math.random() * 0.4 + 0.6), // 0.6 to 1.0
       }
 
       setCurrentMetric(metric)
@@ -339,6 +341,7 @@ export default function Dashboard() {
                           <TableHead className="w-20">Image</TableHead>
                           <TableHead>Sample</TableHead>
                           <TableHead>Prediction</TableHead>
+                          <TableHead className="text-gray-400">Score</TableHead>
                           <TableHead>Ground Truth</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -359,6 +362,7 @@ export default function Dashboard() {
                               </TableCell>
                               <TableCell className="font-medium">Sample {idx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
+                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[idx].toFixed(3)}</TableCell>
                               <TableCell className="font-semibold text-lg">{currentMetric.truths[idx]}</TableCell>
                             </TableRow>
                           )
@@ -385,6 +389,7 @@ export default function Dashboard() {
                           <TableHead className="w-20">Image</TableHead>
                           <TableHead>Sample</TableHead>
                           <TableHead>Prediction</TableHead>
+                          <TableHead className="text-gray-400">Score</TableHead>
                           <TableHead>Ground Truth</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -406,6 +411,7 @@ export default function Dashboard() {
                               </TableCell>
                               <TableCell className="font-medium">Sample {actualIdx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
+                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[actualIdx].toFixed(3)}</TableCell>
                               <TableCell className="font-semibold text-lg">{currentMetric.truths[actualIdx]}</TableCell>
                             </TableRow>
                           )
