@@ -135,6 +135,7 @@ export default function DashboardPage() {
           </div>
 
           <TabsContent value="overview">
+  
             {/* Training Metrics Report with Chart */}
             <Card className="mb-6 border shadow-sm bg-white rounded-lg">
               <CardHeader className="pb-6">
