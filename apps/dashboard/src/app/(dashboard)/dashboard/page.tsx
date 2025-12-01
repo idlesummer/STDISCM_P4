@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 // Local imports
 import { useFPS } from './_hooks/use-fps'
@@ -96,33 +97,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
-          <nav className="flex gap-8">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
-                activeTab === 'overview'
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('playground')}
-              className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
-                activeTab === 'playground'
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Playground
-            </button>
-          </nav>
-        </div>
+        <Tabs defaultValue="overview" className="mb-6">
+          <TabsList className="mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="playground">Playground</TabsTrigger>
+          </TabsList>
 
-        {activeTab === 'overview' && (
-          <>
+          <TabsContent value="overview">
             {/* Training Metrics Report with Chart */}
             <Card className="mb-6 border shadow-sm bg-white rounded-lg">
               <CardHeader className="pb-6">
@@ -419,10 +400,9 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             )}
-          </>
-        )}
+          </TabsContent>
 
-        {activeTab === 'playground' && (
+          <TabsContent value="playground">
           <Card className="border shadow-sm bg-white rounded-lg">
             <CardContent className="flex flex-col items-center justify-center py-20">
               <Avatar className="items-center justify-center mb-4 size-16 bg-gray-100">
@@ -432,7 +412,8 @@ export default function DashboardPage() {
               <p className="mt-1 text-sm text-gray-500">Draw digits and see live predictions</p>
             </CardContent>
           </Card>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
