@@ -23,3 +23,49 @@ class Model(nn.Module):
         x = self.relu(self.fc2(x))         # apply layer 2 + ReLU
         x = self.fc3(x)                    # final linear layer (logits)
         return x.squeeze()                 # remove dims of size 1
+
+
+# CNN Version
+# 
+# import torch
+# import torch.nn as nn
+# from torch import Tensor
+
+# class Model(nn.Module):
+#     """
+#     Simple CNN for 28x28 grayscale images.
+#     Feature extractor: Conv -> ReLU -> Conv -> ReLU -> MaxPool (twice)
+#     Classifier: Linear -> ReLU -> Linear (logits for 10 classes)
+#     """
+    
+#     features: nn.Sequential
+#     classifier: nn.Sequential
+    
+#     def __init__(self, num_classes: int = 10) -> None:
+#         super().__init__()
+#         self.features = nn.Sequential(
+#             nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1),    # 1x28x28 -> 32x28x28
+#             nn.ReLU(inplace=True),                                                  # Saves memory
+#             nn.Conv2d(32, 64, kernel_size=3, padding=1),                            # 32x28x28 -> 64x28x28
+#             nn.ReLU(inplace=True),
+#             nn.MaxPool2d(2),                                                        # 64x28x28 -> 64x14x14
+
+#             nn.Conv2d(64, 128, kernel_size=3, padding=1),                           # 64x14x14 -> 128x14x14
+#             nn.ReLU(inplace=True),
+#             nn.MaxPool2d(2),                                                        # 128x14x14 -> 128x7x7
+#         )
+#         # 128 channels * 7 * 7 = 6272 features after the second pool
+#         self.classifier = nn.Sequential(
+#             nn.Flatten(),                  # -> (N, 6272)
+#             nn.Linear(128 * 7 * 7, 256),
+#             nn.ReLU(inplace=True),
+#             nn.Linear(256, num_classes),   # logits
+#         )
+
+#     def forward(self, x: Tensor) -> Tensor:
+#         # Expect x of shape (N, 1, 28, 28) with dtype float
+#         x = self.features(x)
+#         x = self.classifier(x)
+
+          # do NOT squeeze; keep batch dim even for N=1
+#         return x  #
