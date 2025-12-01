@@ -32,6 +32,8 @@ type LossDataPoint = {
 }
 
 export default function DashboardPage() {
+
+  // Training state hooks
   const [isTraining, setIsTraining] = useState(false)
   const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
