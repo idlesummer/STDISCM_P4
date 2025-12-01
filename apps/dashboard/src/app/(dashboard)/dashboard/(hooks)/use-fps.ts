@@ -5,7 +5,7 @@ export interface FPSDataPoint {
   fps: number
 }
 
-export function useFps() {
+export function useFPS() {
   const [fps, setFps] = useState(60)
   const [fpsHistory, setFpsHistory] = useState<FPSDataPoint[]>([])
 
@@ -36,7 +36,6 @@ export function useFps() {
     }
 
     rafId = requestAnimationFrame(runLoop)
-
     return () => cancelAnimationFrame(rafId)
   }, [])
 

@@ -8,7 +8,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 // Local imports
-import { useFps } from './(hooks)/use-fps'
+import { useFPS } from './(hooks)/use-fps'
 
 type TrainingMetric = {
   epoch: number
@@ -32,7 +32,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
   
   // FPS tracking with history
-  const { fps, fpsHistory } = useFps()
+  const { fps, fpsHistory } = useFPS()
 
   // Simulate training data for demonstration
   useEffect(() => {
