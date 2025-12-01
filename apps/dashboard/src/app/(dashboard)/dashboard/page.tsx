@@ -308,9 +308,9 @@ export default function DashboardPage() {
                         <TableRow>
                           <TableHead className="w-20">Image</TableHead>
                           <TableHead>Sample</TableHead>
-                          <TableHead>Prediction</TableHead>
+                          <TableHead>Predicted Label</TableHead>
                           <TableHead className="text-gray-400">Score</TableHead>
-                          <TableHead>Ground Truth</TableHead>
+                          <TableHead>True Label</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -350,9 +350,9 @@ export default function DashboardPage() {
                         <TableRow>
                           <TableHead className="w-20">Image</TableHead>
                           <TableHead>Sample</TableHead>
-                          <TableHead>Prediction</TableHead>
+                          <TableHead>Predicted Label</TableHead>
                           <TableHead className="text-gray-400">Score</TableHead>
-                          <TableHead>Ground Truth</TableHead>
+                          <TableHead>True Label</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
