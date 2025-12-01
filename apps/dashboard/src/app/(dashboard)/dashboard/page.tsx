@@ -26,10 +26,10 @@ type LossDataPoint = {
 }
 
 export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState('overview')
   const [isTraining, setIsTraining] = useState(false)
   const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
-  const [activeTab, setActiveTab] = useState('overview')
   
   // FPS tracking with history
   const { fps, fpsHistory } = useFPS()
