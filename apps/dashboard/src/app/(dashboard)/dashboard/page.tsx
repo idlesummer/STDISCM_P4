@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { Smile } from 'lucide-react'
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
-import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
@@ -408,9 +408,9 @@ export default function DashboardPage() {
 
             {/* Empty State */}
             {!currentMetric && !isTraining && (
-              <Card className="border shadow-sm bg-white rounded-lg">
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <div className="rounded-full bg-gray-100 p-4 mb-4">
+              <Empty className="border border-gray-200 bg-white shadow-sm">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon" className="bg-gray-100">
                     <svg
                       className="h-8 w-8 text-gray-400"
                       fill="none"
@@ -424,24 +424,24 @@ export default function DashboardPage() {
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                       />
                     </svg>
-                  </div>
-                  <p className="text-base font-medium text-gray-900">No training session active</p>
-                  <p className="mt-1 text-sm text-gray-500">{'Click "Start Training" to begin monitoring'}</p>
-                </CardContent>
-              </Card>
+                  </EmptyMedia>
+                  <EmptyTitle className="text-gray-900">No training session active</EmptyTitle>
+                  <EmptyDescription className="text-gray-500">{'Click "Start Training" to begin monitoring'}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
           </TabsContent>
 
           <TabsContent value="playground">
-            <Card className="border shadow-sm bg-white rounded-lg">
-              <CardContent className="flex flex-col items-center justify-center py-20">
-                <Avatar className="items-center justify-center mb-4 size-16 bg-gray-100">
-                  <Smile className="size-8 text-gray-400" />
-                </Avatar>
-                <p className="text-base font-medium text-gray-900">Playground Coming Soon</p>
-                <p className="mt-1 text-sm text-gray-500">Draw digits and see live predictions</p>
-              </CardContent>
-            </Card>
+            <Empty className="border border-gray-200 bg-white shadow-sm">
+              <EmptyHeader>
+                <EmptyMedia variant="icon" className="bg-gray-100">
+                  <Smile className="h-8 w-8 text-gray-400" />
+                </EmptyMedia>
+                <EmptyTitle className="text-gray-900">Playground Coming Soon</EmptyTitle>
+                <EmptyDescription className="text-gray-500">Draw digits and see live predictions</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           </TabsContent>
         </Tabs>
       </div>
