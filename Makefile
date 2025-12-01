@@ -6,12 +6,12 @@ ROOT := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 gen: gen-py gen-ts
 
 gen-py:
-	@cmd /c if not exist "$(ROOT)\apps\server\src\proto" mkdir "$(ROOT)\apps\server\src\proto"
+	@mkdir -p "$(ROOT)/apps/server/src/proto"
 
 	@echo Removing old Python proto files...
-	@cmd /c del /q "$(ROOT)\apps\server\src\proto\metrics_pb2.py" 2>NUL || true
-	@cmd /c del /q "$(ROOT)\apps\server\src\proto\metrics_pb2.pyi" 2>NUL || true
-	@cmd /c del /q "$(ROOT)\apps\server\src\proto\metrics_pb2_grpc.py" 2>NUL || true
+	@rm -f "$(ROOT)/apps/server/src/proto/metrics_pb2.py"
+	@rm -f "$(ROOT)/apps/server/src/proto/metrics_pb2.pyi"
+	@rm -f "$(ROOT)/apps/server/src/proto/metrics_pb2_grpc.py"
 
 	@echo Generating Python proto files...
 	@cd $(ROOT)/apps/server && \
@@ -32,5 +32,28 @@ gen-py:
 
 
 gen-ts:
-	@cmd /c if not exist "$(ROOT)\apps\dashboard\src\proto" mkdir "$(ROOT)\apps\dashboard\src\proto"
-	@echo TypeScript proto generation not yet configured
+	@mkdir -p "$(ROOT)/apps/dashboard/src/proto"
+
+	@echo Removing old TypeScript proto files...
+	@rm -f "$(ROOT)/apps/dashboard/src/proto/metrics_pb.js"
+	@rm -f "$(ROOT)/apps/dashboard/src/proto/metrics_pb.d.ts"
+	@rm -f "$(ROOT)/apps/dashboard/src/proto/metrics_grpc_pb.js"
+	@rm -f "$(ROOT)/apps/dashboard/src/proto/metrics_grpc_pb.d.ts"
+
+	@echo Generating TypeScript proto files...
+	@cd $(ROOT)/apps/dashboard && \
+	npx grpc_tools_node_protoc \
+		--js_out=import_style=commonjs,binary:src/proto \
+		--grpc_out=grpc_js:src/proto \
+		--plugin=protoc-gen-grpc=node_modules/.bin/grpc_tools_node_protoc_plugin \
+		-I "$(ROOT)/packages/proto" \
+		"$(ROOT)/packages/proto/metrics.proto"
+
+	@cd $(ROOT)/apps/dashboard && \
+	npx grpc_tools_node_protoc \
+		--plugin=protoc-gen-ts=node_modules/.bin/protoc-gen-ts \
+		--ts_out=grpc_js:src/proto \
+		-I "$(ROOT)/packages/proto" \
+		"$(ROOT)/packages/proto/metrics.proto"
+
+	@echo TypeScript proto generation done
