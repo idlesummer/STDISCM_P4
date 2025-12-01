@@ -23,7 +23,7 @@ export function useFPS() {
         const newFps = Math.round((frameCounter * 1000) / elapsedMs)
 
         setFps(newFps)
-        setFpsHistory(hist => [...hist.slice(-19),{ time: hist.length, fps: newFps }])
+        setFpsHistory(hist => [...hist.slice(-19), { time: hist.length, fps: newFps }])
 
         frameCounter = 0
         lastTime = now
