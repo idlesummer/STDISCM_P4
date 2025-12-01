@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -64,15 +64,15 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [isTraining, lossHistory.length])
 
-  const handleStart = useCallback(() => {
+  const handleStart = () => {
     setIsTraining(true)
     setLossHistory([])
     setCurrentMetric(null)
-  }, [])
+  }
 
-  const handleStop = useCallback(() => {
+  const handleStop = () => {
     setIsTraining(false)
-  }, [])
+  }
 
   // Calculate FPS trend
   const fpsTrend = (fpsHistory.length >= 2) ? fpsHistory.at(-1)!.fps - fpsHistory.at(-2)!.fps : 0
