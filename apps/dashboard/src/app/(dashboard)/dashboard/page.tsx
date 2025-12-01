@@ -296,16 +296,13 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="grid gap-6 lg:grid-cols-2">
+                  <div className="grid lg:grid-cols-2 gap-0 lg:divide-x divide-gray-200">
                     {/* Left Column - First 8 predictions */}
-                    <Card className="border shadow-sm bg-white rounded-lg">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <ClipboardList className="w-5 h-5 text-gray-400" />
-                      <CardTitle className="text-base font-medium text-gray-900">Samples 1-8</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
+                    <div className="lg:pr-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <ClipboardList className="w-5 h-5 text-gray-400" />
+                        <h3 className="text-base font-medium text-gray-900">Samples 1-8</h3>
+                      </div>
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -340,18 +337,14 @@ export default function DashboardPage() {
                         })}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
-
-                {/* Right Column - Last 8 predictions */}
-                <Card className="border shadow-sm bg-white rounded-lg">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <ClipboardList className="w-5 h-5 text-gray-400" />
-                      <CardTitle className="text-base font-medium text-gray-900">Samples 9-16</CardTitle>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
+
+                    {/* Right Column - Last 8 predictions */}
+                    <div className="lg:pl-6 mt-6 lg:mt-0">
+                      <div className="flex items-center gap-2 mb-4">
+                        <ClipboardList className="w-5 h-5 text-gray-400" />
+                        <h3 className="text-base font-medium text-gray-900">Samples 9-16</h3>
+                      </div>
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -387,8 +380,7 @@ export default function DashboardPage() {
                         })}
                       </TableBody>
                     </Table>
-                  </CardContent>
-                </Card>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
