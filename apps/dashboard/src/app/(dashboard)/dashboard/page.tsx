@@ -11,7 +11,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Typography3XL, TypographyH2, TypographyXS } from '@/components/ui/typography'
+import { Typography3XL, TypographyH2, TypographyMuted, TypographyXS } from '@/components/ui/typography'
 
 // Local imports
 import { useFPS } from './_hooks/use-fps'
@@ -73,14 +73,11 @@ export default function DashboardPage() {
 
   // Handler functions
 
+  const handleStop = () => setIsTraining(false)
   const handleStart = () => {
     setIsTraining(true)
     setLossHistory([])
     setCurrentMetric(null)
-  }
-
-  const handleStop = () => {
-    setIsTraining(false)
   }
 
   // Calculate FPS trend
@@ -92,9 +89,7 @@ export default function DashboardPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <TypographyH2 className="border-none">
-            Dashboard
-          </TypographyH2>
+          <TypographyH2 className="border-none">Dashboard</TypographyH2>
         </div>
 
         {/* Tabs */}
@@ -144,21 +139,18 @@ export default function DashboardPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Training Report</CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">Real-time batch metrics and loss progression</p>
+                    <TypographyMuted className="mt-1">Real-time batch metrics and loss progression</TypographyMuted>
                   </div>
                   <Button
                     onClick={isTraining ? handleStop : handleStart}
                     variant={isTraining ? 'destructive' : 'default'}
-                    className="bg-gray-900 hover:bg-gray-800 text-white"
                   >
                     {isTraining 
                       ? (<><Pause className="mr-2 fill-current" /> Stop Training</>) 
                       : (<><Play className="mr-2 fill-current" /> Start Training</>)}
-
                   </Button>
                 </div>
               </CardHeader>
-
 
               <CardContent className="pt-0">
                 {/* Metrics Grid */}
@@ -168,7 +160,7 @@ export default function DashboardPage() {
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
                       <RotateCwSquare  className="w-4 h-4 text-gray-400" />
-                      <p className="text-xs text-gray-500 font-medium">Epoch</p>
+                      <TypographyXS className="font-medium">Epoch</TypographyXS>                     
                     </div>
                     <Typography3XL className="font-bold tabular-nums">
                       {currentMetric?.epoch ?? '—'}
@@ -182,7 +174,7 @@ export default function DashboardPage() {
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
                       <Layers className="w-4 h-4 text-gray-400" />
-                      <p className="text-xs text-gray-500 font-medium">Batch</p>
+                      <TypographyXS className="font-medium">Batch</TypographyXS>
                     </div>
                     <Typography3XL className="font-bold tabular-nums">
                       {currentMetric?.batch ?? '—'}
@@ -194,7 +186,7 @@ export default function DashboardPage() {
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
                       <Hash className="w-4 h-4 text-gray-400" />
-                      <p className="text-xs text-gray-500 font-medium">Batch Size</p>
+                      <TypographyXS className="font-medium">Batch Size</TypographyXS>
                     </div>
                      <Typography3XL className="font-bold tabular-nums">
                         {currentMetric?.batch_size ?? '—'}
@@ -206,7 +198,8 @@ export default function DashboardPage() {
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingDown className="w-4 h-4 text-gray-400" />
-                      <p className="text-xs text-gray-500 font-medium">Loss</p>
+                      <TypographyXS className="font-medium">Loss</TypographyXS>
+                      
                     </div>
                      <Typography3XL className="font-bold tabular-nums">
                         {currentMetric?.batch_loss.toFixed(4) ?? '—'}
@@ -218,7 +211,7 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <Zap className="w-4 h-4 text-gray-400" />
-                      <p className="text-xs text-gray-500 font-medium">FPS</p>
+                      <TypographyXS className="font-medium">FPS</TypographyXS>
                     </div>
                     <div className="flex items-end gap-3">
                       <Typography3XL className="font-bold tabular-nums">{fps}</Typography3XL>
@@ -240,11 +233,10 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <TypographyXS className="mt-1">
-                      frames per second {fpsTrend !== 0 && (fpsTrend >= 0 ? '↑' : '↓')}
+                      frames per second {fpsTrend && (fpsTrend > 0 ? '↑' : '↓')}
                     </TypographyXS>
                   </div>
                 </div>
-
 
                 {/* Chart */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
@@ -323,9 +315,9 @@ export default function DashboardPage() {
                             >
                               <TableCell>
                                 <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
-                                  <span className="text-3xl font-bold text-gray-400">
+                                  <Typography3XL className="text-gray-400 font-bold">
                                     {currentMetric.truths[idx]}
-                                  </span>
+                                  </Typography3XL>
                                 </div>
                               </TableCell>
                               <TableCell className="font-medium">Sample {idx + 1}</TableCell>
@@ -370,9 +362,9 @@ export default function DashboardPage() {
                             >
                               <TableCell>
                                 <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
-                                  <span className="text-3xl font-bold text-gray-400">
+                                  <Typography3XL className="text-gray-400 font-bold">
                                     {currentMetric.truths[actualIdx]}
-                                  </span>
+                                  </Typography3XL>
                                 </div>
                               </TableCell>
                               <TableCell className="font-medium">Sample {actualIdx + 1}</TableCell>
