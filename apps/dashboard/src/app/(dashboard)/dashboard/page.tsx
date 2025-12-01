@@ -56,9 +56,9 @@ export default function DashboardPage() {
       setLossHistory(prev => [...prev, { batch, loss }])
 
       // Stop after 50 batches
-      if (batch >= 50) {
+      if (batch >= 50)
         setIsTraining(false)
-      }
+
     }, 1000)
 
     return () => clearInterval(interval)
