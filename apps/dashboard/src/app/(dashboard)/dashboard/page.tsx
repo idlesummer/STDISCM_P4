@@ -75,9 +75,7 @@ export default function DashboardPage() {
   }, [])
 
   // Calculate FPS trend
-  const fpsTrend = fpsHistory.length >= 2
-    ? fpsHistory[fpsHistory.length - 1].fps - fpsHistory[fpsHistory.length - 2].fps
-    : 0
+  const fpsTrend = (fpsHistory.length >= 2) ? fpsHistory.at(-1)!.fps - fpsHistory.at(-2)!.fps : 0
 
   return (
     <div className="min-h-screen bg-gray-50">
