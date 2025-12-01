@@ -223,7 +223,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      frameCounter per second
+                      frames per second
                       {fpsTrend !== 0 && (
                         <span className={`ml-1 ${fpsTrend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {fpsTrend >= 0 ? '↑' : '↓'}
