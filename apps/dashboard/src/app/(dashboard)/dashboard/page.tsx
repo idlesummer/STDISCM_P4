@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
@@ -34,40 +34,36 @@ export default function DashboardPage() {
   const [fps, setFps] = useState(60)
   const [fpsHistory, setFpsHistory] = useState<FPSDataPoint[]>([])
   const [activeTab, setActiveTab] = useState('overview')
-  const frameCountRef = useRef(0)
-  const lastTimeRef = useRef(0)
-  const fpsTimeRef = useRef(0)
 
   // FPS tracking with history
   useEffect(() => {
-    let animationFrameId: number
-    lastTimeRef.current = performance.now()
+    let frameId: number
+    let lastTime = performance.now()
+    let frames = 0
 
-    const updateFps = () => {
-      frameCountRef.current++
-      const currentTime = performance.now()
-      const elapsed = currentTime - lastTimeRef.current
+    const loop = () => {
+      frames++
+      const now = performance.now()
+      const elapsed = now - lastTime
 
       if (elapsed >= 1000) {
-        const newFps = Math.round((frameCountRef.current * 1000) / elapsed)
-        setFps(newFps)
+        const fpsValue = Math.round((frames * 1000) / elapsed)
+        setFps(fpsValue)
 
-        // Update FPS history (keep last 20 data points)
-        setFpsHistory(prev => {
-          const updated = [...prev, { time: fpsTimeRef.current++, fps: newFps }]
-          return updated.slice(-20)
+        setFpsHistory(h => {
+          const next = [...h, { time: h.length, fps: fpsValue }]
+          return next.slice(-20)
         })
 
-        frameCountRef.current = 0
-        lastTimeRef.current = currentTime
+        frames = 0
+        lastTime = now
       }
 
-      animationFrameId = requestAnimationFrame(updateFps)
+      frameId = requestAnimationFrame(loop)
     }
 
-    animationFrameId = requestAnimationFrame(updateFps)
-
-    return () => cancelAnimationFrame(animationFrameId)
+    frameId = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(frameId)
   }, [])
 
   // Simulate training data for demonstration
