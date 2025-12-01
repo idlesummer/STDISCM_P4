@@ -13,6 +13,7 @@ message TrainingMetric {
   float batch_loss      = 4;
   repeated int32 preds  = 5;
   repeated int32 truths = 6;
+  repeated float scores = 7;  // Confidence scores for predictions
 }
 
 message SubscribeReq {

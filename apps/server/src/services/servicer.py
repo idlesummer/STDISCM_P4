@@ -65,6 +65,7 @@ class Servicer(pbg.TrainingServicer):
                     batch_loss=float(metric['batch_loss']),
                     preds=[int(x) for x in metric['preds']],
                     truths=[int(x) for x in metric['truths']],
+                    scores=[float(x) for x in metric.get('scores', [])],
                 )
 
         except Exception as e:
