@@ -411,15 +411,15 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="playground">
-          <Card className="border shadow-sm bg-white rounded-lg">
-            <CardContent className="flex flex-col items-center justify-center py-20">
-              <Avatar className="items-center justify-center mb-4 size-16 bg-gray-100">
-                <Smile className="size-8 text-gray-400" />
-              </Avatar>
-              <p className="text-base font-medium text-gray-900">Playground Coming Soon</p>
-              <p className="mt-1 text-sm text-gray-500">Draw digits and see live predictions</p>
-            </CardContent>
-          </Card>
+            <Card className="border shadow-sm bg-white rounded-lg">
+              <CardContent className="flex flex-col items-center justify-center py-20">
+                <Avatar className="items-center justify-center mb-4 size-16 bg-gray-100">
+                  <Smile className="size-8 text-gray-400" />
+                </Avatar>
+                <p className="text-base font-medium text-gray-900">Playground Coming Soon</p>
+                <p className="mt-1 text-sm text-gray-500">Draw digits and see live predictions</p>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
