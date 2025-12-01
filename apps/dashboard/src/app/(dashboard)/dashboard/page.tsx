@@ -98,13 +98,13 @@ export default function DashboardPage() {
             <TabsList className="h-auto gap-8 rounded-none border-none bg-transparent p-0">
               <TabsTrigger
                 value="overview"
-                className="rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 text-sm font-medium text-gray-500 shadow-none transition-colors hover:text-gray-700 data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
+                className="rounded-none border-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 text-sm font-medium text-gray-500 shadow-none transition-colors hover:text-gray-700 data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="playground"
-                className="rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 text-sm font-medium text-gray-500 shadow-none transition-colors hover:text-gray-700 data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
+                className="rounded-none border-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 text-sm font-medium text-gray-500 shadow-none transition-colors hover:text-gray-700 data-[state=active]:border-gray-900 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
               >
                 Playground
               </TabsTrigger>
