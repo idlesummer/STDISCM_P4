@@ -138,7 +138,7 @@ export default function DashboardPage() {
   
             {/* Training Metrics Report with Chart */}
             <Card className="mb-6 border shadow-sm bg-white rounded-lg">
-              <CardHeader className="pb-6">
+              <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Training Report</CardTitle>
@@ -289,7 +289,7 @@ export default function DashboardPage() {
             {/* Predictions */}
             {currentMetric && (
               <Card className="mb-6 border shadow-sm bg-white rounded-lg">
-                <CardHeader className="pb-6">
+                <CardHeader>
                   <div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions</CardTitle>
                     <p className="text-sm text-gray-500 mt-1">Model predictions for current training batch</p>
