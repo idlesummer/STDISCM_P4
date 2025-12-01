@@ -309,8 +309,8 @@ export default function DashboardPage() {
                           <TableHead className="w-20">Image</TableHead>
                           <TableHead>Sample</TableHead>
                           <TableHead>Predicted Label</TableHead>
-                          <TableHead className="text-gray-400">Score</TableHead>
                           <TableHead>True Label</TableHead>
+                          <TableHead className="text-gray-400">Score</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -330,8 +330,8 @@ export default function DashboardPage() {
                               </TableCell>
                               <TableCell className="font-medium">Sample {idx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
-                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[idx].toFixed(3)}</TableCell>
                               <TableCell className="font-semibold text-lg">{currentMetric.truths[idx]}</TableCell>
+                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[idx].toFixed(3)}</TableCell>
                             </TableRow>
                           )
                         })}
@@ -351,8 +351,8 @@ export default function DashboardPage() {
                           <TableHead className="w-20">Image</TableHead>
                           <TableHead>Sample</TableHead>
                           <TableHead>Predicted Label</TableHead>
-                          <TableHead className="text-gray-400">Score</TableHead>
                           <TableHead>True Label</TableHead>
+                          <TableHead className="text-gray-400">Score</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -373,8 +373,8 @@ export default function DashboardPage() {
                               </TableCell>
                               <TableCell className="font-medium">Sample {actualIdx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
-                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[actualIdx].toFixed(3)}</TableCell>
                               <TableCell className="font-semibold text-lg">{currentMetric.truths[actualIdx]}</TableCell>
+                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[actualIdx].toFixed(3)}</TableCell>
                             </TableRow>
                           )
                         })}
