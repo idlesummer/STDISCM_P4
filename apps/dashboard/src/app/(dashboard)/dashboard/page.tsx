@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Smile } from 'lucide-react'
-
+import { ClipboardList, Hash, Layers, Pause, Play, RotateCwSquare, Smile, TableProperties, TrendingDown, Zap } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
+import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Typography3XL, TypographyH2, TypographyXS } from '@/components/ui/typography'
 
 // Local imports
 import { useFPS } from './_hooks/use-fps'
@@ -87,14 +89,17 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-screen-2xl px-8 py-6">
+
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900">Dashboard</h1>
+          <TypographyH2 className="border-none">
+            Dashboard
+          </TypographyH2>
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="overview">
-          <div className="mb-6 border-b border-gray-200">
+          <div className="mb-6">
             <TabsList className="h-auto gap-8 rounded-none border-none bg-transparent p-0">
               <TabsTrigger
                 value="overview"
@@ -109,8 +114,7 @@ export default function DashboardPage() {
                   data-[state=active]:bg-transparent
                   data-[state=active]:text-gray-900
                   data-[state=active]:shadow-none
-                "
-              >
+              ">
                 Overview
               </TabsTrigger>
               <TabsTrigger
@@ -126,11 +130,11 @@ export default function DashboardPage() {
                   data-[state=active]:bg-transparent
                   data-[state=active]:text-gray-900
                   data-[state=active]:shadow-none
-                "
-              >
+              ">
                 Playground
               </TabsTrigger>
             </TabsList>
+            <Separator/>
           </div>
 
           <TabsContent value="overview">
@@ -147,85 +151,77 @@ export default function DashboardPage() {
                     variant={isTraining ? 'destructive' : 'default'}
                     className="bg-gray-900 hover:bg-gray-800 text-white"
                   >
-                    {isTraining ? (
-                      <>
-                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <rect x="6" y="5" width="2.5" height="10" />
-                          <rect x="11.5" y="5" width="2.5" height="10" />
-                        </svg>
-                        Stop Training
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                        </svg>
-                        Start Training
-                      </>
-                    )}
+                    {isTraining 
+                      ? (<><Pause className="mr-2 fill-current" /> Stop Training</>) 
+                      : (<><Play className="mr-2 fill-current" /> Start Training</>)}
+
                   </Button>
                 </div>
               </CardHeader>
+
+
               <CardContent className="pt-0">
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-5 gap-6 mb-6">
+                  
+                  {/* Epoch */}
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                      </svg>
+                      <RotateCwSquare  className="w-4 h-4 text-gray-400" />
                       <p className="text-xs text-gray-500 font-medium">Epoch</p>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900 tabular-nums">
+                    <Typography3XL className="font-bold tabular-nums">
                       {currentMetric?.epoch ?? '—'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">current epoch</p>
+                    </Typography3XL>
+                    <TypographyXS className="mt-1">current epoch</TypographyXS>
                   </div>
+                  
+                  {/* <Separator orientation="vertical" className="h-full bg-gray-200" /> */}
+
+                  {/* Batch */}
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
+                      <Layers className="w-4 h-4 text-gray-400" />
                       <p className="text-xs text-gray-500 font-medium">Batch</p>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900 tabular-nums">
+                    <Typography3XL className="font-bold tabular-nums">
                       {currentMetric?.batch ?? '—'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">current batch</p>
+                    </Typography3XL>
+                    <TypographyXS className="mt-1">current batch</TypographyXS>
                   </div>
+
+                  {/* Batch Size */}
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-                      </svg>
+                      <Hash className="w-4 h-4 text-gray-400" />
                       <p className="text-xs text-gray-500 font-medium">Batch Size</p>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900 tabular-nums">
-                      {currentMetric?.batch_size ?? '—'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">samples per batch</p>
+                     <Typography3XL className="font-bold tabular-nums">
+                        {currentMetric?.batch_size ?? '—'}
+                     </Typography3XL>
+                    <TypographyXS className="mt-1">samples per batch</TypographyXS>
                   </div>
+
+                  {/* Loss */}
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                      </svg>
+                      <TrendingDown className="w-4 h-4 text-gray-400" />
                       <p className="text-xs text-gray-500 font-medium">Loss</p>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900 tabular-nums">
-                      {currentMetric?.batch_loss.toFixed(4) ?? '—'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">current batch loss</p>
+                     <Typography3XL className="font-bold tabular-nums">
+                        {currentMetric?.batch_loss.toFixed(4) ?? '—'}
+                     </Typography3XL>
+                    <TypographyXS className="mt-1">current batch loss</TypographyXS>
                   </div>
+
+                  {/* FPS */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                      <Zap className="w-4 h-4 text-gray-400" />
                       <p className="text-xs text-gray-500 font-medium">FPS</p>
                     </div>
                     <div className="flex items-end gap-3">
-                      <p className="text-3xl font-bold text-gray-900 tabular-nums">{fps}</p>
+                      <Typography3XL className="font-bold tabular-nums">{fps}</Typography3XL>
                       {fpsHistory.length > 1 && (
                         <div className="flex-1 h-8 mb-1">
                           <ResponsiveContainer width="100%" height="100%">
@@ -243,26 +239,17 @@ export default function DashboardPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      frames per second
-                      {fpsTrend !== 0 && (
-                        <span className={`ml-1 ${fpsTrend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {fpsTrend >= 0 ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </p>
+                    <TypographyXS className="mt-1">
+                      frames per second {fpsTrend !== 0 && (fpsTrend >= 0 ? '↑' : '↓')}
+                    </TypographyXS>
                   </div>
                 </div>
+
 
                 {/* Chart */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <ChartContainer
-                    config={{
-                      loss: {
-                        label: 'Loss',
-                        color: '#000000',
-                      },
-                    }}
+                    config={{ loss: { label: 'Loss', color: '#000000' } }}
                     className="h-[280px] w-full"
                   >
                     <ResponsiveContainer width="100%" height="100%">
@@ -311,9 +298,7 @@ export default function DashboardPage() {
                 <Card className="border shadow-sm bg-white rounded-lg">
                   <CardHeader>
                     <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                      </svg>
+                      <ClipboardList className="w-5 h-5 text-gray-400" />
                       <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (1-8)</CardTitle>
                     </div>
                   </CardHeader>
@@ -359,9 +344,7 @@ export default function DashboardPage() {
                 <Card className="border shadow-sm bg-white rounded-lg">
                   <CardHeader>
                     <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                      </svg>
+                      <ClipboardList className="w-5 h-5 text-gray-400" />
                       <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (9-16)</CardTitle>
                     </div>
                   </CardHeader>
@@ -411,19 +394,7 @@ export default function DashboardPage() {
               <Empty className="border border-gray-200 bg-white shadow-sm">
                 <EmptyHeader>
                   <EmptyMedia variant="icon" className="bg-gray-100">
-                    <svg
-                      className="h-8 w-8 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      />
-                    </svg>
+                    <TableProperties className="h-8 w-8 text-gray-400" />
                   </EmptyMedia>
                   <EmptyTitle className="text-gray-900">No training session active</EmptyTitle>
                   <EmptyDescription className="text-gray-500">{'Click "Start Training" to begin monitoring'}</EmptyDescription>

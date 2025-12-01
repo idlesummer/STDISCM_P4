@@ -2,185 +2,164 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 // h1
-export function TypographyH1(props: React.HTMLAttributes<HTMLHeadingElement>) {
+export function TypographyH1({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h1
-      {...props}
       className={cn(
         "scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl",
-        props.className
+        className
       )}
+      {...props}
     />
   );
 }
 
 // h2
-export function TypographyH2(props: React.HTMLAttributes<HTMLHeadingElement>) {
+export function TypographyH2({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      {...props}
       className={cn(
         "scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0",
-        props.className
+        className
       )}
+      {...props}
     />
   );
 }
 
 // h3
-export function TypographyH3(props: React.HTMLAttributes<HTMLHeadingElement>) {
+export function TypographyH3({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      {...props}
       className={cn(
         "scroll-m-20 text-2xl font-semibold tracking-tight",
-        props.className
+        className
       )}
+      {...props}
     />
   );
 }
 
 // h4
-export function TypographyH4(props: React.HTMLAttributes<HTMLHeadingElement>) {
+export function TypographyH4({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h4
-      {...props}
       className={cn(
         "scroll-m-20 text-xl font-semibold tracking-tight",
-        props.className
+        className
       )}
+      {...props}
     />
   );
 }
 
 // p
-export function TypographyP(props: React.HTMLAttributes<HTMLParagraphElement>) {
+export function TypographyP({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
+      className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}
       {...props}
-      className={cn(
-        "leading-7 [&:not(:first-child)]:mt-6",
-        props.className
-      )}
     />
   );
 }
 
 // blockquote
-export function TypographyBlockquote(
-  props: React.HTMLAttributes<HTMLQuoteElement>
-) {
+export function TypographyBlockquote({ className, ...props }: React.HTMLAttributes<HTMLQuoteElement>) {
   return (
     <blockquote
+      className={cn("mt-6 border-l-2 pl-6 italic", className)}
       {...props}
-      className={cn(
-        "mt-6 border-l-2 pl-6 italic",
-        props.className
-      )}
     />
   );
 }
 
 // inline code
-export function TypographyInlineCode(
-  props: React.HTMLAttributes<HTMLElement>
-) {
+export function TypographyInlineCode({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   return (
     <code
-      {...props}
       className={cn(
         "relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold",
-        props.className
+        className
       )}
+      {...props}
     />
   );
 }
 
 // list
-export function TypographyList(
-  props: React.HTMLAttributes<HTMLUListElement>
-) {
+export function TypographyList({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) {
   return (
     <ul
+      className={cn("my-6 ml-6 list-disc [&>li]:mt-2", className)}
       {...props}
-      className={cn(
-        "my-6 ml-6 list-disc [&>li]:mt-2",
-        props.className
-      )}
     />
   );
 }
 
 // table
-export function TypographyTable(
-  props: React.TableHTMLAttributes<HTMLTableElement>
-) {
+export function TypographyTable({ className, ...props }: React.TableHTMLAttributes<HTMLTableElement>) {
   return (
     <div className="my-6 w-full overflow-y-auto">
-      <table
-        {...props}
-        className={cn("w-full", props.className)}
-      />
+      <table className={cn("w-full", className)} {...props} />
     </div>
   );
 }
 
 // lead
-export function TypographyLead(
-  props: React.HTMLAttributes<HTMLParagraphElement>
-) {
+export function TypographyLead({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
+      className={cn("text-xl text-muted-foreground", className)}
       {...props}
-      className={cn(
-        "text-muted-foreground text-xl",
-        props.className
-      )}
     />
   );
 }
 
 // large
-export function TypographyLarge(
-  props: React.HTMLAttributes<HTMLDivElement>
-) {
+export function TypographyLarge({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      className={cn("text-lg font-semibold", className)}
       {...props}
-      className={cn(
-        "text-lg font-semibold",
-        props.className
-      )}
     />
   );
 }
 
 // small
-export function TypographySmall(
-  props: React.HTMLAttributes<HTMLElement>
-) {
+export function TypographySmall({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
   return (
     <small
+      className={cn("text-sm font-medium leading-none", className)}
       {...props}
-      className={cn(
-        "text-sm font-medium leading-none",
-        props.className
-      )}
     />
   );
 }
 
 // muted
-export function TypographyMuted(
-  props: React.HTMLAttributes<HTMLParagraphElement>
-) {
+export function TypographyMuted({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
-      className={cn(
-        "text-muted-foreground text-sm",
-        props.className
-      )}
+    />
+  );
+}
+
+export function Typography3XL({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={cn("text-3xl font-bold text-foreground tabular-nums", className)}
+      {...props}
+    />
+  );
+}
+
+// xs
+export function TypographyXS({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+  return (
+    <p
+      className={cn("text-xs text-muted-foreground", className)}
+      {...props}
     />
   );
 }
