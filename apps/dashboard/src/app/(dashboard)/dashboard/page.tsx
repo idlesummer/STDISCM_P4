@@ -7,6 +7,9 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 
+// Local imports
+import { useFps } from './(hooks)/use-fps'
+
 type TrainingMetric = {
   epoch: number
   batch: number
@@ -22,49 +25,14 @@ type LossDataPoint = {
   loss: number
 }
 
-type FPSDataPoint = {
-  time: number
-  fps: number
-}
-
 export default function DashboardPage() {
   const [isTraining, setIsTraining] = useState(false)
   const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
-  const [fps, setFps] = useState(60)
-  const [fpsHistory, setFpsHistory] = useState<FPSDataPoint[]>([])
   const [activeTab, setActiveTab] = useState('overview')
-
+  
   // FPS tracking with history
-  useEffect(() => {
-    let frameId: number
-    let lastTime = performance.now()
-    let frames = 0
-
-    const loop = () => {
-      frames++
-      const now = performance.now()
-      const elapsed = now - lastTime
-
-      if (elapsed >= 1000) {
-        const fpsValue = Math.round((frames * 1000) / elapsed)
-        setFps(fpsValue)
-
-        setFpsHistory(h => {
-          const next = [...h, { time: h.length, fps: fpsValue }]
-          return next.slice(-20)
-        })
-
-        frames = 0
-        lastTime = now
-      }
-
-      frameId = requestAnimationFrame(loop)
-    }
-
-    frameId = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(frameId)
-  }, [])
+  const { fps, fpsHistory } = useFps()
 
   // Simulate training data for demonstration
   useEffect(() => {
@@ -257,7 +225,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      frames per second
+                      frameCounter per second
                       {fpsTrend !== 0 && (
                         <span className={`ml-1 ${fpsTrend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {fpsTrend >= 0 ? '↑' : '↓'}
