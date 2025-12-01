@@ -185,18 +185,6 @@ export default function DashboardPage() {
                     <TypographyXS className="mt-1">current batch</TypographyXS>
                   </div>
 
-                  {/* Batch Size */}
-                  <div className="border-r border-gray-200 pr-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Hash className="w-4 h-4 text-gray-400" />
-                      <TypographyXS className="font-medium">Batch Size</TypographyXS>
-                    </div>
-                     <Typography3XL className="font-bold tabular-nums">
-                        {currentMetric?.batch_size ?? '—'}
-                     </Typography3XL>
-                    <TypographyXS className="mt-1">samples per batch</TypographyXS>
-                  </div>
-
                   {/* Loss */}
                   <div className="border-r border-gray-200 pr-6">
                     <div className="flex items-center gap-2 mb-2">
@@ -208,6 +196,18 @@ export default function DashboardPage() {
                         {currentMetric?.batch_loss.toFixed(4) ?? '—'}
                      </Typography3XL>
                     <TypographyXS className="mt-1">current batch loss</TypographyXS>
+                  </div>
+
+                  {/* Batch Size */}
+                  <div className="border-r border-gray-200 pr-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Hash className="w-4 h-4 text-gray-400" />
+                      <TypographyXS className="font-medium">Batch Size</TypographyXS>
+                    </div>
+                     <Typography3XL className="font-bold tabular-nums">
+                        {currentMetric?.batch_size ?? '—'}
+                     </Typography3XL>
+                    <TypographyXS className="mt-1">samples per batch</TypographyXS>
                   </div>
 
                   {/* FPS */}
@@ -299,10 +299,10 @@ export default function DashboardPage() {
                   <div className="grid lg:grid-cols-2 gap-0 lg:divide-x divide-gray-200">
                     {/* Left Column - First 8 predictions */}
                     <div className="lg:pr-6">
-                      <div className="flex items-center gap-2 mb-4">
+                      {/* <div className="flex items-center gap-2 mb-4">
                         <ClipboardList className="w-5 h-5 text-gray-400" />
                         <h3 className="text-base font-medium text-gray-900">Samples 1-8</h3>
-                      </div>
+                      </div> */}
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -341,10 +341,10 @@ export default function DashboardPage() {
 
                     {/* Right Column - Last 8 predictions */}
                     <div className="lg:pl-6 mt-6 lg:mt-0">
-                      <div className="flex items-center gap-2 mb-4">
+                      {/* <div className="flex items-center gap-2 mb-4">
                         <ClipboardList className="w-5 h-5 text-gray-400" />
                         <h3 className="text-base font-medium text-gray-900">Samples 9-16</h3>
-                      </div>
+                      </div> */}
                     <Table>
                       <TableHeader>
                         <TableRow>
