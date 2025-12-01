@@ -26,13 +26,18 @@ type LossDataPoint = {
 }
 
 export default function DashboardPage() {
+  // UI hooks
   const [activeTab, setActiveTab] = useState('overview')
+
+  // Training-related hooks
   const [isTraining, setIsTraining] = useState(false)
   const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
   
   // FPS tracking with history
   const { fps, fpsHistory } = useFPS()
+
+  // Effect hooks
 
   // Simulate training data for demonstration
   useEffect(() => {
@@ -63,6 +68,8 @@ export default function DashboardPage() {
 
     return () => clearInterval(interval)
   }, [isTraining, lossHistory.length])
+
+  // Handler functions
 
   const handleStart = () => {
     setIsTraining(true)
