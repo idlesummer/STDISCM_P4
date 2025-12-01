@@ -286,15 +286,23 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Predictions - Two Column Layout */}
+            {/* Predictions */}
             {currentMetric && (
-              <div className="grid gap-6 lg:grid-cols-2">
-                {/* Left Column - First 8 predictions */}
-                <Card className="border shadow-sm bg-white rounded-lg">
+              <Card className="mb-6 border shadow-sm bg-white rounded-lg">
+                <CardHeader className="pb-6">
+                  <div>
+                    <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions</CardTitle>
+                    <p className="text-sm text-gray-500 mt-1">Model predictions for current training batch</p>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    {/* Left Column - First 8 predictions */}
+                    <Card className="border shadow-sm bg-white rounded-lg">
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <ClipboardList className="w-5 h-5 text-gray-400" />
-                      <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (1-8)</CardTitle>
+                      <CardTitle className="text-base font-medium text-gray-900">Samples 1-8</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -340,7 +348,7 @@ export default function DashboardPage() {
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <ClipboardList className="w-5 h-5 text-gray-400" />
-                      <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions (9-16)</CardTitle>
+                      <CardTitle className="text-base font-medium text-gray-900">Samples 9-16</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -381,7 +389,9 @@ export default function DashboardPage() {
                     </Table>
                   </CardContent>
                 </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
             {/* Empty State */}
