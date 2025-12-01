@@ -34,12 +34,13 @@ export default function Dashboard() {
   const [fpsHistory, setFpsHistory] = useState<FPSDataPoint[]>([])
   const [activeTab, setActiveTab] = useState('overview')
   const frameCountRef = useRef(0)
-  const lastTimeRef = useRef(performance.now())
+  const lastTimeRef = useRef(0)
   const fpsTimeRef = useRef(0)
 
   // FPS tracking with history
   useEffect(() => {
     let animationFrameId: number
+    lastTimeRef.current = performance.now()
 
     const updateFps = () => {
       frameCountRef.current++
