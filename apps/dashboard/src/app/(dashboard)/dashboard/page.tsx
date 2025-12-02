@@ -48,7 +48,7 @@ export default function DashboardPage() {
         <Tabs defaultValue="overview">
           <div className="mb-6">
             <TabsList className="h-auto gap-8 rounded-none border-none bg-transparent p-0">
-              {['Overview', 'Playground'].map((label, i) => (
+              {['Overview', 'Server Logs', 'Playground'].map((label, i) => (
                 <TabsTrigger
                   key={i}
                   value={label.toLowerCase()}
@@ -56,7 +56,7 @@ export default function DashboardPage() {
                     rounded-none
                     border-0 border-b-2 border-transparent
                     bg-transparent
-                    px-0 pb-3 pt-0
+                    px-0 pb-3
                     text-muted-foreground
                     hover:text-gray-700
                     data-[state=active]:border-gray-900
@@ -336,6 +336,18 @@ export default function DashboardPage() {
                 </EmptyHeader>
               </Empty>
             )}
+          </TabsContent>
+
+          <TabsContent value="server logs">
+            <Empty className="border border-border bg-card">
+              <EmptyHeader>
+                <EmptyMedia variant="icon" className="bg-gray-100">
+                  <Smile className="h-8 w-8 text-muted-foreground" />
+                </EmptyMedia>
+                <EmptyTitle className="text-foreground">Server Logs Coming Soon</EmptyTitle>
+                <EmptyDescription className="text-muted-foreground">Draw digits and see live predictions</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           </TabsContent>
 
           <TabsContent value="playground">
