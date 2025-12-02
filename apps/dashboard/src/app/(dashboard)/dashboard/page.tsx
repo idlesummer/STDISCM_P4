@@ -23,14 +23,10 @@ import { useFPS } from './_hooks/use-fps'
 export default function DashboardPage() {
   // Training state hooks
   const [isTraining, setIsTraining] = useState(false)
-  
+
   // Custom hooks
-  const { fps, fpsHistory } = useFPS()                                              // FPS tracking with history
-  const {
-    metric,
-    lossHistory,
-    resetTraining
-  } = useFakeTraining(isTraining, setIsTraining)
+  const { fps, fpsChange, fpsHistory } = useFPS()
+  const { metric, lossHistory, resetTraining } = useFakeTraining(isTraining, setIsTraining)
 
   // Handler functions
   const handleStop = () => setIsTraining(false)
@@ -38,9 +34,6 @@ export default function DashboardPage() {
     resetTraining()
     setIsTraining(true)
   }
-
-  // Local declarations
-  const fpsTrend = (fpsHistory.length >= 2) ? fpsHistory.at(-1)!.fps - fpsHistory.at(-2)!.fps : 0
 
   return (
     <div className="min-h-screen bg-muted">
@@ -182,7 +175,7 @@ export default function DashboardPage() {
                               <Line
                                 type="monotone"
                                 dataKey="fps"
-                                stroke={fpsTrend >= 0 ? '#10b981' : '#ef4444'}
+                                stroke={fpsChange >= 0 ? '#10b981' : '#ef4444'}
                                 strokeWidth={2}
                                 dot={false}
                                 isAnimationActive={false}
@@ -193,7 +186,7 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <TypographyXS className="mt-1">
-                      frames per second {fpsTrend && (fpsTrend > 0 ? '↑' : '↓')}
+                      frames per second {fpsChange && (fpsChange > 0 ? '↑' : '↓')}
                     </TypographyXS>
                   </div>
                 </div>

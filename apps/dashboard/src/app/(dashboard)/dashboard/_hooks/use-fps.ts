@@ -39,5 +39,11 @@ export function useFPS() {
     return () => cancelAnimationFrame(rafId)
   }, [])
 
-  return { fps, fpsHistory }
+  // Difference between the latest FPS value and the previous one
+  const fpsChange =
+    fpsHistory.length >= 2
+      ? fpsHistory.at(-1)!.fps - fpsHistory.at(-2)!.fps
+      : 0
+
+  return { fps, fpsChange, fpsHistory }
 }
