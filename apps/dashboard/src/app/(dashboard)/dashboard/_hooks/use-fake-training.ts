@@ -19,14 +19,11 @@ export function useFakeTraining(
   isTraining: boolean,
   setIsTraining: (value: boolean) => void,
 ) {
+  // State
   const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
 
-  const resetTraining = () => {
-    setCurrentMetric(null)
-    setLossHistory([])
-  }
-
+  // Effect
   useEffect(() => {
     if (!isTraining) return
 
@@ -45,10 +42,8 @@ export function useFakeTraining(
         }
 
         setCurrentMetric(metric)
-
-        // Stop after 50 batches
-        if (batch >= 50)
-          setIsTraining(false)
+        if (batch >= 50)        // Stop after 50 batches
+          setIsTraining(false) 
 
         return [...prev, { batch, loss }]
       })
@@ -57,6 +52,11 @@ export function useFakeTraining(
     return () => clearInterval(interval)
   }, [isTraining, setIsTraining])
 
-  // Expose everything the component needs
+  // 3. Local functions (actions)
+  const resetTraining = () => {
+    setCurrentMetric(null)
+    setLossHistory([])
+  }
+
   return { metric, lossHistory, resetTraining }
 }
