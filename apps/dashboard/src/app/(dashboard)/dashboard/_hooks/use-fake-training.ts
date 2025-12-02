@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 
 export type TrainingMetric = {
   epoch: number
@@ -16,13 +16,13 @@ export type LossDataPoint = {
 }
 
 export function useFakeTraining(isTraining: boolean, onComplete?: () => void) {
-  const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
+  const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
 
-  const resetTraining = useCallback(() => {
+  const resetTraining = () => {
     setCurrentMetric(null)
     setLossHistory([])
-  }, [])
+  }
 
   useEffect(() => {
     if (!isTraining) return
@@ -31,7 +31,6 @@ export function useFakeTraining(isTraining: boolean, onComplete?: () => void) {
       setLossHistory(prev => {
         const batch = prev.length + 1
         const loss = Math.max(0.1, 2.5 * Math.exp(-batch * 0.05) + Math.random() * 0.2)
-
         const metric: TrainingMetric = {
           epoch: Math.floor(batch / 10) + 1,
           batch,
@@ -45,10 +44,9 @@ export function useFakeTraining(isTraining: boolean, onComplete?: () => void) {
         setCurrentMetric(metric)
 
         // Stop after 50 batches
-        if (batch >= 50 && onComplete) {
+        if (batch >= 50 && onComplete)
           onComplete()
-        }
-
+        
         return [...prev, { batch, loss }]
       })
     }, 1000)
@@ -57,9 +55,5 @@ export function useFakeTraining(isTraining: boolean, onComplete?: () => void) {
   }, [isTraining, onComplete])
 
   // Expose everything the component needs
-  return {
-    currentMetric,
-    lossHistory,
-    resetTraining,
-  }
+  return { metric, lossHistory, resetTraining }
 }

@@ -26,10 +26,11 @@ export default function DashboardPage() {
   
   // Custom hooks
   const { fps, fpsHistory } = useFPS()                                              // FPS tracking with history
-  const { currentMetric, lossHistory, resetTraining } = useFakeTraining(
-    isTraining,
-    () => setIsTraining(false) // Stop training after 50 batches
-  )
+  const { 
+    metric, 
+    lossHistory, 
+    resetTraining 
+  } = useFakeTraining(isTraining, () => setIsTraining(false)) // Stop training after 50 batches
 
   // Handler functions
   const handleStop = () => setIsTraining(false)
@@ -122,7 +123,7 @@ export default function DashboardPage() {
                       <TypographyXS className="font-medium">Epoch</TypographyXS>                     
                     </div>
                     <Typography3XL className="font-bold tabular-nums">
-                      {currentMetric?.epoch ?? '—'}
+                      {metric?.epoch ?? '—'}
                     </Typography3XL>
                     <TypographyXS className="mt-1">current epoch</TypographyXS>
                   </div>
@@ -136,7 +137,7 @@ export default function DashboardPage() {
                       <TypographyXS className="font-medium">Batch</TypographyXS>
                     </div>
                     <Typography3XL className="font-bold tabular-nums">
-                      {currentMetric?.batch ?? '—'}
+                      {metric?.batch ?? '—'}
                     </Typography3XL>
                     <TypographyXS className="mt-1">current batch</TypographyXS>
                   </div>
@@ -149,7 +150,7 @@ export default function DashboardPage() {
                       
                     </div>
                      <Typography3XL className="font-bold tabular-nums">
-                        {currentMetric?.batch_loss.toFixed(4) ?? '—'}
+                        {metric?.batch_loss.toFixed(4) ?? '—'}
                      </Typography3XL>
                     <TypographyXS className="mt-1">current batch loss</TypographyXS>
                   </div>
@@ -161,7 +162,7 @@ export default function DashboardPage() {
                       <TypographyXS className="font-medium">Batch Size</TypographyXS>
                     </div>
                      <Typography3XL className="font-bold tabular-nums">
-                        {currentMetric?.batch_size ?? '—'}
+                        {metric?.batch_size ?? '—'}
                      </Typography3XL>
                     <TypographyXS className="mt-1">samples per batch</TypographyXS>
                   </div>
@@ -243,7 +244,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Predictions */}
-            {currentMetric && (
+            {metric && (
               <Card className="mb-6 border bg-card rounded-lg">
                 <CardHeader>
                   <div>
@@ -270,8 +271,8 @@ export default function DashboardPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {currentMetric.preds.slice(0, 8).map((pred, idx) => {
-                          const isCorrect = pred === currentMetric.truths[idx]
+                        {metric.preds.slice(0, 8).map((pred, idx) => {
+                          const isCorrect = pred === metric.truths[idx]
                           return (
                             <TableRow
                               key={idx}
@@ -280,14 +281,14 @@ export default function DashboardPage() {
                               <TableCell>
                                 <div className="w-16 h-16 rounded-lg bg-card border border-border flex items-center justify-center">
                                   <Typography3XL className="text-muted-foreground font-bold">
-                                    {currentMetric.truths[idx]}
+                                    {metric.truths[idx]}
                                   </Typography3XL>
                                 </div>
                               </TableCell>
                               <TableCell className="font-medium">Sample {idx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
-                              <TableCell className="font-semibold text-lg">{currentMetric.truths[idx]}</TableCell>
-                              <TableCell className="text-muted-foreground text-sm">{currentMetric.scores[idx].toFixed(3)}</TableCell>
+                              <TableCell className="font-semibold text-lg">{metric.truths[idx]}</TableCell>
+                              <TableCell className="text-muted-foreground text-sm">{metric.scores[idx].toFixed(3)}</TableCell>
                             </TableRow>
                           )
                         })}
@@ -312,9 +313,9 @@ export default function DashboardPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {currentMetric.preds.slice(8, 16).map((pred, idx) => {
+                        {metric.preds.slice(8, 16).map((pred, idx) => {
                           const actualIdx = idx + 8
-                          const isCorrect = pred === currentMetric.truths[actualIdx]
+                          const isCorrect = pred === metric.truths[actualIdx]
                           return (
                             <TableRow
                               key={actualIdx}
@@ -323,14 +324,14 @@ export default function DashboardPage() {
                               <TableCell>
                                 <div className="w-16 h-16 rounded-lg bg-card border border-border flex items-center justify-center">
                                   <Typography3XL className="text-muted-foreground font-bold">
-                                    {currentMetric.truths[actualIdx]}
+                                    {metric.truths[actualIdx]}
                                   </Typography3XL>
                                 </div>
                               </TableCell>
                               <TableCell className="font-medium">Sample {actualIdx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
-                              <TableCell className="font-semibold text-lg">{currentMetric.truths[actualIdx]}</TableCell>
-                              <TableCell className="text-muted-foreground text-sm">{currentMetric.scores[actualIdx].toFixed(3)}</TableCell>
+                              <TableCell className="font-semibold text-lg">{metric.truths[actualIdx]}</TableCell>
+                              <TableCell className="text-muted-foreground text-sm">{metric.scores[actualIdx].toFixed(3)}</TableCell>
                             </TableRow>
                           )
                         })}
@@ -343,7 +344,7 @@ export default function DashboardPage() {
             )}
 
             {/* Empty State */}
-            {!currentMetric && !isTraining && (
+            {!metric && !isTraining && (
               <Empty className="border border-border bg-card">
                 <EmptyHeader>
                   <EmptyMedia variant="icon" className="bg-gray-100">
