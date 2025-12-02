@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <TypographyH2 className="border-none">Dashboard</TypographyH2>
+          <TypographyH2>Dashboard</TypographyH2>
         </div>
 
         {/* Tabs */}
