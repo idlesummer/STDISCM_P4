@@ -15,7 +15,10 @@ export type LossDataPoint = {
   loss: number
 }
 
-export function useFakeTraining(isTraining: boolean, onComplete?: () => void) {
+export function useFakeTraining(
+  isTraining: boolean,
+  setIsTraining: (value: boolean) => void
+) {
   const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
 
@@ -44,15 +47,15 @@ export function useFakeTraining(isTraining: boolean, onComplete?: () => void) {
         setCurrentMetric(metric)
 
         // Stop after 50 batches
-        if (batch >= 50 && onComplete)
-          onComplete()
-        
+        if (batch >= 50)
+          setIsTraining(false)
+
         return [...prev, { batch, loss }]
       })
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isTraining, onComplete])
+  }, [isTraining, setIsTraining])
 
   // Expose everything the component needs
   return { metric, lossHistory, resetTraining }

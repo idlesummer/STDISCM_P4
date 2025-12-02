@@ -26,11 +26,11 @@ export default function DashboardPage() {
   
   // Custom hooks
   const { fps, fpsHistory } = useFPS()                                              // FPS tracking with history
-  const { 
-    metric, 
-    lossHistory, 
-    resetTraining 
-  } = useFakeTraining(isTraining, () => setIsTraining(false)) // Stop training after 50 batches
+  const {
+    metric,
+    lossHistory,
+    resetTraining
+  } = useFakeTraining(isTraining, setIsTraining)
 
   // Handler functions
   const handleStop = () => setIsTraining(false)
