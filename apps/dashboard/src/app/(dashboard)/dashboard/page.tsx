@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const fpsTrend = (fpsHistory.length >= 2) ? fpsHistory.at(-1)!.fps - fpsHistory.at(-2)!.fps : 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted">
       <div className="mx-auto max-w-screen-2xl px-8 py-6">
 
         {/* Header */}
@@ -58,11 +58,11 @@ export default function DashboardPage() {
                   border-0 border-b-2 border-transparent
                   bg-transparent
                   px-0 pb-3 pt-0
-                  text-gray-500
+                  text-muted-foreground
                   hover:text-gray-700
                   data-[state=active]:border-gray-900
                   data-[state=active]:bg-transparent
-                  data-[state=active]:text-gray-900
+                  data-[state=active]:text-foreground
                   data-[state=active]:shadow-none
               ">
                 Overview
@@ -74,11 +74,11 @@ export default function DashboardPage() {
                   border-0 border-b-2 border-transparent
                   bg-transparent
                   px-0 pb-3 pt-0
-                  text-gray-500
+                  text-muted-foreground
                   hover:text-gray-700
                   data-[state=active]:border-gray-900
                   data-[state=active]:bg-transparent
-                  data-[state=active]:text-gray-900
+                  data-[state=active]:text-foreground
                   data-[state=active]:shadow-none
               ">
                 Playground
@@ -90,11 +90,11 @@ export default function DashboardPage() {
           <TabsContent value="overview">
   
             {/* Training Metrics Report with Chart */}
-            <Card className="mb-6 border shadow-sm bg-white rounded-lg">
+            <Card className="mb-6 border bg-card rounded-lg">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Training Report</CardTitle>
+                    <CardTitle className="text-lg font-semibold text-foreground">Training Report</CardTitle>
                     <TypographyMuted className="mt-1">Real-time batch metrics and loss progression</TypographyMuted>
                   </div>
                   <Button
@@ -113,9 +113,9 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-5 gap-6 mb-6">
                   
                   {/* Epoch */}
-                  <div className="border-r border-gray-200 pr-6">
+                  <div className="border-r border-border pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <RotateCwSquare  className="w-4 h-4 text-gray-400" />
+                      <RotateCwSquare  className="w-4 h-4 text-muted-foreground" />
                       <TypographyXS className="font-medium">Epoch</TypographyXS>                     
                     </div>
                     <Typography3XL className="font-bold tabular-nums">
@@ -127,9 +127,9 @@ export default function DashboardPage() {
                   {/* <Separator orientation="vertical" className="h-full bg-gray-200" /> */}
 
                   {/* Batch */}
-                  <div className="border-r border-gray-200 pr-6">
+                  <div className="border-r border-border pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <Layers className="w-4 h-4 text-gray-400" />
+                      <Layers className="w-4 h-4 text-muted-foreground" />
                       <TypographyXS className="font-medium">Batch</TypographyXS>
                     </div>
                     <Typography3XL className="font-bold tabular-nums">
@@ -139,9 +139,9 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Loss */}
-                  <div className="border-r border-gray-200 pr-6">
+                  <div className="border-r border-border pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <TrendingDown className="w-4 h-4 text-gray-400" />
+                      <TrendingDown className="w-4 h-4 text-muted-foreground" />
                       <TypographyXS className="font-medium">Loss</TypographyXS>
                       
                     </div>
@@ -152,9 +152,9 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Batch Size */}
-                  <div className="border-r border-gray-200 pr-6">
+                  <div className="border-r border-border pr-6">
                     <div className="flex items-center gap-2 mb-2">
-                      <Hash className="w-4 h-4 text-gray-400" />
+                      <Hash className="w-4 h-4 text-muted-foreground" />
                       <TypographyXS className="font-medium">Batch Size</TypographyXS>
                     </div>
                      <Typography3XL className="font-bold tabular-nums">
@@ -166,7 +166,7 @@ export default function DashboardPage() {
                   {/* FPS */}
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <Zap className="w-4 h-4 text-gray-400" />
+                      <Zap className="w-4 h-4 text-muted-foreground" />
                       <TypographyXS className="font-medium">FPS</TypographyXS>
                     </div>
                     <div className="flex items-end gap-3">
@@ -195,7 +195,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Chart */}
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="border border-border rounded-lg p-4 bg-card">
                   <ChartContainer
                     config={{ loss: { label: 'Loss', color: '#000000' } }}
                     className="h-[280px] w-full"
@@ -241,11 +241,11 @@ export default function DashboardPage() {
 
             {/* Predictions */}
             {currentMetric && (
-              <Card className="mb-6 border shadow-sm bg-white rounded-lg">
+              <Card className="mb-6 border bg-card rounded-lg">
                 <CardHeader>
                   <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Batch Predictions</CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">Model predictions for current training batch</p>
+                    <CardTitle className="text-lg font-semibold text-foreground">Batch Predictions</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Model predictions for current training batch</p>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -253,8 +253,8 @@ export default function DashboardPage() {
                     {/* Left Column - First 8 predictions */}
                     <div className="lg:pr-6">
                       {/* <div className="flex items-center gap-2 mb-4">
-                        <ClipboardList className="w-5 h-5 text-gray-400" />
-                        <h3 className="text-base font-medium text-gray-900">Samples 1-8</h3>
+                        <ClipboardList className="w-5 h-5 text-muted-foreground" />
+                        <h3 className="text-base font-medium text-foreground">Samples 1-8</h3>
                       </div> */}
                     <Table>
                       <TableHeader>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                           <TableHead>Sample</TableHead>
                           <TableHead>Predicted Label</TableHead>
                           <TableHead>True Label</TableHead>
-                          <TableHead className="text-gray-400">Score</TableHead>
+                          <TableHead className="text-muted-foreground">Score</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -275,8 +275,8 @@ export default function DashboardPage() {
                               className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
                             >
                               <TableCell>
-                                <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
-                                  <Typography3XL className="text-gray-400 font-bold">
+                                <div className="w-16 h-16 rounded-lg bg-card border border-border flex items-center justify-center">
+                                  <Typography3XL className="text-muted-foreground font-bold">
                                     {currentMetric.truths[idx]}
                                   </Typography3XL>
                                 </div>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                               <TableCell className="font-medium">Sample {idx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
                               <TableCell className="font-semibold text-lg">{currentMetric.truths[idx]}</TableCell>
-                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[idx].toFixed(3)}</TableCell>
+                              <TableCell className="text-muted-foreground text-sm">{currentMetric.scores[idx].toFixed(3)}</TableCell>
                             </TableRow>
                           )
                         })}
@@ -295,8 +295,8 @@ export default function DashboardPage() {
                     {/* Right Column - Last 8 predictions */}
                     <div className="lg:pl-6 mt-6 lg:mt-0">
                       {/* <div className="flex items-center gap-2 mb-4">
-                        <ClipboardList className="w-5 h-5 text-gray-400" />
-                        <h3 className="text-base font-medium text-gray-900">Samples 9-16</h3>
+                        <ClipboardList className="w-5 h-5 text-muted-foreground" />
+                        <h3 className="text-base font-medium text-foreground">Samples 9-16</h3>
                       </div> */}
                     <Table>
                       <TableHeader>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                           <TableHead>Sample</TableHead>
                           <TableHead>Predicted Label</TableHead>
                           <TableHead>True Label</TableHead>
-                          <TableHead className="text-gray-400">Score</TableHead>
+                          <TableHead className="text-muted-foreground">Score</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -318,8 +318,8 @@ export default function DashboardPage() {
                               className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
                             >
                               <TableCell>
-                                <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
-                                  <Typography3XL className="text-gray-400 font-bold">
+                                <div className="w-16 h-16 rounded-lg bg-card border border-border flex items-center justify-center">
+                                  <Typography3XL className="text-muted-foreground font-bold">
                                     {currentMetric.truths[actualIdx]}
                                   </Typography3XL>
                                 </div>
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                               <TableCell className="font-medium">Sample {actualIdx + 1}</TableCell>
                               <TableCell className="font-semibold text-lg">{pred}</TableCell>
                               <TableCell className="font-semibold text-lg">{currentMetric.truths[actualIdx]}</TableCell>
-                              <TableCell className="text-gray-400 text-sm">{currentMetric.scores[actualIdx].toFixed(3)}</TableCell>
+                              <TableCell className="text-muted-foreground text-sm">{currentMetric.scores[actualIdx].toFixed(3)}</TableCell>
                             </TableRow>
                           )
                         })}
@@ -341,26 +341,26 @@ export default function DashboardPage() {
 
             {/* Empty State */}
             {!currentMetric && !isTraining && (
-              <Empty className="border border-gray-200 bg-white shadow-sm">
+              <Empty className="border border-border bg-card">
                 <EmptyHeader>
                   <EmptyMedia variant="icon" className="bg-gray-100">
-                    <TableProperties className="h-8 w-8 text-gray-400" />
+                    <TableProperties className="h-8 w-8 text-muted-foreground" />
                   </EmptyMedia>
-                  <EmptyTitle className="text-gray-900">No training session active</EmptyTitle>
-                  <EmptyDescription className="text-gray-500">{'Click "Start Training" to begin monitoring'}</EmptyDescription>
+                  <EmptyTitle className="text-foreground">No training session active</EmptyTitle>
+                  <EmptyDescription className="text-muted-foreground">{'Click "Start Training" to begin monitoring'}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             )}
           </TabsContent>
 
           <TabsContent value="playground">
-            <Empty className="border border-gray-200 bg-white shadow-sm">
+            <Empty className="border border-border bg-card">
               <EmptyHeader>
                 <EmptyMedia variant="icon" className="bg-gray-100">
-                  <Smile className="h-8 w-8 text-gray-400" />
+                  <Smile className="h-8 w-8 text-muted-foreground" />
                 </EmptyMedia>
-                <EmptyTitle className="text-gray-900">Playground Coming Soon</EmptyTitle>
-                <EmptyDescription className="text-gray-500">Draw digits and see live predictions</EmptyDescription>
+                <EmptyTitle className="text-foreground">Playground Coming Soon</EmptyTitle>
+                <EmptyDescription className="text-muted-foreground">Draw digits and see live predictions</EmptyDescription>
               </EmptyHeader>
             </Empty>
           </TabsContent>
