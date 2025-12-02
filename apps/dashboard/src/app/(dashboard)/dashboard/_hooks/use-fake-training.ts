@@ -17,7 +17,7 @@ export type LossDataPoint = {
 
 export function useFakeTraining(
   isTraining: boolean,
-  setIsTraining: (value: boolean) => void
+  setIsTraining: (value: boolean) => void,
 ) {
   const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
