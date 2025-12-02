@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ClipboardList, Hash, Layers, Pause, Play, RotateCwSquare, Smile, TableProperties, TrendingDown, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { Hash, Layers, Pause, Play, RotateCwSquare, Smile, TableProperties, TrendingDown, Zap } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 
 import { Button } from '@/components/ui/button'
@@ -15,74 +15,25 @@ import { Typography3XL, TypographyH2, TypographyMuted, TypographyXS } from '@/co
 
 // Local imports
 import { useFPS } from './_hooks/use-fps'
+import { useFakeTraining } from './_hooks/use-fake-training'
 
-type TrainingMetric = {
-  epoch: number
-  batch: number
-  batch_size: number
-  batch_loss: number
-  preds: number[]
-  truths: number[]
-  scores: number[]
-}
-
-type LossDataPoint = {
-  batch: number
-  loss: number
-}
 
 export default function DashboardPage() {
-
   // Training state hooks
   const [isTraining, setIsTraining] = useState(false)
-  const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
-  const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
   
-  // FPS tracking with history
-  const { fps, fpsHistory } = useFPS()
-
-  // Effect hooks
-
-  // Simulate training data for demonstration
-  useEffect(() => {
-    if (!isTraining) return
-
-    const interval = setInterval(() => {
-      const batch = lossHistory.length + 1
-      const loss = Math.max(0.1, 2.5 * Math.exp(-batch * 0.05) + Math.random() * 0.2)
-
-      const metric: TrainingMetric = {
-        epoch: Math.floor(batch / 10) + 1,
-        batch,
-        batch_size: 32,
-        batch_loss: loss,
-        preds: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
-        truths: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
-        scores: Array.from({ length: 16 }, () => Math.random() * 0.4 + 0.6), // 0.6 to 1.0
-      }
-
-      setCurrentMetric(metric)
-      setLossHistory(prev => [...prev, { batch, loss }])
-
-      // Stop after 50 batches
-      if (batch >= 50)
-        setIsTraining(false)
-
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [isTraining, lossHistory.length])
+  // Custom hooks
+  const { fps, fpsHistory } = useFPS()                                              // FPS tracking with history
+  const { currentMetric, lossHistory, resetTraining } = useFakeTraining(isTraining) // Simulate training for demo
 
   // Handler functions
-
   const handleStop = () => setIsTraining(false)
-  const handleStart = () => {
+  const handleStart = () => { 
+    resetTraining()
     setIsTraining(true)
-    setLossHistory([])
-    setCurrentMetric(null)
   }
 
-  // Calculate FPS trend
+  // Local declarations
   const fpsTrend = (fpsHistory.length >= 2) ? fpsHistory.at(-1)!.fps - fpsHistory.at(-2)!.fps : 0
 
   return (
