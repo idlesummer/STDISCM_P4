@@ -173,7 +173,8 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <TypographyXS className="mt-1">
-                      frames per second {fpsChange && (fpsChange > 0 ? '↑' : '↓')}
+                      frames per second
+                      {fpsChange ? (fpsChange > 0 ? ' ↑' : ' ↓') : ''}
                     </TypographyXS>
                   </div>
                 </div>
