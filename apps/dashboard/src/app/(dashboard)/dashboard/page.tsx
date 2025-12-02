@@ -229,7 +229,7 @@ export default function DashboardPage() {
                 <CardHeader>
                   <div>
                     <CardTitle className="text-lg font-semibold text-foreground">Batch Predictions</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">Model predictions for current training batch</p>
+                    <TypographyMuted className="mt-1">Model predictions for current training batch</TypographyMuted>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
