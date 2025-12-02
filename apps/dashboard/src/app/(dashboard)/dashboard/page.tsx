@@ -1,9 +1,11 @@
 'use client'
 
+// Global imports
 import { useState } from 'react'
 import { Hash, Layers, Pause, Play, RotateCwSquare, Smile, TableProperties, TrendingDown, Zap } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 
+// Component imports
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
@@ -14,8 +16,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Typography3XL, TypographyH2, TypographyMuted, TypographyXS } from '@/components/ui/typography'
 
 // Local imports
-import { useFPS } from './_hooks/use-fps'
 import { useFakeTraining } from './_hooks/use-fake-training'
+import { useFPS } from './_hooks/use-fps'
 
 
 export default function DashboardPage() {
