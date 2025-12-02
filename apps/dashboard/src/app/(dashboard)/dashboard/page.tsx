@@ -48,38 +48,25 @@ export default function DashboardPage() {
         <Tabs defaultValue="overview">
           <div className="mb-6">
             <TabsList className="h-auto gap-8 rounded-none border-none bg-transparent p-0">
-              <TabsTrigger
-                value="overview"
-                className="
-                  rounded-none
-                  border-0 border-b-2 border-transparent
-                  bg-transparent
-                  px-0 pb-3 pt-0
-                  text-muted-foreground
-                  hover:text-gray-700
-                  data-[state=active]:border-gray-900
-                  data-[state=active]:bg-transparent
-                  data-[state=active]:text-foreground
-                  data-[state=active]:shadow-none
-              ">
-                Overview
-              </TabsTrigger>
-              <TabsTrigger
-                value="playground"
-                className="
-                  rounded-none
-                  border-0 border-b-2 border-transparent
-                  bg-transparent
-                  px-0 pb-3 pt-0
-                  text-muted-foreground
-                  hover:text-gray-700
-                  data-[state=active]:border-gray-900
-                  data-[state=active]:bg-transparent
-                  data-[state=active]:text-foreground
-                  data-[state=active]:shadow-none
-              ">
-                Playground
-              </TabsTrigger>
+              {['Overview', 'Playground'].map((label, i) => (
+                <TabsTrigger
+                  key={i}
+                  value={label.toLowerCase()}
+                  className="
+                    rounded-none
+                    border-0 border-b-2 border-transparent
+                    bg-transparent
+                    px-0 pb-3 pt-0
+                    text-muted-foreground
+                    hover:text-gray-700
+                    data-[state=active]:border-gray-900
+                    data-[state=active]:bg-transparent
+                    data-[state=active]:text-foreground
+                    data-[state=active]:shadow-none
+                ">
+                  {label}
+                </TabsTrigger>
+              ))}
             </TabsList>
             <Separator/>
           </div>
