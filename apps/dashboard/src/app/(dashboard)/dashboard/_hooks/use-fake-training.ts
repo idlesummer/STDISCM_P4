@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 export type TrainingMetric = {
   epoch: number
@@ -15,41 +15,51 @@ export type LossDataPoint = {
   loss: number
 }
 
-export function useFakeTraining(isTraining: boolean) {
+export function useFakeTraining(isTraining: boolean, onComplete?: () => void) {
   const [currentMetric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
+
+  const resetTraining = useCallback(() => {
+    setCurrentMetric(null)
+    setLossHistory([])
+  }, [])
 
   useEffect(() => {
     if (!isTraining) return
 
     const interval = setInterval(() => {
-      const batch = lossHistory.length + 1
-      const loss = Math.max(0.1, 2.5 * Math.exp(-batch * 0.05) + Math.random() * 0.2)
+      setLossHistory(prev => {
+        const batch = prev.length + 1
+        const loss = Math.max(0.1, 2.5 * Math.exp(-batch * 0.05) + Math.random() * 0.2)
 
-      const metric: TrainingMetric = {
-        epoch: Math.floor(batch / 10) + 1,
-        batch,
-        batch_size: 32,
-        batch_loss: loss,
-        preds: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
-        truths: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
-        scores: Array.from({ length: 16 }, () => Math.random() * 0.4 + 0.6),
-      }
+        const metric: TrainingMetric = {
+          epoch: Math.floor(batch / 10) + 1,
+          batch,
+          batch_size: 32,
+          batch_loss: loss,
+          preds: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
+          truths: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
+          scores: Array.from({ length: 16 }, () => Math.random() * 0.4 + 0.6),
+        }
 
-      setCurrentMetric(metric)
-      setLossHistory(prev => [...prev, { batch, loss }])
+        setCurrentMetric(metric)
+
+        // Stop after 50 batches
+        if (batch >= 50 && onComplete) {
+          onComplete()
+        }
+
+        return [...prev, { batch, loss }]
+      })
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [isTraining, lossHistory.length])
+  }, [isTraining, onComplete])
 
   // Expose everything the component needs
   return {
     currentMetric,
     lossHistory,
-    resetTraining: () => {
-      setCurrentMetric(null)
-      setLossHistory([])
-    },
+    resetTraining,
   }
 }
