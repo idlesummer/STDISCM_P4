@@ -11,7 +11,7 @@
     "gen-py:fix": "cd apps/server && uv run python -c \"open('src/proto/__init__.py', 'w').write('# Generated gRPC proto stubs\\n')\" && uv run python -c \"import sys; data = open('src/proto/metrics_pb2_grpc.py').read(); open('src/proto/metrics_pb2_grpc.py', 'w').write(data.replace('import metrics_pb2 as metrics__pb2', 'from . import metrics_pb2 as metrics__pb2'))\"",
     "gen-ts": "npm run gen-ts:clean && npm run gen-ts:generate",
     "gen-ts:clean": "mkdir -p apps/dashboard/src/proto && rm -f apps/dashboard/src/proto/metrics_pb.js apps/dashboard/src/proto/metrics_pb.d.ts apps/dashboard/src/proto/metrics_grpc_pb.js apps/dashboard/src/proto/metrics_grpc_pb.d.ts",
-    "gen-ts:generate": "cd apps/dashboard && npx grpc_tools_node_protoc --js_out=import_style=commonjs,binary:src/proto --grpc_out=grpc_js:src/proto --plugin=protoc-gen-grpc=node_modules/.bin/grpc_tools_node_protoc_plugin -I ../../packages/proto ../../packages/proto/metrics.proto && npx grpc_tools_node_protoc --plugin=protoc-gen-ts=node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:src/proto -I ../../packages/proto ../../packages/proto/metrics.proto"
+    "gen-ts:generate": "cd apps/dashboard && npx grpc_tools_node_protoc --js_out=import_style=commonjs,binary:src/proto --grpc_out=grpc_js:src/proto --plugin=protoc-gen-grpc=../../node_modules/.bin/grpc_tools_node_protoc_plugin -I ../../packages/proto ../../packages/proto/metrics.proto && npx grpc_tools_node_protoc --plugin=protoc-gen-ts=../../node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:src/proto -I ../../packages/proto ../../packages/proto/metrics.proto"
   },
   "workspaces": [
     "apps/dashboard",

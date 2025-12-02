@@ -17,8 +17,11 @@ import { Typography3XL, TypographyH2, TypographyMuted, TypographyXS } from '@/co
 
 // Local imports
 import { useFakeTraining } from './_hooks/use-fake-training'
+import { useRealTraining } from './_hooks/use-real-training'
 import { useFPS } from './_hooks/use-fps'
 
+// Toggle between fake and real training
+const USE_REAL_TRAINING = true
 
 export default function DashboardPage() {
   // Training state hooks
@@ -26,7 +29,9 @@ export default function DashboardPage() {
 
   // Custom hooks
   const { fps, fpsChange, fpsHistory } = useFPS()
-  const { metric, lossHistory, resetTraining } = useFakeTraining(isTraining, setIsTraining)
+  const { metric, lossHistory, resetTraining } = USE_REAL_TRAINING
+    ? useRealTraining(isTraining, setIsTraining)
+    : useFakeTraining(isTraining, setIsTraining)
 
   // Handler functions
   const handleStop = () => setIsTraining(false)
