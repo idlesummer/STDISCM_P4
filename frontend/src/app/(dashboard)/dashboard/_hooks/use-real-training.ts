@@ -19,7 +19,7 @@ export function useRealTraining(
     // Start training first
     const startTraining = async () => {
       try {
-        const response = await fetch('/api/training/start', {
+        const response = await fetch('/dashboard/api/training/start', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export function useRealTraining(
         console.log('Training started:', data)
 
         // Now subscribe to metrics stream
-        eventSource = new EventSource('/api/training/subscribe')
+        eventSource = new EventSource('/dashboard/api/training/subscribe')
 
         eventSource.onmessage = (event) => {
           try {
