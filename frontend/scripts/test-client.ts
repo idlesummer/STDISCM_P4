@@ -5,7 +5,6 @@
 
 import * as readline from 'readline'
 import * as grpc from '@grpc/grpc-js'
-import { promisify } from 'util'
 import { TrainingClient } from '../src/generated/metrics'
 import type { ServiceError } from '@grpc/grpc-js'
 import type { StatusRes, StartRes, TrainingMetric } from '../src/generated/metrics'
@@ -23,43 +22,50 @@ class Client {
   async status(): Promise<StatusRes> {
     console.log('🔍 Checking server status...')
 
-    try {
-      const statusAsync = promisify(this.client.status.bind(this.client))
-      const res = await statusAsync({})
+    return new Promise((resolve, reject) => {
+      this.client.status({}, (error: ServiceError | null, response?: StatusRes) => {
+        if (error) {
+          console.error(`❌ Failed to get status: ${error.code} - ${error.message}`)
+          reject(error)
+          return
+        }
 
-      console.log(`   Status: ${res.status}`)
-      console.log(`   Message: ${res.message}`)
-      if (res.epoch > 0)
-        console.log(`   Current epoch: ${res.epoch}`)
+        if (!response) {
+          reject(new Error('No response received'))
+          return
+        }
 
-      return res
-    } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
-        const grpcError = error as ServiceError
-        console.error(`❌ Failed to get status: ${grpcError.code} - ${grpcError.message}`)
-      }
-      throw error
-    }
+        console.log(`   Status: ${response.status}`)
+        console.log(`   Message: ${response.message}`)
+        if (response.epoch > 0)
+          console.log(`   Current epoch: ${response.epoch}`)
+
+        resolve(response)
+      })
+    })
   }
 
   async start(numEpochs: number, confirmed: boolean = true): Promise<StartRes> {
     console.log(`🎬 Starting training (${numEpochs} epochs, confirmed=${confirmed})...`)
 
-    try {
-      const startAsync = promisify(this.client.start.bind(this.client))
-      const res = await startAsync({ numEpochs, confirmed })
+    return new Promise((resolve, reject) => {
+      this.client.start({ numEpochs, confirmed }, (error: ServiceError | null, response?: StartRes) => {
+        if (error) {
+          console.error(`❌ Failed to start training: ${error.code} - ${error.message}`)
+          reject(error)
+          return
+        }
 
-      console.log(`   Status: ${res.status}`)
-      console.log(`   Message: ${res.message}`)
+        if (!response) {
+          reject(new Error('No response received'))
+          return
+        }
 
-      return res
-    } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
-        const grpcError = error as ServiceError
-        console.error(`❌ Failed to start training: ${grpcError.code} - ${grpcError.message}`)
-      }
-      throw error
-    }
+        console.log(`   Status: ${response.status}`)
+        console.log(`   Message: ${response.message}`)
+        resolve(response)
+      })
+    })
   }
 
   subscribe(): void {
