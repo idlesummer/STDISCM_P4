@@ -18,7 +18,8 @@ export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
           toastOptions={{
             style: {
               fontSize: '1.125rem',
-              color: '#dc2626',
+              backgroundColor: '#dc2626',
+              color: '#ffffff',
               fontWeight: '500',
             },
           }}
