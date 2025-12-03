@@ -7,13 +7,14 @@ package services;
 // =========================
 
 message TrainingMetric {
-  int32 epoch           = 1;
-  int32 batch           = 2;
-  int32 batch_size      = 3;
-  float batch_loss      = 4;
-  repeated int32 preds  = 5;
-  repeated int32 truths = 6;
-  repeated float scores = 7;  // Confidence scores for predictions
+  int32 epoch              = 1;
+  int32 batch              = 2;
+  int32 batch_size         = 3;
+  float batch_loss         = 4;
+  repeated int32 preds     = 5;
+  repeated int32 truths    = 6;
+  repeated float scores    = 7;  // Confidence scores for predictions
+  repeated int32 image_ids = 8;  // MNIST test image indices (0-9999)
 }
 
 message SubscribeReq {

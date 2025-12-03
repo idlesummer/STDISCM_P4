@@ -42,6 +42,7 @@ export function useTraining(
           preds: data.preds,
           truths: data.truths,
           scores: data.scores,
+          image_ids: data.imageIds || data.image_ids || [],
         }
 
         const batch = data.batch

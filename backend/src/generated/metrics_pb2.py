@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmetrics.proto\x12\x08services\"\x85\x01\n\x0eTrainingMetric\x12\r\n\x05\x65poch\x18\x01 \x01(\x05\x12\r\n\x05\x62\x61tch\x18\x02 \x01(\x05\x12\x12\n\nbatch_size\x18\x03 \x01(\x05\x12\x12\n\nbatch_loss\x18\x04 \x01(\x02\x12\r\n\x05preds\x18\x05 \x03(\x05\x12\x0e\n\x06truths\x18\x06 \x03(\x05\x12\x0e\n\x06scores\x18\x07 \x03(\x02\"\x0e\n\x0cSubscribeReq\"\x0b\n\tStatusReq\";\n\tStatusRes\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\r\n\x05\x65poch\x18\x03 \x01(\x05\"1\n\x08StartReq\x12\x12\n\nnum_epochs\x18\x01 \x01(\x05\x12\x11\n\tconfirmed\x18\x02 \x01(\x08\"+\n\x08StartRes\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t2\xb0\x01\n\x08Training\x12\x32\n\x06Status\x12\x13.services.StatusReq\x1a\x13.services.StatusRes\x12/\n\x05Start\x12\x12.services.StartReq\x1a\x12.services.StartRes\x12?\n\tSubscribe\x12\x16.services.SubscribeReq\x1a\x18.services.TrainingMetric0\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmetrics.proto\x12\x08services\"\x98\x01\n\x0eTrainingMetric\x12\r\n\x05\x65poch\x18\x01 \x01(\x05\x12\r\n\x05\x62\x61tch\x18\x02 \x01(\x05\x12\x12\n\nbatch_size\x18\x03 \x01(\x05\x12\x12\n\nbatch_loss\x18\x04 \x01(\x02\x12\r\n\x05preds\x18\x05 \x03(\x05\x12\x0e\n\x06truths\x18\x06 \x03(\x05\x12\x0e\n\x06scores\x18\x07 \x03(\x02\x12\x11\n\timage_ids\x18\x08 \x03(\x05\"\x0e\n\x0cSubscribeReq\"\x0b\n\tStatusReq\";\n\tStatusRes\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\r\n\x05\x65poch\x18\x03 \x01(\x05\"1\n\x08StartReq\x12\x12\n\nnum_epochs\x18\x01 \x01(\x05\x12\x11\n\tconfirmed\x18\x02 \x01(\x08\"+\n\x08StartRes\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t2\xb0\x01\n\x08Training\x12\x32\n\x06Status\x12\x13.services.StatusReq\x1a\x13.services.StatusRes\x12/\n\x05Start\x12\x12.services.StartReq\x1a\x12.services.StartRes\x12?\n\tSubscribe\x12\x16.services.SubscribeReq\x1a\x18.services.TrainingMetric0\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,17 +32,17 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'metrics_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_TRAININGMETRIC']._serialized_start=28
-  _globals['_TRAININGMETRIC']._serialized_end=161
-  _globals['_SUBSCRIBEREQ']._serialized_start=163
-  _globals['_SUBSCRIBEREQ']._serialized_end=177
-  _globals['_STATUSREQ']._serialized_start=179
-  _globals['_STATUSREQ']._serialized_end=190
-  _globals['_STATUSRES']._serialized_start=192
-  _globals['_STATUSRES']._serialized_end=251
-  _globals['_STARTREQ']._serialized_start=253
-  _globals['_STARTREQ']._serialized_end=302
-  _globals['_STARTRES']._serialized_start=304
-  _globals['_STARTRES']._serialized_end=347
-  _globals['_TRAINING']._serialized_start=350
-  _globals['_TRAINING']._serialized_end=526
+  _globals['_TRAININGMETRIC']._serialized_end=180
+  _globals['_SUBSCRIBEREQ']._serialized_start=182
+  _globals['_SUBSCRIBEREQ']._serialized_end=196
+  _globals['_STATUSREQ']._serialized_start=198
+  _globals['_STATUSREQ']._serialized_end=209
+  _globals['_STATUSRES']._serialized_start=211
+  _globals['_STATUSRES']._serialized_end=270
+  _globals['_STARTREQ']._serialized_start=272
+  _globals['_STARTREQ']._serialized_end=321
+  _globals['_STARTRES']._serialized_start=323
+  _globals['_STARTRES']._serialized_end=366
+  _globals['_TRAINING']._serialized_start=369
+  _globals['_TRAINING']._serialized_end=545
 # @@protoc_insertion_point(module_scope)

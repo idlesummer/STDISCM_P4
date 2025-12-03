@@ -273,10 +273,12 @@ export default function DashboardPage() {
                               className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
                             >
                               <TableCell>
-                                <div className="w-16 h-16 rounded-lg bg-card border border-border flex items-center justify-center">
-                                  <Typography3XL className="text-muted-foreground font-bold">
-                                    {metric.truths[idx]}
-                                  </Typography3XL>
+                                <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden">
+                                  <img
+                                    src={`/images/test/${metric.image_ids[idx]}.png`}
+                                    alt={`MNIST digit ${metric.truths[idx]}`}
+                                    className="w-full h-full object-contain"
+                                  />
                                 </div>
                               </TableCell>
                               <TableCell className="font-medium">Sample {idx + 1}</TableCell>
@@ -316,10 +318,12 @@ export default function DashboardPage() {
                               className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
                             >
                               <TableCell>
-                                <div className="w-16 h-16 rounded-lg bg-card border border-border flex items-center justify-center">
-                                  <Typography3XL className="text-muted-foreground font-bold">
-                                    {metric.truths[actualIdx]}
-                                  </Typography3XL>
+                                <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden">
+                                  <img
+                                    src={`/images/test/${metric.image_ids[actualIdx]}.png`}
+                                    alt={`MNIST digit ${metric.truths[actualIdx]}`}
+                                    className="w-full h-full object-contain"
+                                  />
                                 </div>
                               </TableCell>
                               <TableCell className="font-medium">Sample {actualIdx + 1}</TableCell>

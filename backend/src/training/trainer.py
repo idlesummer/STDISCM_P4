@@ -15,6 +15,7 @@ class TrainingMetric(TypedDict):
     preds: list[int]
     truths: list[int]
     scores: list[float]
+    image_ids: list[int]
 
 
 class Trainer:
@@ -42,8 +43,8 @@ class Trainer:
         self.metrics = Queue()
         self.update_interval = update_interval
 
-    def train_batch(self, inputs: Tensor, targets: Tensor) -> tuple[float, list[int], list[int], list[float]]:
-        """Train on a single batch and return loss, predictions, ground truths, and confidence scores."""
+    def train_batch(self, indices: Tensor, inputs: Tensor, targets: Tensor) -> tuple[float, list[int], list[int], list[float], list[int]]:
+        """Train on a single batch and return loss, predictions, ground truths, confidence scores, and image indices."""
 
         # Standard training step
         self.optimizer.zero_grad(set_to_none=True)
@@ -55,13 +56,14 @@ class Trainer:
         # Extract predictions and targets
         preds = outputs.argmax(dim=-1).tolist()
         truths = targets.tolist()
+        image_ids = indices.tolist()
 
         # Get confidence scores (softmax probabilities for predicted class)
         import torch.nn.functional as F
         probs = F.softmax(outputs, dim=-1)
         scores = [probs[i, pred].item() for i, pred in enumerate(preds)]
 
-        return loss.item(), preds, truths, scores
+        return loss.item(), preds, truths, scores, image_ids
 
     def train_epoch(self, epoch: int) -> float:
         """Train for one epoch and return average loss."""
@@ -69,8 +71,8 @@ class Trainer:
         running_loss = 0.0
 
         num_batches = len(self.dataloader)  # guard for last-batch check
-        for batch, (inputs, targets) in enumerate(self.dataloader):
-            batch_loss, preds, truths, scores = self.train_batch(inputs, targets)
+        for batch, (indices, inputs, targets) in enumerate(self.dataloader):
+            batch_loss, preds, truths, scores, image_ids = self.train_batch(indices, inputs, targets)
             running_loss += batch_loss
 
             # Record at interval boundaries, and always for the final batch
@@ -86,6 +88,7 @@ class Trainer:
                     'preds': preds,
                     'truths': truths,
                     'scores': scores,
+                    'image_ids': image_ids,
                 })
 
         return running_loss / len(self.dataloader)

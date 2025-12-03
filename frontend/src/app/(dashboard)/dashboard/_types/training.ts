@@ -6,6 +6,7 @@ export type TrainingMetric = {
   preds: number[]
   truths: number[]
   scores: number[]
+  image_ids: number[]
 }
 
 export type LossDataPoint = {

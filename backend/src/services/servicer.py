@@ -66,6 +66,7 @@ class Servicer(pbg.TrainingServicer):
                     preds=[int(x) for x in metric['preds']],
                     truths=[int(x) for x in metric['truths']],
                     scores=[float(x) for x in metric.get('scores', [])],
+                    image_ids=[int(x) for x in metric.get('image_ids', [])],
                 )
 
         except Exception as e:
