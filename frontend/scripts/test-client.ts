@@ -153,14 +153,17 @@ async function main() {
     console.log()
     shouldClose = false // Subscribe handlers will close the client
     client.subscribe()
-
-  } catch (error: any) {
-    console.error(`❌ Error: ${error.message}`)
-  } finally {
+  }
+  
+  catch (error: unknown) {
+    if (error instanceof Error)
+      console.error(`❌ Error: ${error.message}`)
+  } 
+  
+  finally {
     // Only close if we didn't reach subscribe (which handles its own cleanup)
-    if (shouldClose) {
+    if (shouldClose)
       client.close()
-    }
   }
 }
 
