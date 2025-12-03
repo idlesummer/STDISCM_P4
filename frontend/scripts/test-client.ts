@@ -14,7 +14,8 @@ class Client {
   private timeout: number
 
   constructor(target: string, timeout: number = 10000) {
-    this.client = new TrainingClient(target, grpc.credentials.createInsecure())
+    const channel = grpc.credentials.createInsecure()
+    this.client = new TrainingClient(target, channel)
     this.timeout = timeout / 1000
     console.log(`📡 Client initialized (target=${target}, timeout=${this.timeout}s)`)
   }
