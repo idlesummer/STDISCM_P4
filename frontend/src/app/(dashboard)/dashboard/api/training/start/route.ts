@@ -21,9 +21,12 @@ export async function POST(request: NextRequest) {
         client.close()
 
         if (error) {
-          console.error('gRPC Start error:', error)
+          const errorMsg = error.code === 14
+            ? 'Failed to connect to server. Please start the backend server.'
+            : error.message
+          console.error('gRPC Start error:', errorMsg)
           resolve(NextResponse.json(
-            { error: error.message },
+            { error: errorMsg },
             { status: 500 }
           ))
         } else {
