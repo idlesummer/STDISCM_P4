@@ -6,7 +6,7 @@ import path from 'path'
 export const dynamic = 'force-dynamic'
 
 // Load the proto file
-const PROTO_PATH = path.resolve(process.cwd(), '../../packages/proto/metrics.proto')
+const PROTO_PATH = path.resolve(process.cwd(), '../packages/proto/metrics.proto')
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,
