@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:grpc": "tsx test-grpc-client.ts"
+    "test:grpc": "tsx scripts/test-grpc-client.ts"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.2",
