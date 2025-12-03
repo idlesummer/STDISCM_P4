@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { TrainingMetric, LossDataPoint } from './use-fake-training'
 
@@ -10,14 +10,13 @@ export function useTraining(
   const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
   const [error, setError] = useState<string | null>(null)
-  const hasShownErrorRef = useRef(false)
 
   // Effect
   useEffect(() => {
     if (!isTraining) return
 
     let eventSource: EventSource | null = null
-    hasShownErrorRef.current = false
+    let hasShownError = false
 
     // Subscribe to metrics stream
     eventSource = new EventSource('/dashboard/api/training/subscribe')
@@ -28,9 +27,9 @@ export function useTraining(
 
         if (data.error) {
           setError(data.error)
-          if (!hasShownErrorRef.current) {
+          if (!hasShownError) {
             toast.error(data.error)
-            hasShownErrorRef.current = true
+            hasShownError = true
           }
           setIsTraining(false)
           return
@@ -60,9 +59,9 @@ export function useTraining(
       console.error('EventSource error:', err)
       const errorMsg = 'Connection to server lost'
       setError(errorMsg)
-      if (!hasShownErrorRef.current) {
+      if (!hasShownError) {
         toast.error(errorMsg)
-        hasShownErrorRef.current = true
+        hasShownError = true
       }
       eventSource?.close()
       setIsTraining(false)
@@ -70,7 +69,6 @@ export function useTraining(
 
     return () => {
       eventSource?.close()
-      hasShownErrorRef.current = false
     }
   }, [isTraining, setIsTraining])
 
