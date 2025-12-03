@@ -17,7 +17,7 @@ export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
           position="top-center"
           toastOptions={{
             classNames: {
-              toast: 'bg-red-600 text-white text-lg font-medium',
+              toast: '!bg-red-500 !text-white',
             },
           }}
         />
