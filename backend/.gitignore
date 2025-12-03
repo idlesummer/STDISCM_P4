@@ -13,3 +13,6 @@ ENV/
 *.egg-info/
 build/
 dist/
+
+# Generated MNIST images
+images/
