@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as grpc from '@grpc/grpc-js'
-import { TrainingClient } from '@/proto/metrics_grpc_pb'
-import { StatusReq } from '@/proto/metrics_pb'
+import { TrainingClient } from '@/proto/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,9 +14,7 @@ export async function GET(request: NextRequest) {
 
     // Call Status RPC
     return new Promise<NextResponse>((resolve) => {
-      const statusReq = new StatusReq()
-
-      client.status(statusReq, (error: any, response: any) => {
+      client.status({}, (error: any, response: any) => {
         if (error) {
           console.error('gRPC Status error:', error)
           resolve(NextResponse.json(

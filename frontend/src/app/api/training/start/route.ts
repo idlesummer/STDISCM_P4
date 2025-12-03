@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as grpc from '@grpc/grpc-js'
-import { TrainingClient } from '@/proto/metrics_grpc_pb'
-import { StartReq } from '@/proto/metrics_pb'
+import { TrainingClient } from '@/proto/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,11 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Call Start RPC
     return new Promise<NextResponse>((resolve) => {
-      const startReq = new StartReq()
-      startReq.setNumEpochs(numEpochs)
-      startReq.setConfirmed(true)
-
-      client.start(startReq, (error: any, response: any) => {
+      client.start({ numEpochs, confirmed: true }, (error: any, response: any) => {
           if (error) {
             console.error('gRPC Start error:', error)
             resolve(NextResponse.json(

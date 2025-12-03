@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import * as grpc from '@grpc/grpc-js'
-import { TrainingClient } from '@/proto/metrics_grpc_pb'
-import { SubscribeReq } from '@/proto/metrics_pb'
+import { TrainingClient } from '@/proto/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,15 +17,14 @@ export async function GET(request: NextRequest) {
       )
 
       // Subscribe to metrics stream
-      const subscribeReq = new SubscribeReq()
-      const call = client.subscribe(subscribeReq)
+      const call = client.subscribe({})
 
       call.on('data', (metric: any) => {
         const data = JSON.stringify({
           epoch: metric.epoch,
           batch: metric.batch,
-          batch_size: metric.batch_size,
-          batch_loss: metric.batch_loss,
+          batch_size: metric.batchSize,
+          batch_loss: metric.batchLoss,
           preds: metric.preds,
           truths: metric.truths,
           scores: metric.scores,
