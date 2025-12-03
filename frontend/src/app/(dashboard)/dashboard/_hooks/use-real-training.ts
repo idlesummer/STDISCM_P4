@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { TrainingMetric, LossDataPoint } from './use-fake-training'
 
 export function useRealTraining(
@@ -30,7 +31,9 @@ export function useRealTraining(
         const data = await response.json()
 
         if (!response.ok || data.error) {
-          throw new Error(data.error || 'Failed to start training')
+          const errorMsg = data.error || 'Failed to start training'
+          toast.error(errorMsg)
+          throw new Error(errorMsg)
         }
 
         console.log('Training started:', data)
@@ -44,6 +47,7 @@ export function useRealTraining(
 
             if (data.error) {
               setError(data.error)
+              toast.error(data.error)
               setIsTraining(false)
               return
             }
@@ -70,13 +74,17 @@ export function useRealTraining(
 
         eventSource.onerror = (err) => {
           console.error('EventSource error:', err)
-          setError('Connection to server lost')
+          const errorMsg = 'Connection to server lost'
+          setError(errorMsg)
+          toast.error(errorMsg)
           eventSource?.close()
           setIsTraining(false)
         }
       } catch (err: any) {
         console.error('Error starting training:', err)
-        setError(err.message)
+        const errorMsg = err.message || 'Failed to connect to server'
+        setError(errorMsg)
+        toast.error('Server not connected. Please start the backend server.')
         setIsTraining(false)
       }
     }
