@@ -3,33 +3,33 @@
  * Run with: npm run test (from frontend directory)
  */
 
-import * as readline from 'readline'
+import * as readline from 'readline/promises'
 import * as grpc from '@grpc/grpc-js'
 import { promisify } from 'util'
 import { TrainingClient } from '../src/generated/metrics'
 import type { ServiceError } from '@grpc/grpc-js'
 import type { StatusRes, StartRes, TrainingMetric } from '../src/generated/metrics'
 
+
 class Client {
   private client: TrainingClient
-  private timeout: number
-  private statusAsync: (request: {}) => Promise<StatusRes>
+  private statusAsync: (request: Record<string, never>) => Promise<StatusRes>
   private startAsync: (request: { numEpochs: number; confirmed: boolean }) => Promise<StartRes>
 
   constructor(target: string, timeout: number = 10000) {
     const channel = grpc.credentials.createInsecure()
     this.client = new TrainingClient(target, channel)
-    this.timeout = timeout / 1000
 
     // Promisify methods once during construction
     this.statusAsync = promisify(this.client.status.bind(this.client))
     this.startAsync = promisify(this.client.start.bind(this.client))
 
-    console.log(`📡 Client initialized (target=${target}, timeout=${this.timeout}s)`)
+    // Log initialization
+    console.log(`📡 Client initialized (target=${target}, timeout=${timeout / 1000}s)`)
   }
 
   async status(): Promise<StatusRes> {
-    console.log('🔍 Checking server status...')
+    console.log('🔍 Checking server res...')
 
     try {
       const res = await this.statusAsync({})
@@ -38,8 +38,8 @@ class Client {
       console.log(`   Message: ${res.message}`)
       if (res.epoch > 0)
         console.log(`   Current epoch: ${res.epoch}`)
-
       return res
+
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
         const grpcError = error as ServiceError
@@ -57,8 +57,8 @@ class Client {
 
       console.log(`   Status: ${res.status}`)
       console.log(`   Message: ${res.message}`)
-
       return res
+      
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
         const grpcError = error as ServiceError
@@ -70,7 +70,6 @@ class Client {
 
   subscribe(): void {
     console.log('📡 Subscribing to metrics stream...')
-
     const call = this.client.subscribe({})
 
     call.on('data', (metric: TrainingMetric) => {
@@ -103,21 +102,18 @@ class Client {
   }
 }
 
-async function askQuestion(question: string): Promise<string> {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  })
+async function input(question: string): Promise<string> {
+  const input = process.stdin
+  const output = process.stdout
+  const rl = readline.createInterface({ input, output })
+  const answer = await rl.question(question)  // Use the promises API instead of callbacks
+  rl.close()
 
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close()
-      resolve(answer.trim().toLowerCase())
-    })
-  })
+  return answer.trim().toLowerCase()
 }
 
-async function main(): Promise<void> {
+
+async function main() {
   const target = 'localhost:50051'
   const numEpochs = 3
   const client = new Client(target)
@@ -128,33 +124,37 @@ async function main(): Promise<void> {
 
   try {
     // Step 1: Check server status (handshake)
-    const status = await client.status()
+    const res = await client.status()
 
-    if (status.status === 'training') {
-      console.log(`⚠️  Server is already training at epoch ${status.epoch}. Exiting.`)
+    
+    if (res.status === 'ready') {
+
+      // Step 2: Ask user for confirmation to start training
+      console.log(`\n❓ Start training with ${numEpochs} epochs?`)
+      const confirmation = await input('   Type "yes" to proceed: ')
+
+      if (confirmation !== 'yes') {
+        console.log('❌ Training cancelled by user.')
+        return
+      }
+
+      // Step 3: Start training
+      console.log()
+      const startRes = await client.start(numEpochs, true)
+
+      if (startRes.status !== 'started') {
+        console.log('⚠️  Training not started. Exiting.')
+        return
+      }
+    }
+    
+    if (res.status === 'training') {
+      console.log(`⚠️  Server is already training at epoch ${res.epoch}. Exiting.`)
       return
     }
 
-    if (status.status !== 'ready') {
+    else if (res.status !== 'ready') {
       console.log('⚠️  Server not ready. Exiting.')
-      return
-    }
-
-    // Step 2: Ask user for confirmation
-    console.log(`\n❓ Start training with ${numEpochs} epochs?`)
-    const confirmation = await askQuestion('   Type "yes" to proceed: ')
-
-    if (confirmation !== 'yes') {
-      console.log('❌ Training cancelled by user.')
-      return
-    }
-
-    // Step 3: Start training
-    console.log()
-    const startRes = await client.start(numEpochs, true)
-
-    if (startRes.status !== 'started') {
-      console.log('⚠️  Training not started. Exiting.')
       return
     }
 
@@ -162,13 +162,16 @@ async function main(): Promise<void> {
     console.log()
     shouldClose = false // Subscribe handlers will close the client
     client.subscribe()
-
-  } catch (error) {
+  } 
+  
+  catch (error) {
     if (error instanceof Error)
       console.error(`❌ Error: ${error.message}`)
     else
-      console.error(`❌ Error: ${String(error)}`)
-  } finally {
+      console.error(`❌ Error: ${String(error)}`)  
+  } 
+
+  finally {
     // Only close if we didn't reach subscribe (which handles its own cleanup)
     if (shouldClose)
       client.close()
@@ -180,5 +183,6 @@ process.on('SIGINT', () => {
   console.log('\n⏹️  Interrupted by user')
   process.exit(0)
 })
+
 
 main()
