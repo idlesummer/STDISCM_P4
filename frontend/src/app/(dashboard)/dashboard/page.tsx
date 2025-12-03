@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Hash, Layers, Pause, Play, RotateCwSquare, Smile, TableProperties, TrendingDown, Zap } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { toast } from 'sonner'
+import axios from 'axios'
 
 // Component imports
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,20 @@ import { Typography3XL, TypographyH2, TypographyMuted, TypographyXS } from '@/co
 import { useTraining } from './_hooks/use-training'
 import { useFPS } from './_hooks/use-fps'
 
+// Types
+interface StartTrainingRequest {
+  numEpochs: number
+}
+
+interface StartTrainingResponse {
+  status: string
+  message: string
+}
+
+interface StartTrainingError {
+  error: string
+}
+
 export default function DashboardPage() {
   // Training state hooks
   const [isTraining, setIsTraining] = useState(false)
@@ -32,25 +47,18 @@ export default function DashboardPage() {
   const handleStop = () => setIsTraining(false)
   const handleStart = async () => {
     try {
-      const response = await fetch('/dashboard/api/training/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ numEpochs: 3 }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok || data.error) {
-        toast.error(data.error || 'Failed to start training')
-        return
-      }
+      const { data } = await axios.post<StartTrainingResponse>(
+        '/dashboard/api/training/start',
+        { numEpochs: 3 } satisfies StartTrainingRequest
+      )
 
       resetTraining()
       setIsTraining(true)
-    } catch (err: any) {
-      toast.error('Server not connected. Please start the backend server.')
+    } catch (err) {
+      if (axios.isAxiosError<StartTrainingError>(err) && err.response?.data.error)
+        toast.error(err.response.data.error)
+      else
+        toast.error('Server not connected. Please start the backend server.')
     }
   }
 
