@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
       resetTraining()
       setIsTraining(true)
-    } catch (err: any) {
+    } catch {
       toast.error('Server not connected. Please start the backend server.')
     }
   }
