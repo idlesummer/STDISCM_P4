@@ -82,30 +82,30 @@ def main() -> None:
 
     try:
         # Step 1: Check server status (handshake)
-        status = client.status()
+        res = client.status()
 
-        if status.status == "training":
-            print(f"⚠️  Server is already training at epoch {status.epoch}. Exiting.")
-            return
+        if res.status == 'ready':
+            # Step 2: Ask user for confirmation to start training
+            print(f"\n❓ Start training with {num_epochs} epochs?")
+            confirmation = input("   Type 'yes' to proceed: ").strip().lower()
 
-        if status.status != "ready":
+            if confirmation != 'yes':
+                print("❌ Training cancelled by user.")
+                return
+
+            # Step 3: Start training
+            print()
+            start_res = client.start(num_epochs=num_epochs, confirmed=True)
+
+            if start_res.status != "started":
+                print("⚠️  Training not started. Exiting.")
+                return
+
+        elif res.status == "training":
+            print(f"⚠️  Server is already training at epoch {res.epoch}. Exiting.")
+
+        elif res.status != "ready":
             print("⚠️  Server not ready. Exiting.")
-            return
-
-        # Step 2: Ask user for confirmation
-        print(f"\n❓ Start training with {num_epochs} epochs?")
-        confirmation = input("   Type 'yes' to proceed: ").strip().lower()
-
-        if confirmation != 'yes':
-            print("❌ Training cancelled by user.")
-            return
-
-        # Step 3: Start training
-        print()
-        start_res = client.start(num_epochs=num_epochs, confirmed=True)
-
-        if start_res.status != "started":
-            print("⚠️  Training not started. Exiting.")
             return
 
         # Step 4: Subscribe to metrics stream
@@ -122,8 +122,10 @@ def main() -> None:
 
     except KeyboardInterrupt:
         print("\n⏹️  Interrupted by user")
+        
     except Exception as e:
         print(f"❌ Error: {e}")
+
     finally:
         client.close()
 
