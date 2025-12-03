@@ -20,7 +20,7 @@ import { Typography3XL, TypographyH2, TypographyMuted, TypographyXS } from '@/co
 // Local imports
 import { useTraining } from './_hooks/use-training'
 import { useFPS } from './_hooks/use-fps'
-import { StartTrainingRequest, StartTrainingResponse, StartTrainingError } from './_types/api'
+import { StartTrainingReq, StartTrainingRes } from './_types/api'
 
 export default function DashboardPage() {
   // Training state hooks
@@ -34,8 +34,8 @@ export default function DashboardPage() {
   const handleStop = () => setIsTraining(false)
   const handleStart = async () => {
     try {
-      const req: StartTrainingRequest = { numEpochs: 3 }
-      await axios.post<StartTrainingResponse>('/dashboard/api/training/start', req)
+      const req: StartTrainingReq = { numEpochs: 3 }
+      await axios.post<StartTrainingRes>('/dashboard/api/training/start', req)
       resetTraining()
       setIsTraining(true)
       
