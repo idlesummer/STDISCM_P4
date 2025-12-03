@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
+import torch
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 from grpc import server as Server
@@ -13,6 +14,9 @@ from src.training.trainer import Trainer
 
 def main() -> None:
     """Entry point for training with gRPC metric streaming server."""
+
+    # Set seed for reproducibility
+    torch.manual_seed(0)
 
     # 1. Load data
     data = DataModule(root='./data', batch_size=16, download=True)
