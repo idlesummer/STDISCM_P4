@@ -1,11 +1,11 @@
 /**
  * Standalone gRPC client to test the training server
- * Run with: npx tsx test-grpc-client.ts
+ * Run with: npm run test (from frontend directory)
  */
 
 import * as grpc from '@grpc/grpc-js'
 import * as readline from 'readline'
-import { TrainingClient } from './src/generated/metrics'
+import { TrainingClient } from '../src/generated/metrics'
 
 class Client {
   private client: TrainingClient
@@ -17,7 +17,7 @@ class Client {
       grpc.credentials.createInsecure()
     )
     this.timeout = timeout
-    console.log(`📡 Client initialized (target=${target}, timeout=${timeout}ms)\n`)
+    console.log(`📡 Client initialized (target=${target}, timeout=${timeout / 1000}s)`)
   }
 
   async status(): Promise<any> {
@@ -60,7 +60,7 @@ class Client {
   }
 
   subscribe(): void {
-    console.log('📡 Subscribing to metrics stream...\n')
+    console.log('📡 Subscribing to metrics stream...')
 
     const call = this.client.subscribe({})
 
@@ -76,12 +76,14 @@ class Client {
     })
 
     call.on('end', () => {
-      console.log('🔌 Stream ended')
+      console.log('🔌 Unsubscribed from metrics stream')
+      this.close()
       process.exit(0)
     })
 
     call.on('error', (error) => {
       console.error(`❌ Streaming error: ${error.message}`)
+      this.close()
       process.exit(1)
     })
   }
@@ -113,46 +115,52 @@ async function main() {
 
   console.log(`📡 Connected to training server at ${target}.\n`)
 
+  let shouldClose = true // Track if we should close in finally
+
   try {
     // Step 1: Check server status (handshake)
     const status = await client.status()
-    console.log()
 
     if (status.status === 'training') {
       console.log(`⚠️  Server is already training at epoch ${status.epoch}. Exiting.`)
-      process.exit(0)
+      return
     }
 
     if (status.status !== 'ready') {
       console.log('⚠️  Server not ready. Exiting.')
-      process.exit(0)
+      return
     }
 
     // Step 2: Ask user for confirmation
-    console.log(`❓ Start training with ${numEpochs} epochs?`)
+    console.log(`\n❓ Start training with ${numEpochs} epochs?`)
     const confirmation = await askQuestion('   Type "yes" to proceed: ')
 
     if (confirmation !== 'yes') {
       console.log('❌ Training cancelled by user.')
-      process.exit(0)
+      return
     }
 
     // Step 3: Start training
     console.log()
     const startRes = await client.start(numEpochs, true)
-    console.log()
 
     if (startRes.status !== 'started') {
       console.log('⚠️  Training not started. Exiting.')
-      process.exit(0)
+      return
     }
 
     // Step 4: Subscribe to metrics stream
+    console.log()
+    shouldClose = false // Subscribe handlers will close the client
     client.subscribe()
 
   } catch (error: any) {
     console.error(`❌ Error: ${error.message}`)
-    process.exit(1)
+  } finally {
+    // Only close if we didn't reach subscribe (which handles its own cleanup)
+    if (shouldClose) {
+      client.close()
+    }
   }
 }
 
