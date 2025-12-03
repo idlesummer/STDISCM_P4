@@ -5,7 +5,7 @@
   "description": "STDISCM Machine Learning Project",
   "scripts": {
     "gen": "npm run gen-py && npm run gen-ts",
-    "gen-py": "cd backend && uv run python -m grpc_tools.protoc -I ../packages/proto --python_out=src/proto --grpc_python_out=src/proto --pyi_out=src/proto ../packages/proto/metrics.proto && uv run python -c \"open('src/proto/__init__.py', 'w').write('# Generated gRPC proto stubs\\n')\" && uv run python -c \"data = open('src/proto/metrics_pb2_grpc.py').read(); open('src/proto/metrics_pb2_grpc.py', 'w').write(data.replace('import metrics_pb2 as metrics__pb2', 'from . import metrics_pb2 as metrics__pb2'))\"",
+    "gen-py": "cd backend && uv run python -m grpc_tools.protoc -I ../packages/proto --python_out=src/proto --grpc_python_out=src/proto --pyi_out=src/proto ../packages/proto/metrics.proto",
     "gen-ts": "cd frontend && npx grpc_tools_node_protoc --js_out=import_style=commonjs,binary:src/proto --grpc_out=grpc_js:src/proto --plugin=protoc-gen-grpc=../node_modules/.bin/grpc_tools_node_protoc_plugin -I ../packages/proto ../packages/proto/metrics.proto && npx grpc_tools_node_protoc --plugin=protoc-gen-ts=../node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:src/proto -I ../packages/proto ../packages/proto/metrics.proto"
   },
   "workspaces": [
