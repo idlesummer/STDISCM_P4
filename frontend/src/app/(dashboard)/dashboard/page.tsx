@@ -47,18 +47,17 @@ export default function DashboardPage() {
   const handleStop = () => setIsTraining(false)
   const handleStart = async () => {
     try {
-      const { data } = await axios.post<StartTrainingResponse>(
-        '/dashboard/api/training/start',
-        { numEpochs: 3 } satisfies StartTrainingRequest
-      )
-
+      const req: StartTrainingRequest = { numEpochs: 3 }
+      await axios.post<StartTrainingResponse>('/dashboard/api/training/start', req)
       resetTraining()
       setIsTraining(true)
+      
     } catch (err) {
-      if (axios.isAxiosError<StartTrainingError>(err) && err.response?.data.error)
-        toast.error(err.response.data.error)
-      else
-        toast.error('Server not connected. Please start the backend server.')
+      const msg =
+        axios.isAxiosError(err)
+          ? err.response?.data?.error ?? err.message
+          : 'Server not connected. Please start the backend server.'
+      toast.error(msg)
     }
   }
 
