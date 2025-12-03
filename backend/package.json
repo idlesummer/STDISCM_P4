@@ -6,8 +6,8 @@
   "scripts": {
     "start": "uv run python -m src.main",
     "dev": "uv run python -m src.main",
-    "venv": "cmd.exe /K .venv\\Scripts\\activate",
-    "subscribe": "uv run python -m src.subscriber",
-    "install": "uv sync"
+    "test": "uv run python -m src.scripts.client",
+    "install": "uv sync",
+    "venv": "cmd.exe /K .venv\\Scripts\\activate"
   }
 }

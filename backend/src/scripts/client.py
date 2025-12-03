@@ -1,5 +1,12 @@
+from pathlib import Path
 from typing import Iterator
+import sys
 import grpc
+
+
+# Add generated directory to sys.path for protobuf imports
+generated_dir = Path(__file__).parent / "generated"
+sys.path.insert(0, str(generated_dir))
 
 from src.generated import metrics_pb2 as pb
 from src.generated import metrics_pb2_grpc as pbg
