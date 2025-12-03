@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { TrainingMetric, LossDataPoint } from './use-fake-training'
 
@@ -10,12 +10,14 @@ export function useRealTraining(
   const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
   const [error, setError] = useState<string | null>(null)
+  const hasShownErrorRef = useRef(false)
 
   // Effect
   useEffect(() => {
     if (!isTraining) return
 
     let eventSource: EventSource | null = null
+    hasShownErrorRef.current = false
 
     // Start training first
     const startTraining = async () => {
@@ -32,7 +34,10 @@ export function useRealTraining(
 
         if (!response.ok || data.error) {
           const errorMsg = data.error || 'Failed to start training'
-          toast.error(errorMsg)
+          if (!hasShownErrorRef.current) {
+            toast.error(errorMsg, { id: 'training-error' })
+            hasShownErrorRef.current = true
+          }
           throw new Error(errorMsg)
         }
 
@@ -47,7 +52,10 @@ export function useRealTraining(
 
             if (data.error) {
               setError(data.error)
-              toast.error(data.error)
+              if (!hasShownErrorRef.current) {
+                toast.error(data.error, { id: 'training-error' })
+                hasShownErrorRef.current = true
+              }
               setIsTraining(false)
               return
             }
@@ -76,7 +84,10 @@ export function useRealTraining(
           console.error('EventSource error:', err)
           const errorMsg = 'Connection to server lost'
           setError(errorMsg)
-          toast.error(errorMsg)
+          if (!hasShownErrorRef.current) {
+            toast.error(errorMsg, { id: 'training-error' })
+            hasShownErrorRef.current = true
+          }
           eventSource?.close()
           setIsTraining(false)
         }
@@ -84,7 +95,10 @@ export function useRealTraining(
         console.error('Error starting training:', err)
         const errorMsg = err.message || 'Failed to connect to server'
         setError(errorMsg)
-        toast.error('Server not connected. Please start the backend server.')
+        if (!hasShownErrorRef.current) {
+          toast.error('Server not connected. Please start the backend server.', { id: 'training-error' })
+          hasShownErrorRef.current = true
+        }
         setIsTraining(false)
       }
     }
@@ -93,6 +107,7 @@ export function useRealTraining(
 
     return () => {
       eventSource?.close()
+      hasShownErrorRef.current = false
     }
   }, [isTraining, setIsTraining])
 
