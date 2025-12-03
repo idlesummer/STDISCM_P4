@@ -4,8 +4,9 @@
  */
 
 import * as grpc from '@grpc/grpc-js'
+import type { ServiceError } from '@grpc/grpc-js'
 import * as readline from 'readline'
-import { TrainingClient } from '../src/generated/metrics'
+import { TrainingClient, type StatusRes, type StartRes, type TrainingMetric } from '../src/generated/metrics'
 
 class Client {
   private client: TrainingClient
@@ -20,35 +21,45 @@ class Client {
     console.log(`📡 Client initialized (target=${target}, timeout=${timeout / 1000}s)`)
   }
 
-  async status(): Promise<any> {
+  async status(): Promise<StatusRes> {
     console.log('🔍 Checking server status...')
 
     return new Promise((resolve, reject) => {
-      this.client.status({}, (error, response) => {
+      this.client.status({}, (error: ServiceError | null, response?: StatusRes) => {
         if (error) {
           console.error(`❌ Failed to get status: ${error.code} - ${error.message}`)
           reject(error)
           return
         }
 
+        if (!response) {
+          reject(new Error('No response received'))
+          return
+        }
+
         console.log(`   Status: ${response.status}`)
         console.log(`   Message: ${response.message}`)
-        if (response.epoch > 0) {
+        if (response.epoch > 0)
           console.log(`   Current epoch: ${response.epoch}`)
-        }
+
         resolve(response)
       })
     })
   }
 
-  async start(numEpochs: number, confirmed: boolean = true): Promise<any> {
+  async start(numEpochs: number, confirmed: boolean = true): Promise<StartRes> {
     console.log(`🎬 Starting training (${numEpochs} epochs, confirmed=${confirmed})...`)
 
     return new Promise((resolve, reject) => {
-      this.client.start({ numEpochs, confirmed }, (error, response) => {
+      this.client.start({ numEpochs, confirmed }, (error: ServiceError | null, response?: StartRes) => {
         if (error) {
           console.error(`❌ Failed to start training: ${error.code} - ${error.message}`)
           reject(error)
+          return
+        }
+
+        if (!response) {
+          reject(new Error('No response received'))
           return
         }
 
@@ -64,7 +75,7 @@ class Client {
 
     const call = this.client.subscribe({})
 
-    call.on('data', (metric) => {
+    call.on('data', (metric: TrainingMetric) => {
       console.log('📊 Received Metric:')
       console.log(`   Epoch: ${metric.epoch}`)
       console.log(`   Batch: ${metric.batch}`)
@@ -81,7 +92,7 @@ class Client {
       process.exit(0)
     })
 
-    call.on('error', (error) => {
+    call.on('error', (error: Error) => {
       console.error(`❌ Streaming error: ${error.message}`)
       this.close()
       process.exit(1)
@@ -108,7 +119,7 @@ async function askQuestion(question: string): Promise<string> {
   })
 }
 
-async function main() {
+async function main(): Promise<void> {
   const target = 'localhost:50051'
   const numEpochs = 3
   const client = new Client(target)
@@ -153,14 +164,13 @@ async function main() {
     console.log()
     shouldClose = false // Subscribe handlers will close the client
     client.subscribe()
-  }
-  
-  catch (error: unknown) {
+
+  } catch (error) {
     if (error instanceof Error)
       console.error(`❌ Error: ${error.message}`)
-  } 
-  
-  finally {
+    else
+      console.error(`❌ Error: ${String(error)}`)
+  } finally {
     // Only close if we didn't reach subscribe (which handles its own cleanup)
     if (shouldClose)
       client.close()
