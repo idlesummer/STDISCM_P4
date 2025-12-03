@@ -15,10 +15,8 @@ export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
         {children}
         <Toaster
           position="top-center"
-          toastOptions={{
-            classNames: {
-              toast: '!bg-red-500 !text-white',
-            },
+          toastOptions={{ 
+            classNames: { toast: '!bg-red-500 !text-white' },
           }}
         />
       </body>
