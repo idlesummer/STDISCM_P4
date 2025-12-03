@@ -41,10 +41,8 @@ class Client {
 
       return res
     } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
-        const grpcError = error as ServiceError
-        console.error(`❌ Failed to get status: ${grpcError.code} - ${grpcError.message}`)
-      }
+      const grpcError = error as ServiceError
+      console.error(`❌ Failed to get status: ${grpcError.code} - ${grpcError.message}`)
       throw error
     }
   }
@@ -60,10 +58,8 @@ class Client {
 
       return res
     } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
-        const grpcError = error as ServiceError
-        console.error(`❌ Failed to start training: ${grpcError.code} - ${grpcError.message}`)
-      }
+      const grpcError = error as ServiceError
+      console.error(`❌ Failed to start training: ${grpcError.code} - ${grpcError.message}`)
       throw error
     }
   }
