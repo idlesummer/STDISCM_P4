@@ -61,7 +61,12 @@ export async function GET(request: NextRequest) {
       })
 
       call.on('error', (err: any) => {
-        console.error('gRPC error:', err)
+        // Check if this is an intentional cancellation (not a real error)
+        if (err.code === 1) {
+          console.log('gRPC stream cancelled by client')
+        } else {
+          console.error('gRPC error:', err)
+        }
 
         if (!isClosed) {
           try {
