@@ -3,20 +3,18 @@
  * Run with: npm run test (from frontend directory)
  */
 
-import * as grpc from '@grpc/grpc-js'
-import type { ServiceError } from '@grpc/grpc-js'
 import * as readline from 'readline'
-import { TrainingClient, type StatusRes, type StartRes, type TrainingMetric } from '../src/generated/metrics'
+import * as grpc from '@grpc/grpc-js'
+import { TrainingClient } from '../src/generated/metrics'
+import type { ServiceError } from '@grpc/grpc-js'
+import type { StatusRes, StartRes, TrainingMetric } from '../src/generated/metrics'
 
 class Client {
   private client: TrainingClient
   private timeout: number
 
   constructor(target: string, timeout: number = 10000) {
-    this.client = new TrainingClient(
-      target,
-      grpc.credentials.createInsecure()
-    )
+    this.client = new TrainingClient(target, grpc.credentials.createInsecure())
     this.timeout = timeout
     console.log(`📡 Client initialized (target=${target}, timeout=${timeout / 1000}s)`)
   }
