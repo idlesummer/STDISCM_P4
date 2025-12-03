@@ -2,8 +2,8 @@ from queue import Queue, Empty
 from typing import Iterator, Callable
 import grpc
 
-from src.proto import metrics_pb2 as pb
-from src.proto import metrics_pb2_grpc as pbg
+from src.generated import metrics_pb2 as pb
+from src.generated import metrics_pb2_grpc as pbg
 
 
 class Servicer(pbg.TrainingServicer):

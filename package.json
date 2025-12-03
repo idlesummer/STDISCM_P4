@@ -4,8 +4,8 @@
   "private": true,
   "description": "STDISCM Machine Learning Project",
   "scripts": {
-    "gen": "npm run gen-py && npm run gen-ts",
-    "gen-py": "cd backend && uv run python -m grpc_tools.protoc -I ../packages/proto --python_out=src/proto --grpc_python_out=src/proto --pyi_out=src/proto ../packages/proto/metrics.proto",
-    "gen-ts": "cd frontend && node node_modules/grpc-tools/bin/protoc.js --plugin=protoc-gen-ts_proto=node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/proto --ts_proto_opt=outputServices=grpc-js,env=node,esModuleInterop=true -I ../packages/proto ../packages/proto/metrics.proto"
+    "gen": "npm run gen-py && npm run gen-ts && echo \u001b[32mAll proto files generated successfully!\u001b[0m",
+    "gen-py": "cd backend && uv run python -m grpc_tools.protoc -I ../packages/proto --python_out=src/generated --grpc_python_out=src/generated --pyi_out=src/generated ../packages/proto/metrics.proto",
+    "gen-ts": "cd frontend && npx protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_out=src\\generated --ts_proto_opt=env=node,outputServices=grpc-js,esModuleInterop=true -I ..\\packages\\proto ..\\packages\\proto\\metrics.proto"
   }
 }

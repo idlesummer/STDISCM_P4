@@ -4,7 +4,7 @@ from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 from grpc import server as Server
 
-from src.proto import metrics_pb2_grpc as pbg
+from src.generated import metrics_pb2_grpc as pbg
 from src.services.servicer import Servicer
 from src.training.data_module import DataModule
 from src.training.model import Model

@@ -1,8 +1,8 @@
 from typing import Iterator
 import grpc
 
-from src.proto import metrics_pb2 as pb
-from src.proto import metrics_pb2_grpc as pbg
+from src.generated import metrics_pb2 as pb
+from src.generated import metrics_pb2_grpc as pbg
 
 
 class Client:
