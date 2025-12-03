@@ -18,6 +18,7 @@ export function useRealTraining(
 
     let eventSource: EventSource | null = null
     hasShownErrorRef.current = false
+    toast.dismiss('training-error')
 
     // Start training first
     const startTraining = async () => {
