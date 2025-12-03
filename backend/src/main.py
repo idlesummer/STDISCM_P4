@@ -1,14 +1,8 @@
-import sys
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 from grpc import server as Server
-
-# Add generated directory to sys.path for protobuf imports
-generated_dir = Path(__file__).parent / "generated"
-sys.path.insert(0, str(generated_dir))
 
 from src.generated import metrics_pb2_grpc as pbg
 from src.services.servicer import Servicer
