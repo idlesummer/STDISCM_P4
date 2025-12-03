@@ -20,7 +20,6 @@ export function useTraining(
 
     // Subscribe to metrics stream
     eventSource = new EventSource('/dashboard/api/training/subscribe')
-
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data)
@@ -45,11 +44,11 @@ export function useTraining(
           scores: data.scores,
         }
 
+        const batch = data.batch
+        const loss = data.batch_loss
         setCurrentMetric(metric)
-        setLossHistory((prev) => [
-          ...prev,
-          { batch: data.batch, loss: data.batch_loss },
-        ])
+        setLossHistory(prev => [...prev, { batch, loss }])
+
       } catch (err) {
         console.error('Error parsing metric:', err)
       }
@@ -67,9 +66,8 @@ export function useTraining(
       setIsTraining(false)
     }
 
-    return () => {
-      eventSource?.close()
-    }
+    return () => eventSource?.close()
+
   }, [isTraining, setIsTraining])
 
   // Local functions (actions)

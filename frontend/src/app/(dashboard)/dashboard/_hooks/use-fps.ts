@@ -21,7 +21,6 @@ export function useFPS() {
 
       if (elapsedMs >= 1000) {
         const newFps = Math.round((frameCounter * 1000) / elapsedMs)
-
         setFps(newFps)
         setFpsHistory(hist => [...hist.slice(-19), { time: hist.length, fps: newFps }])
 
