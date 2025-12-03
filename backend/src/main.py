@@ -53,7 +53,7 @@ def main() -> None:
     servicer = Servicer(queue, on_start=worker)             # Equivalent of router with set routes
     server = Server(ThreadPoolExecutor(max_workers=10))     # Equivalent of app = express()
     pbg.add_TrainingServicer_to_server(servicer, server)    # Equivalent of app.use(router)
-    server.add_insecure_port(f'[::]:{port}')                # |
+    server.add_insecure_port(f'0.0.0.0:{port}')             # |
     server.start()                                          # Equivalent of app.listen(port, ...)
 
     print(f"✅ Server listening on port {port}")
