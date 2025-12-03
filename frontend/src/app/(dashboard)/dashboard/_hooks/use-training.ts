@@ -48,7 +48,7 @@ export function useTraining(
         const loss = data.batch_loss
         setCurrentMetric(metric)
         setLossHistory(prev => [...prev, { batch, loss }])
-        
+
       } catch (err) {
         console.error('Error parsing metric:', err)
       }
