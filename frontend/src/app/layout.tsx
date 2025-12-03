@@ -13,7 +13,16 @@ export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
     <html lang="en">
       <body className="antialiased">
         {children}
-        <Toaster />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              fontSize: '1.125rem',
+              color: '#dc2626',
+              fontWeight: '500',
+            },
+          }}
+        />
       </body>
     </html>
   )
