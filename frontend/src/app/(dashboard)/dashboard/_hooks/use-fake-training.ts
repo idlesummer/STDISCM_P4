@@ -25,6 +25,7 @@ export function useFakeTraining(
           preds: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
           truths: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)),
           scores: Array.from({ length: 16 }, () => Math.random() * 0.4 + 0.6),
+          image_ids: Array.from({ length: 16 }, () => Math.floor(Math.random() * 10000)),
         }
 
         setCurrentMetric(metric)
