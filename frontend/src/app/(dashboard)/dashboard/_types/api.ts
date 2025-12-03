@@ -1,8 +1,8 @@
-export interface StartTrainingRequest {
+export interface StartTrainingReq {
   numEpochs: number
 }
 
-export interface StartTrainingResponse {
+export interface StartTrainingRes {
   status: string
   message: string
 }
