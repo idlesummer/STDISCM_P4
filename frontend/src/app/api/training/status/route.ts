@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as grpc from '@grpc/grpc-js'
-import { TrainingClient } from '@/proto/metrics'
+import { TrainingClient } from '@/generated/metrics'
 
 export const dynamic = 'force-dynamic'
 
