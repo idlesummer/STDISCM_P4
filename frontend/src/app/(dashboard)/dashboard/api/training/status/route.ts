@@ -5,16 +5,18 @@ import { TrainingClient } from '@/generated/metrics'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  try {
-    // Create gRPC client using generated proto files
-    const client = new TrainingClient(
-      process.env.GRPC_SERVER_URL || 'localhost:50051',
-      grpc.credentials.createInsecure()
-    )
+  const client = new TrainingClient(
+    process.env.GRPC_SERVER_URL || 'localhost:50051',
+    grpc.credentials.createInsecure()
+  )
 
+  try {
     // Call Status RPC
     return new Promise<NextResponse>((resolve) => {
       client.status({}, (error: any, response: any) => {
+        // Close client after call completes
+        client.close()
+
         if (error) {
           console.error('gRPC Status error:', error)
           resolve(NextResponse.json(
@@ -31,6 +33,7 @@ export async function GET(request: NextRequest) {
       })
     })
   } catch (error: any) {
+    client.close()
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

@@ -10,44 +10,74 @@ export async function GET(request: NextRequest) {
   // Create a ReadableStream to send SSE (Server-Sent Events)
   const stream = new ReadableStream({
     start(controller) {
+      let isClosed = false
+
       // Create gRPC client using generated proto files
       const client = new TrainingClient(
         process.env.GRPC_SERVER_URL || 'localhost:50051',
         grpc.credentials.createInsecure()
       )
 
+      const cleanup = () => {
+        if (isClosed) return
+        isClosed = true
+
+        try {
+          controller.close()
+        } catch (err) {
+          // Controller may already be closed, ignore error
+        }
+
+        client.close()
+      }
+
       // Subscribe to metrics stream
       const call = client.subscribe({})
 
       call.on('data', (metric: any) => {
-        const data = JSON.stringify({
-          epoch: metric.epoch,
-          batch: metric.batch,
-          batch_size: metric.batchSize,
-          batch_loss: metric.batchLoss,
-          preds: metric.preds,
-          truths: metric.truths,
-          scores: metric.scores,
-        })
+        if (isClosed) return
 
-        controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+        try {
+          const data = JSON.stringify({
+            epoch: metric.epoch,
+            batch: metric.batch,
+            batch_size: metric.batchSize,
+            batch_loss: metric.batchLoss,
+            preds: metric.preds,
+            truths: metric.truths,
+            scores: metric.scores,
+          })
+
+          controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+        } catch (err) {
+          console.error('Error enqueueing data:', err)
+          cleanup()
+        }
       })
 
       call.on('end', () => {
         console.log('gRPC stream ended')
-        controller.close()
+        cleanup()
       })
 
       call.on('error', (err: any) => {
         console.error('gRPC error:', err)
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: err.message })}\n\n`))
-        controller.close()
+
+        if (!isClosed) {
+          try {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: err.message })}\n\n`))
+          } catch (e) {
+            // Controller may be closed, ignore
+          }
+        }
+
+        cleanup()
       })
 
       // Clean up on client disconnect
       request.signal.addEventListener('abort', () => {
         call.cancel()
-        controller.close()
+        cleanup()
       })
     }
   })
