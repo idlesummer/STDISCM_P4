@@ -1,22 +1,9 @@
 import { NextRequest } from 'next/server'
 import * as grpc from '@grpc/grpc-js'
-import * as protoLoader from '@grpc/proto-loader'
-import path from 'path'
+import { TrainingClient } from '@/proto/metrics_grpc_pb'
+import { SubscribeReq } from '@/proto/metrics_pb'
 
 export const dynamic = 'force-dynamic'
-
-// Load the proto file
-const PROTO_PATH = path.resolve(process.cwd(), '../packages/proto/metrics.proto')
-
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true
-})
-
-const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder()
@@ -24,14 +11,15 @@ export async function GET(request: NextRequest) {
   // Create a ReadableStream to send SSE (Server-Sent Events)
   const stream = new ReadableStream({
     start(controller) {
-      // Create gRPC client
-      const client = new protoDescriptor.services.Training(
+      // Create gRPC client using generated proto files
+      const client = new TrainingClient(
         process.env.GRPC_SERVER_URL || 'localhost:50051',
         grpc.credentials.createInsecure()
       )
 
       // Subscribe to metrics stream
-      const call = client.Subscribe({})
+      const subscribeReq = new SubscribeReq()
+      const call = client.subscribe(subscribeReq)
 
       call.on('data', (metric: any) => {
         const data = JSON.stringify({
