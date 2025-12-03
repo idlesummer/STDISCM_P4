@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { toast } from 'sonner'
 import { TrainingMetric, LossDataPoint } from './use-fake-training'
 
-export function useRealTraining(
+export function useTraining(
   isTraining: boolean,
   setIsTraining: (value: boolean) => void,
 ) {
