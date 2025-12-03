@@ -18,7 +18,6 @@ export function useRealTraining(
 
     let eventSource: EventSource | null = null
     hasShownErrorRef.current = false
-    toast.dismiss('training-error')
 
     // Start training first
     const startTraining = async () => {
@@ -36,7 +35,7 @@ export function useRealTraining(
         if (!response.ok || data.error) {
           const errorMsg = data.error || 'Failed to start training'
           if (!hasShownErrorRef.current) {
-            toast.error(errorMsg, { id: 'training-error' })
+            toast.error(errorMsg)
             hasShownErrorRef.current = true
           }
           throw new Error(errorMsg)
@@ -54,7 +53,7 @@ export function useRealTraining(
             if (data.error) {
               setError(data.error)
               if (!hasShownErrorRef.current) {
-                toast.error(data.error, { id: 'training-error' })
+                toast.error(data.error)
                 hasShownErrorRef.current = true
               }
               setIsTraining(false)
@@ -86,7 +85,7 @@ export function useRealTraining(
           const errorMsg = 'Connection to server lost'
           setError(errorMsg)
           if (!hasShownErrorRef.current) {
-            toast.error(errorMsg, { id: 'training-error' })
+            toast.error(errorMsg)
             hasShownErrorRef.current = true
           }
           eventSource?.close()
@@ -97,7 +96,7 @@ export function useRealTraining(
         const errorMsg = err.message || 'Failed to connect to server'
         setError(errorMsg)
         if (!hasShownErrorRef.current) {
-          toast.error('Server not connected. Please start the backend server.', { id: 'training-error' })
+          toast.error('Server not connected. Please start the backend server.')
           hasShownErrorRef.current = true
         }
         setIsTraining(false)
