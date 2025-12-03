@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { Hash, Layers, Pause, Play, RotateCwSquare, Smile, TableProperties, TrendingDown, Zap } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
+import { toast } from 'sonner'
 
 // Component imports
 import { Button } from '@/components/ui/button'
@@ -35,9 +36,28 @@ export default function DashboardPage() {
 
   // Handler functions
   const handleStop = () => setIsTraining(false)
-  const handleStart = () => { 
-    resetTraining()
-    setIsTraining(true)
+  const handleStart = async () => {
+    try {
+      const response = await fetch('/dashboard/api/training/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ numEpochs: 3 }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || data.error) {
+        toast.error(data.error || 'Failed to start training')
+        return
+      }
+
+      resetTraining()
+      setIsTraining(true)
+    } catch (err: any) {
+      toast.error('Server not connected. Please start the backend server.')
+    }
   }
 
   return (
