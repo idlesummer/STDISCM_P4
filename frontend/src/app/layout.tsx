@@ -16,11 +16,8 @@ export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
         <Toaster
           position="top-center"
           toastOptions={{
-            style: {
-              fontSize: '1.125rem',
-              backgroundColor: '#dc2626',
-              color: '#ffffff',
-              fontWeight: '500',
+            classNames: {
+              toast: 'bg-red-600 text-white text-lg font-medium',
             },
           }}
         />
