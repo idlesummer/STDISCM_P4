@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { TrainingMetric, LossDataPoint } from './use-fake-training'
+import { TrainingMetric, LossDataPoint } from '../_types/training'
 
 export function useTraining(
   isTraining: boolean,

@@ -20,20 +20,7 @@ import { Typography3XL, TypographyH2, TypographyMuted, TypographyXS } from '@/co
 // Local imports
 import { useTraining } from './_hooks/use-training'
 import { useFPS } from './_hooks/use-fps'
-
-// Types
-interface StartTrainingRequest {
-  numEpochs: number
-}
-
-interface StartTrainingResponse {
-  status: string
-  message: string
-}
-
-interface StartTrainingError {
-  error: string
-}
+import { StartTrainingRequest, StartTrainingResponse, StartTrainingError } from './_types/api'
 
 export default function DashboardPage() {
   // Training state hooks
