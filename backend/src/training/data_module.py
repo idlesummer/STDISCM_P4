@@ -1,3 +1,5 @@
+import sys
+import os
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Dataset
 from typing import Any
@@ -10,11 +12,17 @@ class IndexedDataset(Dataset):
         self.base_dataset = base_dataset
 
     def __len__(self) -> int:
-        return len(self.base_dataset)
+        return len(self.base_dataset)   # type: ignore
 
     def __getitem__(self, idx: int) -> tuple[int, Any, Any]:
         image, label = self.base_dataset[idx]
         return idx, image, label
+
+
+def get_data_path():
+    if getattr(sys, 'frozen', False):
+        return os.path.join(getattr(sys, '_MEIPASS', '.'), 'data')
+    return './data'
 
 
 class DataModule:
@@ -24,8 +32,8 @@ class DataModule:
     batch_size: int
     download: bool
     
-    def __init__(self, root = './data', batch_size = 64, download = True):
-        self.root = root
+    def __init__(self, root: str | None = None, batch_size = 64, download = True):
+        self.root = root or get_data_path()
         self.batch_size = batch_size
         self.download = download
         
