@@ -24,8 +24,7 @@ export async function GET(request: NextRequest) {
 
         try {
           controller.close()
-        } 
-        catch {
+        } catch {
           // Controller may already be closed, ignore error
         }
         client.close()
@@ -71,9 +70,10 @@ export async function GET(request: NextRequest) {
 
         if (!isClosed) {
           try {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: err.message })}\n\n`))
-          } 
-          catch {
+            const input = `data: ${JSON.stringify({ error: err.message })}\n\n`
+            const chunk = encoder.encode(input)
+            controller.enqueue(chunk)
+          } catch {
             // Controller may be closed, ignore
           }
         }
