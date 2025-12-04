@@ -110,7 +110,7 @@ export function useTraining(
           // Calculate exponential backoff delay
           const delay = Math.min(
             INITIAL_RETRY_DELAY * Math.pow(BACKOFF_MULTIPLIER, retryCount.current),
-            MAX_RETRY_DELAY
+            MAX_RETRY_DELAY,
           )
 
           retryCount.current += 1
@@ -122,7 +122,7 @@ export function useTraining(
           if (!hasShownErrorRef.current) {
             toast.warning(
               `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s... (${retryCount.current}/${MAX_RETRIES})`,
-              { duration: delay }
+              { duration: delay },
             )
             hasShownErrorRef.current = true
           }
