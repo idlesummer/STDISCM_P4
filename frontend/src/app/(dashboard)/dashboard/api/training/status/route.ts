@@ -7,7 +7,7 @@ import { TrainingClient, type StatusReq, type StatusRes } from '@/generated/metr
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const addr = process.env.GRPC_SERVER_URL!
+  const addr = process.env.GRPC_SERVER_URL || 'localhost:50051'
   const cred = grpc.credentials.createInsecure()
   const client = new TrainingClient(addr, cred)
 

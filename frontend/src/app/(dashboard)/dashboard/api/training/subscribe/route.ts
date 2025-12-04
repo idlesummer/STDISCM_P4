@@ -14,10 +14,9 @@ export async function GET(request: NextRequest) {
       let isClosed = false
 
       // Create gRPC client using generated proto files
-      const client = new TrainingClient(
-        process.env.GRPC_SERVER_URL!,
-        grpc.credentials.createInsecure()
-      )
+      const addr = process.env.GRPC_SERVER_URL || 'localhost:50051'
+      const cred = grpc.credentials.createInsecure()
+      const client = new TrainingClient(addr, cred)
 
       const cleanup = () => {
         if (isClosed) return
@@ -25,7 +24,7 @@ export async function GET(request: NextRequest) {
 
         try {
           controller.close()
-        } catch (err) {
+        } catch {
           // Controller may already be closed, ignore error
         }
 
@@ -51,6 +50,7 @@ export async function GET(request: NextRequest) {
           })
 
           controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+          
         } catch (err) {
           console.error('Error enqueueing data:', err)
           cleanup()
@@ -64,16 +64,15 @@ export async function GET(request: NextRequest) {
 
       call.on('error', (err: ServiceError) => {
         // Check if this is an intentional cancellation (not a real error)
-        if (err.code === 1) {
+        if (err.code === 1)
           console.log('gRPC stream cancelled by client')
-        } else {
+        else
           console.error('gRPC error:', err)
-        }
 
         if (!isClosed) {
           try {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: err.message })}\n\n`))
-          } catch (e) {
+          } catch {
             // Controller may be closed, ignore
           }
         }
@@ -86,7 +85,7 @@ export async function GET(request: NextRequest) {
         call.cancel()
         cleanup()
       })
-    }
+    },
   })
 
   return new Response(stream, {
