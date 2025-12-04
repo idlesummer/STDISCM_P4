@@ -7,16 +7,13 @@ import { TrainingClient, type StatusReq, type StatusRes } from '@/generated/metr
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const client = new TrainingClient(
-    process.env.GRPC_SERVER_URL || 'localhost:50051',
-    grpc.credentials.createInsecure()
-  )
+  const addr = process.env.GRPC_SERVER_URL || 'localhost:50051'
+  const cred = grpc.credentials.createInsecure()
+  const client = new TrainingClient(addr, cred)
 
   try {
     // Promisify the status method
-    const statusAsync = promisify<StatusReq, StatusRes>(
-      client.status.bind(client)
-    )
+    const statusAsync = promisify<StatusReq, StatusRes>(client.status.bind(client))
 
     // Call Status RPC
     const response = await statusAsync({})
@@ -24,20 +21,17 @@ export async function GET(request: NextRequest) {
     // Close client after call completes
     client.close()
 
-    return NextResponse.json({
-      status: response.status,
-      message: response.message,
-      epoch: response.epoch,
-    })
-  } catch (error) {
-    client.close()
+    const status = response.status
+    const message = response.message
+    const epoch = response.epoch
+    return NextResponse.json({ status, message, epoch })
 
+  } catch (error) {    
+    client.close()
     const grpcError = error as ServiceError
+    const errorMsg = grpcError.message || 'Unknown error occurred'
     console.error('gRPC Status error:', grpcError)
 
-    return NextResponse.json(
-      { error: grpcError.message || 'Unknown error occurred' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

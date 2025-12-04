@@ -7,43 +7,34 @@ import { TrainingClient, type StartReq, type StartRes } from '@/generated/metric
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
-  const client = new TrainingClient(
-    process.env.GRPC_SERVER_URL || 'localhost:50051',
-    grpc.credentials.createInsecure()
-  )
+  const addr = process.env.GRPC_SERVER_URL || 'localhost:50051'
+  const creds = grpc.credentials.createInsecure()
+  const client = new TrainingClient(addr, creds)
 
   try {
     const body = await request.json()
     const numEpochs = body.numEpochs || 20
 
     // Promisify the start method
-    const startAsync = promisify<StartReq, StartRes>(
-      client.start.bind(client)
-    )
+    const startAsync = promisify<StartReq, StartRes>(client.start.bind(client))
 
     // Call Start RPC
     const response = await startAsync({ numEpochs, confirmed: true })
 
     // Close client after call completes
     client.close()
+    const status = response.status
+    const message = response.message
+    return NextResponse.json({ status, message })
 
-    return NextResponse.json({
-      status: response.status,
-      message: response.message,
-    })
   } catch (error) {
     client.close()
-
     const grpcError = error as ServiceError
     const errorMsg = grpcError.code === 14
       ? 'Failed to connect to server. Please start the backend server.'
       : grpcError.message || 'Unknown error occurred'
 
     console.error('gRPC Start error:', errorMsg)
-
-    return NextResponse.json(
-      { error: errorMsg },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }
