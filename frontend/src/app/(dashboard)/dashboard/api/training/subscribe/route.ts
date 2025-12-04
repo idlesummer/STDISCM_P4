@@ -63,21 +63,14 @@ export async function GET(request: NextRequest) {
 
       call.on('error', (err: ServiceError) => {
         // Check if this is an intentional cancellation (not a real error)
-        if (err.code === 1)
+        if (err.code === 1) {
           console.log('gRPC stream cancelled by client')
-        else
+        } else {
           console.error('gRPC error:', err)
-
-        if (!isClosed) {
-          try {
-            const input = `data: ${JSON.stringify({ error: err.message })}\n\n`
-            const chunk = encoder.encode(input)
-            controller.enqueue(chunk)
-          } catch {
-            // Controller may be closed, ignore
-          }
         }
 
+        // Don't send error as SSE data - just close the connection
+        // This will trigger EventSource onerror on the client and activate exponential backoff
         cleanup()
       })
 
