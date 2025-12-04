@@ -40,13 +40,14 @@ export function useTraining(
       eventSource.onopen = () => {
         console.log('EventSource connection established')
 
-        // Show reconnection success if we were reconnecting
-        if (isReconnecting)
+        // Show reconnection success if this was a retry
+        if (retryCount > 0) {
           toast.success('Reconnected to training stream')
+        }
 
         // Reset retry state on successful connection
         retryCount = 0
-        isReconnecting = false
+        hasShownError = false
       }
 
       eventSource.onmessage = (event) => {
@@ -88,12 +89,23 @@ export function useTraining(
 
       eventSource.onerror = (err) => {
         console.error('EventSource error:', err)
-        eventSource?.close()
 
-        // Prevent multiple simultaneous retry attempts
+        // Prevent multiple simultaneous retry attempts - check FIRST before closing
         if (isReconnecting) {
           console.log('Already reconnecting, ignoring additional error event')
           return
+        }
+
+        // Mark as reconnecting immediately to prevent race conditions
+        isReconnecting = true
+
+        // Close the failed connection
+        eventSource?.close()
+
+        // Clear any existing retry timeout
+        if (retryTimeout) {
+          clearTimeout(retryTimeout)
+          retryTimeout = null
         }
 
         // If max retries exceeded
@@ -102,6 +114,7 @@ export function useTraining(
           setError(errorMsg)
           toast.error(errorMsg, { duration: 5000 })
           setIsTraining(false)
+          isReconnecting = false
           return
         }
 
@@ -110,7 +123,6 @@ export function useTraining(
         const delay = Math.min(retryDelay, MAX_RETRY_DELAY)
 
         retryCount++
-        isReconnecting = true
 
         console.log(`Connection lost. Retrying in ${delay}ms (attempt ${retryCount}/${MAX_RETRIES})`)
 
@@ -125,6 +137,7 @@ export function useTraining(
         // Schedule reconnection
         retryTimeout = setTimeout(() => {
           hasShownError = false
+          isReconnecting = false  // Reset before reconnecting
           connectToStream()
         }, delay)
       }
