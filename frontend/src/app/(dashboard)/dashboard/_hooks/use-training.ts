@@ -12,6 +12,7 @@ export function useTraining(
   isTraining: boolean,
   setIsTraining: (value: boolean) => void,
 ) {
+
   // State
   const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
@@ -30,9 +31,8 @@ export function useTraining(
 
     const connectToStream = () => {
       // Close existing connection if any
-      if (eventSource) {
+      if (eventSource)
         eventSource.close()
-      }
 
       // Create new EventSource connection
       eventSource = new EventSource('/dashboard/api/training/subscribe')
@@ -41,9 +41,8 @@ export function useTraining(
         console.log('EventSource connection established')
 
         // Show reconnection success if we were reconnecting
-        if (isReconnecting) {
+        if (isReconnecting)
           toast.success('Reconnected to training stream')
-        }
 
         // Reset retry state on successful connection
         retryCount = 0
@@ -91,40 +90,37 @@ export function useTraining(
         console.error('EventSource error:', err)
         eventSource?.close()
 
-        // Check if we should retry
-        if (retryCount < MAX_RETRIES) {
-          // Calculate exponential backoff delay
-          const delay = Math.min(
-            INITIAL_RETRY_DELAY * Math.pow(BACKOFF_MULTIPLIER, retryCount),
-            MAX_RETRY_DELAY,
-          )
-
-          retryCount += 1
-          isReconnecting = true
-
-          console.log(`Connection lost. Retrying in ${delay}ms (attempt ${retryCount}/${MAX_RETRIES})`)
-
-          // Show reconnection toast
-          if (!hasShownError) {
-            toast.warning(
-              `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s... (${retryCount}/${MAX_RETRIES})`,
-              { duration: delay },
-            )
-            hasShownError = true
-          }
-
-          // Schedule reconnection
-          retryTimeout = setTimeout(() => {
-            hasShownError = false
-            connectToStream()
-          }, delay)
-        } else {
-          // Max retries exceeded
+        // If max retries exceeded
+        if (retryCount >= MAX_RETRIES) {
           const errorMsg = 'Connection to server lost. Max retries exceeded.'
           setError(errorMsg)
           toast.error(errorMsg, { duration: 5000 })
           setIsTraining(false)
+          return
         }
+
+        // Calculate exponential backoff delay
+        const retryDelay = INITIAL_RETRY_DELAY * Math.pow(BACKOFF_MULTIPLIER, retryCount)
+        const delay = Math.min(retryDelay, MAX_RETRY_DELAY)
+
+        retryCount++
+        isReconnecting = true
+
+        console.log(`Connection lost. Retrying in ${delay}ms (attempt ${retryCount}/${MAX_RETRIES})`)
+
+        // Show reconnection toast
+        if (!hasShownError) {
+          const message = `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s... (${retryCount}/${MAX_RETRIES})`
+          const data = { duration: delay }
+          toast.warning(message, data)
+          hasShownError = true
+        }
+
+        // Schedule reconnection
+        retryTimeout = setTimeout(() => {
+          hasShownError = false
+          connectToStream()
+        }, delay)
       }
     }
 
@@ -133,12 +129,10 @@ export function useTraining(
 
     // Cleanup function
     return () => {
-      if (retryTimeout) {
+      if (retryTimeout)
         clearTimeout(retryTimeout)
-      }
-      if (eventSource) {
+      if (eventSource)
         eventSource.close()
-      }
     }
 
   }, [isTraining, setIsTraining])
