@@ -276,7 +276,7 @@ export default function DashboardPage() {
                               <TableCell>
                                 <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden flex items-center justify-center">
                                   <Image
-                                    src={`/images/test/${metric.image_ids[idx]}.png`}
+                                    src={`/images/train/${metric.image_ids[idx]}.png`}
                                     alt={`MNIST digit ${metric.truths[idx]}`}
                                     width={64}
                                     height={64}
@@ -324,7 +324,7 @@ export default function DashboardPage() {
                               <TableCell>
                                 <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden flex items-center justify-center">
                                   <Image
-                                    src={`/images/test/${metric.image_ids[actualIdx]}.png`}
+                                    src={`/images/train/${metric.image_ids[actualIdx]}.png`}
                                     alt={`MNIST digit ${metric.truths[actualIdx]}`}
                                     width={64}
                                     height={64}
