@@ -6,8 +6,20 @@
 
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import {
+  type CallOptions,
+  type ChannelCredentials,
+  Client,
+  type ClientOptions,
+  type ClientReadableStream,
+  type ClientUnaryCall,
+  type handleServerStreamingCall,
+  type handleUnaryCall,
+  makeGenericClientConstructor,
+  type Metadata,
+  type ServiceError,
+  type UntypedServiceImplementation,
+} from "@grpc/grpc-js";
 
 export const protobufPackage = "services";
 
@@ -605,51 +617,90 @@ export const StartRes: MessageFns<StartRes> = {
   },
 };
 
-export interface Training {
+export type TrainingService = typeof TrainingService;
+export const TrainingService = {
   /** Check server status (handshake) */
-  Status(request: StatusReq): Promise<StatusRes>;
+  status: {
+    path: "/services.Training/Status",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: StatusReq): Buffer => Buffer.from(StatusReq.encode(value).finish()),
+    requestDeserialize: (value: Buffer): StatusReq => StatusReq.decode(value),
+    responseSerialize: (value: StatusRes): Buffer => Buffer.from(StatusRes.encode(value).finish()),
+    responseDeserialize: (value: Buffer): StatusRes => StatusRes.decode(value),
+  },
   /** Start training with epochs and confirmation (stateless) */
-  Start(request: StartReq): Promise<StartRes>;
+  start: {
+    path: "/services.Training/Start",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: StartReq): Buffer => Buffer.from(StartReq.encode(value).finish()),
+    requestDeserialize: (value: Buffer): StartReq => StartReq.decode(value),
+    responseSerialize: (value: StartRes): Buffer => Buffer.from(StartRes.encode(value).finish()),
+    responseDeserialize: (value: Buffer): StartRes => StartRes.decode(value),
+  },
   /** Client subscribes to stream of metrics from server */
-  Subscribe(request: SubscribeReq): Observable<TrainingMetric>;
+  subscribe: {
+    path: "/services.Training/Subscribe",
+    requestStream: false,
+    responseStream: true,
+    requestSerialize: (value: SubscribeReq): Buffer => Buffer.from(SubscribeReq.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SubscribeReq => SubscribeReq.decode(value),
+    responseSerialize: (value: TrainingMetric): Buffer => Buffer.from(TrainingMetric.encode(value).finish()),
+    responseDeserialize: (value: Buffer): TrainingMetric => TrainingMetric.decode(value),
+  },
+} as const;
+
+export interface TrainingServer extends UntypedServiceImplementation {
+  /** Check server status (handshake) */
+  status: handleUnaryCall<StatusReq, StatusRes>;
+  /** Start training with epochs and confirmation (stateless) */
+  start: handleUnaryCall<StartReq, StartRes>;
+  /** Client subscribes to stream of metrics from server */
+  subscribe: handleServerStreamingCall<SubscribeReq, TrainingMetric>;
 }
 
-export const TrainingServiceName = "services.Training";
-export class TrainingClientImpl implements Training {
-  private readonly rpc: Rpc;
-  private readonly service: string;
-  constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || TrainingServiceName;
-    this.rpc = rpc;
-    this.Status = this.Status.bind(this);
-    this.Start = this.Start.bind(this);
-    this.Subscribe = this.Subscribe.bind(this);
-  }
-  Status(request: StatusReq): Promise<StatusRes> {
-    const data = StatusReq.encode(request).finish();
-    const promise = this.rpc.request(this.service, "Status", data);
-    return promise.then((data) => StatusRes.decode(new BinaryReader(data)));
-  }
-
-  Start(request: StartReq): Promise<StartRes> {
-    const data = StartReq.encode(request).finish();
-    const promise = this.rpc.request(this.service, "Start", data);
-    return promise.then((data) => StartRes.decode(new BinaryReader(data)));
-  }
-
-  Subscribe(request: SubscribeReq): Observable<TrainingMetric> {
-    const data = SubscribeReq.encode(request).finish();
-    const result = this.rpc.serverStreamingRequest(this.service, "Subscribe", data);
-    return result.pipe(map((data) => TrainingMetric.decode(new BinaryReader(data))));
-  }
+export interface TrainingClient extends Client {
+  /** Check server status (handshake) */
+  status(request: StatusReq, callback: (error: ServiceError | null, response: StatusRes) => void): ClientUnaryCall;
+  status(
+    request: StatusReq,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: StatusRes) => void,
+  ): ClientUnaryCall;
+  status(
+    request: StatusReq,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: StatusRes) => void,
+  ): ClientUnaryCall;
+  /** Start training with epochs and confirmation (stateless) */
+  start(request: StartReq, callback: (error: ServiceError | null, response: StartRes) => void): ClientUnaryCall;
+  start(
+    request: StartReq,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: StartRes) => void,
+  ): ClientUnaryCall;
+  start(
+    request: StartReq,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: StartRes) => void,
+  ): ClientUnaryCall;
+  /** Client subscribes to stream of metrics from server */
+  subscribe(request: SubscribeReq, options?: Partial<CallOptions>): ClientReadableStream<TrainingMetric>;
+  subscribe(
+    request: SubscribeReq,
+    metadata?: Metadata,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<TrainingMetric>;
 }
 
-interface Rpc {
-  request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
-  clientStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Promise<Uint8Array>;
-  serverStreamingRequest(service: string, method: string, data: Uint8Array): Observable<Uint8Array>;
-  bidirectionalStreamingRequest(service: string, method: string, data: Observable<Uint8Array>): Observable<Uint8Array>;
-}
+export const TrainingClient = makeGenericClientConstructor(TrainingService, "services.Training") as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): TrainingClient;
+  service: typeof TrainingService;
+  serviceName: string;
+};
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 

@@ -7,7 +7,7 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class TrainingMetric(_message.Message):
-    __slots__ = ("epoch", "batch", "batch_size", "batch_loss", "preds", "truths", "scores")
+    __slots__ = ("epoch", "batch", "batch_size", "batch_loss", "preds", "truths", "scores", "image_ids")
     EPOCH_FIELD_NUMBER: _ClassVar[int]
     BATCH_FIELD_NUMBER: _ClassVar[int]
     BATCH_SIZE_FIELD_NUMBER: _ClassVar[int]
@@ -15,6 +15,7 @@ class TrainingMetric(_message.Message):
     PREDS_FIELD_NUMBER: _ClassVar[int]
     TRUTHS_FIELD_NUMBER: _ClassVar[int]
     SCORES_FIELD_NUMBER: _ClassVar[int]
+    IMAGE_IDS_FIELD_NUMBER: _ClassVar[int]
     epoch: int
     batch: int
     batch_size: int
@@ -22,7 +23,8 @@ class TrainingMetric(_message.Message):
     preds: _containers.RepeatedScalarFieldContainer[int]
     truths: _containers.RepeatedScalarFieldContainer[int]
     scores: _containers.RepeatedScalarFieldContainer[float]
-    def __init__(self, epoch: _Optional[int] = ..., batch: _Optional[int] = ..., batch_size: _Optional[int] = ..., batch_loss: _Optional[float] = ..., preds: _Optional[_Iterable[int]] = ..., truths: _Optional[_Iterable[int]] = ..., scores: _Optional[_Iterable[float]] = ...) -> None: ...
+    image_ids: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, epoch: _Optional[int] = ..., batch: _Optional[int] = ..., batch_size: _Optional[int] = ..., batch_loss: _Optional[float] = ..., preds: _Optional[_Iterable[int]] = ..., truths: _Optional[_Iterable[int]] = ..., scores: _Optional[_Iterable[float]] = ..., image_ids: _Optional[_Iterable[int]] = ...) -> None: ...
 
 class SubscribeReq(_message.Message):
     __slots__ = ()
