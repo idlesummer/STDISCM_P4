@@ -20,7 +20,7 @@ def main() -> None:
 
     # 1. Load data
     data = DataModule(root='./data', batch_size=16, download=True)
-    train_loader, _ = data.get_loaders()
+    _, test_loader = data.get_loaders()
 
     # 2. Build model + optimizer + loss
     model = Model()
@@ -32,7 +32,7 @@ def main() -> None:
         model=model,
         criterion=criterion,
         optimizer=optimizer,
-        dataloader=train_loader,
+        dataloader=test_loader,
         tolerance=0.001,
         update_interval=160,
     )
