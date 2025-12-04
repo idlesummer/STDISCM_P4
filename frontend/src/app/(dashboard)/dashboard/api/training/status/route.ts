@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { promisify } from 'util'
 import * as grpc from '@grpc/grpc-js'
 import type { ServiceError } from '@grpc/grpc-js'
@@ -6,7 +6,7 @@ import { TrainingClient, type StatusReq, type StatusRes } from '@/generated/metr
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const addr = process.env.GRPC_SERVER_URL || 'localhost:50051'
   const cred = grpc.credentials.createInsecure()
   const client = new TrainingClient(addr, cred)
