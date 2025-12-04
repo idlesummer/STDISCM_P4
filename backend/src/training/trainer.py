@@ -1,9 +1,9 @@
 from queue import Queue
 from typing import TypedDict
 from torch import nn, Tensor
+import torch.nn.functional as F
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-
 
 class TrainingMetric(TypedDict):
     """Training metrics for a single batch."""
@@ -59,7 +59,6 @@ class Trainer:
         image_ids = indices.tolist()
 
         # Get confidence scores (softmax probabilities for predicted class)
-        import torch.nn.functional as F
         probs = F.softmax(outputs, dim=-1)
         scores = [probs[i, pred].item() for i, pred in enumerate(preds)]
 
@@ -90,6 +89,9 @@ class Trainer:
                     'scores': scores,
                     'image_ids': image_ids,
                 })
+                
+            if batch % 16 == 0:
+                print(f'[Epoch {epoch} | Batch {batch}/{num_batches-1}] | Loss: {batch_loss:.4f}')
 
         return running_loss / len(self.dataloader)
 

@@ -1,3 +1,4 @@
+import os
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 import torch
@@ -47,6 +48,7 @@ def main() -> None:
     port = 50051
     queue = trainer.metrics
     
+    os.system('cls')
     print("🚀 Starting gRPC Training Server...")
     servicer = Servicer(queue, on_start=worker)             # Equivalent of router with set routes
     server = Server(ThreadPoolExecutor(max_workers=10))     # Equivalent of app = express()
