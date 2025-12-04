@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const handleStop = () => setIsTraining(false)
   const handleStart = async () => {
     try {
-      const req: StartTrainingReq = { numEpochs: 3 }
+      const req: StartTrainingReq = { numEpochs: 20 }
       await axios.post<StartTrainingRes>('/dashboard/api/training/start', req)
       resetTraining()
       setIsTraining(true)
