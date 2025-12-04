@@ -33,7 +33,7 @@ def main() -> None:
         criterion=criterion,
         optimizer=optimizer,
         dataloader=train_loader,
-        tolerance=0.001,
+        tolerance=0.005,
         update_interval=160,
     )
 

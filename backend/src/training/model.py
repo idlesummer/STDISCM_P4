@@ -2,6 +2,8 @@ from torch import Tensor
 import torch.nn as nn
 
 
+# Regular NN Verson
+
 class Model(nn.Module):
     """Neural network pipeline from https://www.youtube.com/watch?v=gBw0u_5u0qU."""
     
@@ -25,9 +27,8 @@ class Model(nn.Module):
         return x.squeeze()                 # remove dims of size 1
 
 
-# CNN Version
-# 
-# import torch
+# # CNN Version
+
 # import torch.nn as nn
 # from torch import Tensor
 
@@ -67,5 +68,5 @@ class Model(nn.Module):
 #         x = self.features(x)
 #         x = self.classifier(x)
 
-          # do NOT squeeze; keep batch dim even for N=1
+#         # Do NOT squeeze; keep batch dim even for N=1
 #         return x  #
