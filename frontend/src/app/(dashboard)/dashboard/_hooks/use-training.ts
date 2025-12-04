@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { TrainingMetric, LossDataPoint } from '../_types/training'
 
@@ -17,51 +17,37 @@ export function useTraining(
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  // Refs for retry logic
-  const retryCount = useRef(0)
-  const retryTimeout = useRef<NodeJS.Timeout | null>(null)
-  const eventSourceRef = useRef<EventSource | null>(null)
-  const hasShownErrorRef = useRef(false)
-  const isReconnectingRef = useRef(false)
-
   // Effect
   useEffect(() => {
-    if (!isTraining) {
-      // Clean up on stop
-      if (retryTimeout.current) {
-        clearTimeout(retryTimeout.current)
-        retryTimeout.current = null
-      }
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-        eventSourceRef.current = null
-      }
-      retryCount.current = 0
-      isReconnectingRef.current = false
-      return
-    }
+    if (!isTraining) return
+
+    // Closure state for reconnection logic
+    let retryCount = 0
+    let retryTimeout: NodeJS.Timeout | null = null
+    let eventSource: EventSource | null = null
+    let hasShownError = false
+    let isReconnecting = false
 
     const connectToStream = () => {
       // Close existing connection if any
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
+      if (eventSource) {
+        eventSource.close()
       }
 
       // Create new EventSource connection
-      const eventSource = new EventSource('/dashboard/api/training/subscribe')
-      eventSourceRef.current = eventSource
+      eventSource = new EventSource('/dashboard/api/training/subscribe')
 
       eventSource.onopen = () => {
         console.log('EventSource connection established')
 
         // Show reconnection success if we were reconnecting
-        if (isReconnectingRef.current) {
+        if (isReconnecting) {
           toast.success('Reconnected to training stream')
         }
 
         // Reset retry state on successful connection
-        retryCount.current = 0
-        isReconnectingRef.current = false
+        retryCount = 0
+        isReconnecting = false
       }
 
       eventSource.onmessage = (event) => {
@@ -70,9 +56,9 @@ export function useTraining(
 
           if (data.error) {
             setError(data.error)
-            if (!hasShownErrorRef.current) {
+            if (!hasShownError) {
               toast.error(data.error)
-              hasShownErrorRef.current = true
+              hasShownError = true
             }
             setIsTraining(false)
             return
@@ -103,33 +89,33 @@ export function useTraining(
 
       eventSource.onerror = (err) => {
         console.error('EventSource error:', err)
-        eventSource.close()
+        eventSource?.close()
 
         // Check if we should retry
-        if (retryCount.current < MAX_RETRIES) {
+        if (retryCount < MAX_RETRIES) {
           // Calculate exponential backoff delay
           const delay = Math.min(
-            INITIAL_RETRY_DELAY * Math.pow(BACKOFF_MULTIPLIER, retryCount.current),
+            INITIAL_RETRY_DELAY * Math.pow(BACKOFF_MULTIPLIER, retryCount),
             MAX_RETRY_DELAY,
           )
 
-          retryCount.current += 1
-          isReconnectingRef.current = true
+          retryCount += 1
+          isReconnecting = true
 
-          console.log(`Connection lost. Retrying in ${delay}ms (attempt ${retryCount.current}/${MAX_RETRIES})`)
+          console.log(`Connection lost. Retrying in ${delay}ms (attempt ${retryCount}/${MAX_RETRIES})`)
 
           // Show reconnection toast
-          if (!hasShownErrorRef.current) {
+          if (!hasShownError) {
             toast.warning(
-              `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s... (${retryCount.current}/${MAX_RETRIES})`,
+              `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s... (${retryCount}/${MAX_RETRIES})`,
               { duration: delay },
             )
-            hasShownErrorRef.current = true
+            hasShownError = true
           }
 
           // Schedule reconnection
-          retryTimeout.current = setTimeout(() => {
-            hasShownErrorRef.current = false
+          retryTimeout = setTimeout(() => {
+            hasShownError = false
             connectToStream()
           }, delay)
         } else {
@@ -147,17 +133,12 @@ export function useTraining(
 
     // Cleanup function
     return () => {
-      if (retryTimeout.current) {
-        clearTimeout(retryTimeout.current)
-        retryTimeout.current = null
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
       }
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-        eventSourceRef.current = null
+      if (eventSource) {
+        eventSource.close()
       }
-      retryCount.current = 0
-      hasShownErrorRef.current = false
-      isReconnectingRef.current = false
     }
 
   }, [isTraining, setIsTraining])
