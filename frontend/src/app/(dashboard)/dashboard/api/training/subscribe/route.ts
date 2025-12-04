@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   // Create a ReadableStream to send SSE (Server-Sent Events)
   const stream = new ReadableStream({
-    start(controller) {
+    start: (controller) => {
       let isClosed = false
 
       // Create gRPC client using generated proto files
