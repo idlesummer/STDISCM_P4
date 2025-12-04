@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
       // Create gRPC client using generated proto files
       const client = new TrainingClient(
-        process.env.GRPC_SERVER_URL || 'localhost:50051',
+        process.env.GRPC_SERVER_URL!,
         grpc.credentials.createInsecure()
       )
 
