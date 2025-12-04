@@ -45,6 +45,8 @@ export function useTraining(
           image_ids: data.imageIds || data.image_ids || [],
         }
 
+        console.log('Received metric with image_ids:', metric.image_ids)
+
         const batch = data.batch
         const loss = data.batch_loss
         setCurrentMetric(metric)

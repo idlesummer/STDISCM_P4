@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
             preds: metric.preds,
             truths: metric.truths,
             scores: metric.scores,
+            imageIds: metric.imageIds,
           })
 
           controller.enqueue(encoder.encode(`data: ${data}\n\n`))
