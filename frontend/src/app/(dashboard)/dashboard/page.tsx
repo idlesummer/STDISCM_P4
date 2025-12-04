@@ -6,6 +6,7 @@ import { Hash, Layers, Pause, Play, RotateCwSquare, Smile, TableProperties, Tren
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { toast } from 'sonner'
 import axios from 'axios'
+import Image from 'next/image'
 
 // Component imports
 import { Button } from '@/components/ui/button'
@@ -273,11 +274,14 @@ export default function DashboardPage() {
                               className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
                             >
                               <TableCell>
-                                <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden">
-                                  <img
+                                <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden flex items-center justify-center">
+                                  <Image
                                     src={`/images/test/${metric.image_ids[idx]}.png`}
                                     alt={`MNIST digit ${metric.truths[idx]}`}
-                                    className="w-full h-full object-contain"
+                                    width={64}
+                                    height={64}
+                                    className="object-contain"
+                                    unoptimized
                                   />
                                 </div>
                               </TableCell>
@@ -318,11 +322,14 @@ export default function DashboardPage() {
                               className={isCorrect ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
                             >
                               <TableCell>
-                                <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden">
-                                  <img
+                                <div className="w-16 h-16 rounded-lg bg-card border border-border overflow-hidden flex items-center justify-center">
+                                  <Image
                                     src={`/images/test/${metric.image_ids[actualIdx]}.png`}
                                     alt={`MNIST digit ${metric.truths[actualIdx]}`}
-                                    className="w-full h-full object-contain"
+                                    width={64}
+                                    height={64}
+                                    className="object-contain"
+                                    unoptimized
                                   />
                                 </div>
                               </TableCell>
