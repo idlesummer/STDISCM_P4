@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { promisify } from 'util'
 import * as grpc from '@grpc/grpc-js'
-import { TrainingClient } from '@/generated/metrics'
+import type { ServiceError } from '@grpc/grpc-js'
+import { TrainingClient, type StartReq, type StartRes } from '@/generated/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,33 +16,33 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const numEpochs = body.numEpochs || 20
 
-    // Call Start RPC
-    return new Promise<NextResponse>((resolve) => {
-      client.start({ numEpochs, confirmed: true }, (error: any, response: any) => {
-        // Close client after call completes
-        client.close()
+    // Promisify the start method
+    const startAsync = promisify<StartReq, StartRes>(
+      client.start.bind(client)
+    )
 
-        if (error) {
-          const errorMsg = error.code === 14
-            ? 'Failed to connect to server. Please start the backend server.'
-            : error.message
-          console.error('gRPC Start error:', errorMsg)
-          resolve(NextResponse.json(
-            { error: errorMsg },
-            { status: 500 }
-          ))
-        } else {
-          resolve(NextResponse.json({
-            status: response.status,
-            message: response.message,
-          }))
-        }
-      })
-    })
-  } catch (error: any) {
+    // Call Start RPC
+    const response = await startAsync({ numEpochs, confirmed: true })
+
+    // Close client after call completes
     client.close()
+
+    return NextResponse.json({
+      status: response.status,
+      message: response.message,
+    })
+  } catch (error) {
+    client.close()
+
+    const grpcError = error as ServiceError
+    const errorMsg = grpcError.code === 14
+      ? 'Failed to connect to server. Please start the backend server.'
+      : grpcError.message || 'Unknown error occurred'
+
+    console.error('gRPC Start error:', errorMsg)
+
     return NextResponse.json(
-      { error: error.message },
+      { error: errorMsg },
       { status: 500 }
     )
   }

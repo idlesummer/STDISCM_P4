@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { promisify } from 'util'
 import * as grpc from '@grpc/grpc-js'
-import { TrainingClient } from '@/generated/metrics'
+import type { ServiceError } from '@grpc/grpc-js'
+import { TrainingClient, type StatusReq, type StatusRes } from '@/generated/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,31 +13,30 @@ export async function GET(request: NextRequest) {
   )
 
   try {
-    // Call Status RPC
-    return new Promise<NextResponse>((resolve) => {
-      client.status({}, (error: any, response: any) => {
-        // Close client after call completes
-        client.close()
+    // Promisify the status method
+    const statusAsync = promisify<StatusReq, StatusRes>(
+      client.status.bind(client)
+    )
 
-        if (error) {
-          console.error('gRPC Status error:', error)
-          resolve(NextResponse.json(
-            { error: error.message },
-            { status: 500 }
-          ))
-        } else {
-          resolve(NextResponse.json({
-            status: response.status,
-            message: response.message,
-            epoch: response.epoch,
-          }))
-        }
-      })
-    })
-  } catch (error: any) {
+    // Call Status RPC
+    const response = await statusAsync({})
+
+    // Close client after call completes
     client.close()
+
+    return NextResponse.json({
+      status: response.status,
+      message: response.message,
+      epoch: response.epoch,
+    })
+  } catch (error) {
+    client.close()
+
+    const grpcError = error as ServiceError
+    console.error('gRPC Status error:', grpcError)
+
     return NextResponse.json(
-      { error: error.message },
+      { error: grpcError.message || 'Unknown error occurred' },
       { status: 500 }
     )
   }

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import * as grpc from '@grpc/grpc-js'
-import { TrainingClient } from '@/generated/metrics'
+import type { ServiceError } from '@grpc/grpc-js'
+import { TrainingClient, type TrainingMetric } from '@/generated/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       // Subscribe to metrics stream
       const call = client.subscribe({})
 
-      call.on('data', (metric: any) => {
+      call.on('data', (metric: TrainingMetric) => {
         if (isClosed) return
 
         try {
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
         cleanup()
       })
 
-      call.on('error', (err: any) => {
+      call.on('error', (err: ServiceError) => {
         // Check if this is an intentional cancellation (not a real error)
         if (err.code === 1) {
           console.log('gRPC stream cancelled by client')
