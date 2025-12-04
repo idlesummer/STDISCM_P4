@@ -10,13 +10,14 @@ export async function GET(request: NextRequest) {
 
   // Create a ReadableStream to send SSE (Server-Sent Events)
   const stream = new ReadableStream({
-    start: (controller) => {
+    start(controller) {
       let isClosed = false
 
       // Create gRPC client using generated proto files
-      const addr = process.env.GRPC_SERVER_URL || 'localhost:50051'
-      const cred = grpc.credentials.createInsecure()
-      const client = new TrainingClient(addr, cred)
+      const client = new TrainingClient(
+        process.env.GRPC_SERVER_URL || 'localhost:50051',
+        grpc.credentials.createInsecure()
+      )
 
       const cleanup = () => {
         if (isClosed) return
@@ -24,9 +25,10 @@ export async function GET(request: NextRequest) {
 
         try {
           controller.close()
-        } catch {
+        } catch (err) {
           // Controller may already be closed, ignore error
         }
+
         client.close()
       }
 
@@ -49,7 +51,6 @@ export async function GET(request: NextRequest) {
           })
 
           controller.enqueue(encoder.encode(`data: ${data}\n\n`))
-
         } catch (err) {
           console.error('Error enqueueing data:', err)
           cleanup()
@@ -69,8 +70,14 @@ export async function GET(request: NextRequest) {
           console.error('gRPC error:', err)
         }
 
-        // Don't send error as SSE data - just close the connection
-        // This will trigger EventSource onerror on the client and activate exponential backoff
+        if (!isClosed) {
+          try {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: err.message })}\n\n`))
+          } catch (e) {
+            // Controller may be closed, ignore
+          }
+        }
+
         cleanup()
       })
 
@@ -79,7 +86,7 @@ export async function GET(request: NextRequest) {
         call.cancel()
         cleanup()
       })
-    },
+    }
   })
 
   return new Response(stream, {

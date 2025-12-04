@@ -2,17 +2,10 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { TrainingMetric, LossDataPoint } from '../_types/training'
 
-// Exponential backoff configuration
-const INITIAL_RETRY_DELAY = 1000 // 1 second
-const MAX_RETRY_DELAY = 30000 // 30 seconds
-const MAX_RETRIES = 5
-const BACKOFF_MULTIPLIER = 2
-
 export function useTraining(
   isTraining: boolean,
   setIsTraining: (value: boolean) => void,
 ) {
-
   // State
   const [metric, setCurrentMetric] = useState<TrainingMetric | null>(null)
   const [lossHistory, setLossHistory] = useState<LossDataPoint[]>([])
@@ -22,137 +15,61 @@ export function useTraining(
   useEffect(() => {
     if (!isTraining) return
 
-    // Closure state for reconnection logic
-    let retryCount = 0
-    let retryTimeout: NodeJS.Timeout | null = null
     let eventSource: EventSource | null = null
     let hasShownError = false
-    let isReconnecting = false
 
-    const connectToStream = () => {
-      // Close existing connection if any
-      if (eventSource)
-        eventSource.close()
+    // Subscribe to metrics stream
+    eventSource = new EventSource('/dashboard/api/training/subscribe')
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
 
-      // Create new EventSource connection
-      eventSource = new EventSource('/dashboard/api/training/subscribe')
-
-      eventSource.onopen = () => {
-        console.log('EventSource connection established')
-
-        // Show reconnection success if this was a retry
-        if (retryCount > 0) {
-          toast.success('Reconnected to training stream')
-        }
-
-        // Reset retry state on successful connection
-        retryCount = 0
-        hasShownError = false
-      }
-
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-
-          if (data.error) {
-            setError(data.error)
-            if (!hasShownError) {
-              toast.error(data.error)
-              hasShownError = true
-            }
-            setIsTraining(false)
-            return
+        if (data.error) {
+          setError(data.error)
+          if (!hasShownError) {
+            toast.error(data.error)
+            hasShownError = true
           }
-
-          const metric: TrainingMetric = {
-            epoch: data.epoch,
-            batch: data.batch,
-            batch_size: data.batch_size,
-            batch_loss: data.batch_loss,
-            preds: data.preds,
-            truths: data.truths,
-            scores: data.scores,
-            image_ids: data.imageIds || data.image_ids || [],
-          }
-
-          console.log('Received metric with image_ids:', metric.image_ids)
-
-          const batch = data.batch
-          const loss = data.batch_loss
-          setCurrentMetric(metric)
-          setLossHistory(prev => [...prev, { batch, loss }])
-
-        } catch (err) {
-          console.error('Error parsing metric:', err)
-        }
-      }
-
-      eventSource.onerror = (err) => {
-        console.error('EventSource error:', err)
-
-        // Prevent multiple simultaneous retry attempts - check FIRST before closing
-        if (isReconnecting) {
-          console.log('Already reconnecting, ignoring additional error event')
-          return
-        }
-
-        // Mark as reconnecting immediately to prevent race conditions
-        isReconnecting = true
-
-        // Close the failed connection
-        eventSource?.close()
-
-        // Clear any existing retry timeout
-        if (retryTimeout) {
-          clearTimeout(retryTimeout)
-          retryTimeout = null
-        }
-
-        // If max retries exceeded
-        if (retryCount >= MAX_RETRIES) {
-          const errorMsg = 'Connection to server lost. Max retries exceeded.'
-          setError(errorMsg)
-          toast.error(errorMsg, { duration: 5000 })
           setIsTraining(false)
-          isReconnecting = false
           return
         }
 
-        // Calculate exponential backoff delay
-        const retryDelay = INITIAL_RETRY_DELAY * Math.pow(BACKOFF_MULTIPLIER, retryCount)
-        const delay = Math.min(retryDelay, MAX_RETRY_DELAY)
-
-        retryCount++
-
-        console.log(`Connection lost. Retrying in ${delay}ms (attempt ${retryCount}/${MAX_RETRIES})`)
-
-        // Show reconnection toast
-        if (!hasShownError) {
-          const message = `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s... (${retryCount}/${MAX_RETRIES})`
-          const data = { duration: delay }
-          toast.warning(message, data)
-          hasShownError = true
+        const metric: TrainingMetric = {
+          epoch: data.epoch,
+          batch: data.batch,
+          batch_size: data.batch_size,
+          batch_loss: data.batch_loss,
+          preds: data.preds,
+          truths: data.truths,
+          scores: data.scores,
+          image_ids: data.imageIds || data.image_ids || [],
         }
 
-        // Schedule reconnection
-        retryTimeout = setTimeout(() => {
-          hasShownError = false
-          isReconnecting = false  // Reset before reconnecting
-          connectToStream()
-        }, delay)
+        console.log('Received metric with image_ids:', metric.image_ids)
+
+        const batch = data.batch
+        const loss = data.batch_loss
+        setCurrentMetric(metric)
+        setLossHistory(prev => [...prev, { batch, loss }])
+
+      } catch (err) {
+        console.error('Error parsing metric:', err)
       }
     }
 
-    // Initial connection
-    connectToStream()
-
-    // Cleanup function
-    return () => {
-      if (retryTimeout)
-        clearTimeout(retryTimeout)
-      if (eventSource)
-        eventSource.close()
+    eventSource.onerror = (err) => {
+      console.error('EventSource error:', err)
+      const errorMsg = 'Connection to server lost'
+      setError(errorMsg)
+      if (!hasShownError) {
+        toast.error(errorMsg)
+        hasShownError = true
+      }
+      eventSource?.close()
+      setIsTraining(false)
     }
+
+    return () => eventSource?.close()
 
   }, [isTraining, setIsTraining])
 
