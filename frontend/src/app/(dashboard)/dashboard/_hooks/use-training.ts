@@ -90,6 +90,12 @@ export function useTraining(
         console.error('EventSource error:', err)
         eventSource?.close()
 
+        // Prevent multiple simultaneous retry attempts
+        if (isReconnecting) {
+          console.log('Already reconnecting, ignoring additional error event')
+          return
+        }
+
         // If max retries exceeded
         if (retryCount >= MAX_RETRIES) {
           const errorMsg = 'Connection to server lost. Max retries exceeded.'
